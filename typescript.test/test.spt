@@ -3,5 +3,11 @@ module test
 language typescript
 
 test parse [[
+function foo() {
+}
+]] parse succeeds
 
+test parse [[
+function foo() {
+}
 ]] parse succeeds

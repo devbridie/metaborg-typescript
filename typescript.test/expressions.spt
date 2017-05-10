@@ -1,0 +1,28 @@
+module expressions
+
+language typescript
+start symbol Expression
+
+test integer [[
+5
+]] parse succeeds
+
+test true [[
+true
+]] parse succeeds
+
+test false [[
+false
+]] parse succeeds
+
+test strings [[
+"foo"
+]] parse succeeds
+
+test null [[
+null
+]] parse succeeds
+
+test undefined [[
+undefined
+]] parse succeeds

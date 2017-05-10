@@ -6,8 +6,35 @@ imports
 
 context-free start-symbols
   
-  Start
+  Expression Statement Program
 
 context-free syntax
   
-  Start.Empty = <>
+  Program.program = <>
+  
+  Statement.variableStatement = <var <{VariableDeclaration ","}+>;>
+  // Separate definition for let and const, because the scoping is different than for vars
+  Statement.lexicalDeclaration = <<LetOrConst> <{VariableDeclaration ","}+>;>
+  
+  LetOrConst.letDeclaration = <let>
+  LetOrConst.constDeclaration = <const>
+  
+  VariableDeclaration.simpleVariableDeclaration = <<BindingIdentifier> <TypeAnnotation?> <Initializer?>>
+  
+  TypeAnnotation.typeAnnotation = <: <Type>>
+  
+  BindingIdentifier.identifier = ID
+  
+  Initializer.initializer = <= <Expression>>
+  
+  Expression.number = INT
+  Expression.true = <true>
+  Expression.false = <false>
+  Expression.string = STRING
+  Expression.null = <null>
+  Expression.undefined = <undefined>
+  
+  Type.void = <void>
+  Type.number = <number>
+  Type.boolean = <boolean>
+  Type.string = <string>

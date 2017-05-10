@@ -4,7 +4,5 @@ name: typescript
 dependencies:
   compile:
   - org.metaborg:typescript:0.1.0-SNAPSHOT
-debug:
-  typesmart: false
 build:
   useBuildSystemSpec: true
