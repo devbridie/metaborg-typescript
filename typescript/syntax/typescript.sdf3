@@ -10,11 +10,23 @@ context-free start-symbols
 
 context-free syntax
   
-  Program.program = <>
+  Program.program = Statement*
   
   Statement.variableStatement = <var <{VariableDeclaration ","}+>;>
   // Separate definition for let and const, because the scoping is different than for vars
   Statement.lexicalDeclaration = <<LetOrConst> <{VariableDeclaration ","}+>;>
+  Statement.functionDeclaration = <
+  function <BindingIdentifier?><CallSignature> {
+  	<FunctionBody>
+  }
+  >
+  
+  Declaration.variabelDeclaration = VariableDeclaration
+  
+  FunctionBody.statementList = StatementListItem*
+  
+  StatementListItem.statement = Statement
+  StatementListItem.declaration = Declaration
   
   LetOrConst.letDeclaration = <let>
   LetOrConst.constDeclaration = <const>
@@ -24,6 +36,33 @@ context-free syntax
   TypeAnnotation.typeAnnotation = <: <Type>>
   
   BindingIdentifier.identifier = ID
+  
+  BindingIdentifierOrPattern.identifier = BindingIdentifier
+//  TODO
+//  BindingIdentifierOrPattern.pattern = BindingPattern
+  
+  CallSignature.callSignature = <<TypeParameters?>(<ParameterList?>)<TypeAnnotation?>>
+  
+  TypeParameters.typeParameters = <\<<{TypeParameter ","}+>\>>
+ 
+  TypeParameter.typeParameter = <<BindingIdentifier> <Constraint?>>
+
+  Constraint.constraint = <extends <Type>>
+  
+  ParameterList.requiredParameterList = {RequiredParameter ","}+
+// TODO
+//  OptionalParameterList
+//   RestParameter
+//   RequiredParameterList , OptionalParameterList
+//   RequiredParameterList , RestParameter
+//   OptionalParameterList , RestParameter
+//   RequiredParameterList , OptionalParameterList , RestParameter
+  
+  RequiredParameter.requiredParameter = /*<AccessibilityModifier?>*/<<BindingIdentifierOrPattern> <TypeAnnotation?>>
+  
+  AccessibilityModifier.public = <public>
+  AccessibilityModifier.private = <private>
+  AccessibilityModifier.protected = <protected>
   
   Initializer.initializer = <= <Expression>>
   

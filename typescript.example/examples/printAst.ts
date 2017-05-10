@@ -1,4 +1,4 @@
-/// <reference path="../node_modules/@types/node/index.d.ts" />
+/// <reference path="../../node_modules/@types/node/index.d.ts" />
 
 import {readFileSync} from 'fs';
 import * as ts from 'typescript';
@@ -12,3 +12,8 @@ fileNames.forEach(fileName => {
       console.log(statement);
     })
 });
+
+
+function(public a) {
+  
+}
