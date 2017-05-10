@@ -9,7 +9,7 @@ context-free start-symbols
   Expression Statement Program
 
 context-free syntax
-  
+ 
   Program.program = Statement*
   
   Statement.variableStatement = <var <{VariableDeclaration ","}+>;>
