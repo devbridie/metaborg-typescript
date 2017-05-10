@@ -1,0 +1,7 @@
+module test
+
+language typescript
+
+test parse [[
+
+]] parse succeeds
