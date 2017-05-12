@@ -16,17 +16,28 @@ context-free syntax
  
   Program.program = Statement*
   
-  Statement.variableStatement = <var <{VariableDeclaration ","}+>;>
-  // Separate definition for let and const, because the scoping is different than for vars
-  Statement.lexicalDeclaration = <<LetOrConst> <{VariableDeclaration ","}+>;>
-  Statement.functionDeclaration = <
+  Statement.variableStatement = VariableStatement
+  Statement.declaration = Declaration
+  Statement.return = ReturnStatement
+  
+  VariableStatement.variable = <var <{VariableDeclaration ","}+>;>
+  
+  Declaration.interfaceDeclaration = InterfaceDeclaration
+  Declaration.hoistable = HoistableDeclaration
+  Declaration.lexical = LexicalDeclaration
+  
+  HoistableDeclaration.function = FunctionDeclaration
+  
+  FunctionDeclaration.function = <
   function <BindingIdentifier?><CallSignature> {
-  	<FunctionBody>
+    <FunctionBody>
   }
   >
   
-  Declaration.variabelDeclaration = VariableDeclaration
-  Declaration.interfaceDeclaration = InterfaceDeclaration
+  LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+>;>
+  
+  ReturnStatement.empty = <return;>
+  ReturnStatement.value = <return <PrimaryExpression>;>
   
 //  TODO
 //  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>

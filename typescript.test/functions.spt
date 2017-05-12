@@ -82,3 +82,9 @@ test function with type parameters and extends [[
 function foo<A extends number, B>() {
 }
 ]] parse succeeds
+
+test function with return [[
+function foo(): number {
+  return 5;
+}
+]] parse succeeds
