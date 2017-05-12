@@ -26,6 +26,11 @@ function foo() {
 }
 ]] parse succeeds
 
+test function with reserved keyword [[
+function null() {
+}
+]] parse fails
+
 test function with return type [[
 function (): string {
 }

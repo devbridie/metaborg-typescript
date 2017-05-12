@@ -1,0 +1,67 @@
+module objects
+
+language typescript
+start symbol PrimaryExpression
+
+test empty object [[
+{}
+]] parse succeeds
+
+test empty object whitespace [[
+{  }
+]] parse succeeds
+
+test empty object trailing comma [[
+{ , }
+]] parse fails
+
+test object with field [[
+{
+  foo: 5
+}
+]] parse succeeds
+
+test object with colon [[
+{ a:b : 1 }
+]] parse fails
+
+test object with field trailing comma [[
+{
+  foo: 5,
+}
+]] parse succeeds
+
+test object with fields and trailing comma [[
+{
+  a: 1,
+  b: 2,
+}
+]] parse succeeds
+
+test object with one identifier [[
+{
+  foo
+}
+]] parse succeeds
+
+test object with multiple fields [[
+{
+  foo,
+  foo: bar,
+  5: bar,
+  "asdf": "bar"
+}
+]] parse succeeds
+
+test object multiple fields no comma [[
+{
+  foo: bar
+  5: bar
+}
+]] parse fails
+
+test object computed field [[
+{
+  ["a"]: 5
+}
+]] parse succeeds

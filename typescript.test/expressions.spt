@@ -1,7 +1,7 @@
 module expressions
 
 language typescript
-start symbol Expression
+start symbol PrimaryExpression
 
 test integer [[
 5

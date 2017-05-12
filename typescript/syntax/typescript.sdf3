@@ -3,10 +3,14 @@ module typescript
 imports
   
   Common
+ 
+template options
+
+  tokenize: "(,[;{.="
 
 context-free start-symbols
   
-  Expression Statement Program
+  PrimaryExpression Statement Program
 
 context-free syntax
  
@@ -64,14 +68,29 @@ context-free syntax
   AccessibilityModifier.private = <private>
   AccessibilityModifier.protected = <protected>
   
-  Initializer.initializer = <= <Expression>>
+  Initializer.initializer = <= <PrimaryExpression>>
   
-  Expression.number = INT
-  Expression.true = <true>
-  Expression.false = <false>
-  Expression.string = STRING
-  Expression.null = <null>
-  Expression.undefined = <undefined>
+  PrimaryExpression.this = <this>
+  PrimaryExpression.identifier = BindingIdentifier
+  PrimaryExpression.literal = Literal
+  PrimaryExpression.object = ObjectLiteral
+  
+  ObjectLiteral.empty = <{}>
+  ObjectLiteral.fields = <{<{PropertyDefinition ","}+>}>
+  ObjectLiteral.fieldsTrailingComma = <{<{PropertyDefinition ","}+>,}>
+  
+  PropertyDefinition.identifier = BindingIdentifier
+  PropertyDefinition.property = <<PropertyName>: <PrimaryExpression>>
+  
+  PropertyName.literal = LiteralPropertyName
+  PropertyName.computed = <[<PrimaryExpression>]>
+  
+  LiteralPropertyName.identifier = ID
+  LiteralPropertyName.string = STRING
+  LiteralPropertyName.number = NumericLiteral
+  
+//  PrimaryExpression.undefined = <undefined>
+//  PrimaryExpression.binary = <<PrimaryExpression> <Operator> <PrimaryExpression>>
   
   Type.void = <void>
   Type.number = <number>

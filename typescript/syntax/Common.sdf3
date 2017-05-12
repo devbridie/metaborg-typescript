@@ -3,6 +3,9 @@ module Common
 lexical syntax
 
   ID             = [a-zA-Z] [a-zA-Z0-9]* 
+  ID             = Keyword {reject}
+  ID             = NullLiteral {reject}
+  ID             = BooleanLiteral {reject}
   INT            = "-"? [0-9]+ 
   STRING         = "\"" StringChar* "\"" 
   StringChar     = ~[\"\n] 
@@ -19,6 +22,60 @@ lexical syntax
   NewLineEOF     = EOF 
   EOF            =  
 
+sorts Keyword
+lexical syntax
+
+  // Keyword
+  Keyword = "break"
+  Keyword = "do"
+  Keyword = "in"
+  Keyword = "typeof"
+  Keyword = "case"
+  Keyword = "else"
+  Keyword = "instanceof"
+  Keyword = "var"
+  Keyword = "catch"
+  Keyword = "export"
+  Keyword = "new"
+  Keyword = "void"
+  Keyword = "class"
+  Keyword = "extends"
+  Keyword = "return"
+  Keyword = "while"
+  Keyword = "const"
+  Keyword = "finally"
+  Keyword = "super"
+  Keyword = "with"
+  Keyword = "continue"
+  Keyword = "for"
+  Keyword = "switch"
+  Keyword = "yield"
+  Keyword = "debugger"
+  Keyword = "function"
+  Keyword = "this"
+  Keyword = "default"
+  Keyword = "if"
+  Keyword = "throw"
+  Keyword = "delete"
+  Keyword = "import"
+  Keyword = "try"
+  
+  Literal.null = NullLiteral
+  Literal.boolean = BooleanLiteral
+  Literal.number = NumericLiteral
+  Literal.string = STRING
+  
+  NullLiteral.null = "null"
+  
+  BooleanLiteral.true = "true"
+  BooleanLiteral.false = "false"
+  
+  NumericLiteral.number = INT
+  
+  // FutureReservedWord
+  Keyword = "enum"
+  Keyword = "await"
+  
 lexical restrictions
 
   // Ensure greedy matching for lexicals
