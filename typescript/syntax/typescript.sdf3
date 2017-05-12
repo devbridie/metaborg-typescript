@@ -14,11 +14,11 @@ context-free start-symbols
 
 context-free syntax
  
-  Program.program = Statement*
+  Program.program = StatementListItem*
   
   Statement.variableStatement = VariableStatement
-  Statement.declaration = Declaration
   Statement.return = ReturnStatement
+  Statement.expression = <<PrimaryExpression>;>
   
   VariableStatement.variable = <var <{VariableDeclaration ","}+>;>
   
@@ -37,7 +37,7 @@ context-free syntax
   LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+>;>
   
   ReturnStatement.empty = <return;>
-  ReturnStatement.value = <return <PrimaryExpression>;>
+  ReturnStatement.value = <return <PrimaryExpression>;> 
   
 //  TODO
 //  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>
@@ -108,6 +108,10 @@ context-free syntax
   PrimaryExpression.identifier = BindingIdentifier
   PrimaryExpression.literal = Literal
   PrimaryExpression.object = ObjectLiteral
+  PrimaryExpression.call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
+  
+  MemberExpression.primary = PrimaryExpression
+  MemberExpression.property = <<MemberExpression>.<ID>>
   
   ObjectLiteral.empty = <{}>
   ObjectLiteral.fields = <{<{PropertyDefinition ","}+>}>
