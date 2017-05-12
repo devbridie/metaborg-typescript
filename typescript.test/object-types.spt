@@ -1,0 +1,50 @@
+module object-types
+
+language typescript
+start symbol ObjectType
+
+test empty type [[
+{}
+]] parse succeeds
+
+test simple type [[
+{
+  foo: string
+}
+]] parse succeeds
+
+test simple type multiple fields commas [[
+{
+  foo: string,
+  bar: number
+}
+]] parse succeeds
+
+test simple type multiple fields commas trailing [[
+{
+  foo: string,
+  bar: number,
+}
+]] parse succeeds
+
+test simple type multiple fields semi-colons [[
+{
+  foo: string;
+  bar: number
+}
+]] parse succeeds
+
+test simple type multiple fields semi-colons trailing [[
+{
+  foo: string;
+  bar: number;
+}
+]] parse succeeds
+
+test simple type multiple fields mixed separator [[
+{
+  foo: string,
+  bar: number;
+  baz: string,
+}
+]] parse succeeds

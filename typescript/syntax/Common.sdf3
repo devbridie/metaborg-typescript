@@ -18,6 +18,9 @@ lexical syntax
   InsideComment  = ~[\*] 
   InsideComment  = CommentChar 
   LAYOUT         = "//" ~[\n\r]* NewLineEOF 
+  Comma          = ","
+  Colon          = ";"
+  QuestionMark   = "?"
   NewLineEOF     = [\n\r] 
   NewLineEOF     = EOF 
   EOF            =  

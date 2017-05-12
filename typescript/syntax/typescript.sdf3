@@ -10,7 +10,7 @@ template options
 
 context-free start-symbols
   
-  PrimaryExpression Statement Program
+  PrimaryExpression Statement Program Declaration ObjectType
 
 context-free syntax
  
@@ -26,6 +26,29 @@ context-free syntax
   >
   
   Declaration.variabelDeclaration = VariableDeclaration
+  Declaration.interfaceDeclaration = InterfaceDeclaration
+  
+//  TODO
+//  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>
+  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><ObjectType>>
+  
+//  TODO
+//  InterfaceExtendsClause.extends = <extends <{ ","}+>>
+
+  PrimaryType.object = ObjectType
+  
+  ObjectType.object = <{<TypeBody?>}>
+  
+  TypeBody.semiColon = <<TypeMemberList><SemiColon?>>
+  TypeBody.comma = <<TypeMemberList><Comma?>>
+  
+  TypeMemberList.typemember = TypeMember
+  TypeMemberList.semiColon = <<TypeMemberList><SemiColon><TypeMember>>
+  TypeMemberList.comma = <<TypeMemberList><Comma><TypeMember>>
+  
+  TypeMember.property = PropertySignature
+  
+  PropertySignature.property = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
   
   FunctionBody.statementList = StatementListItem*
   
