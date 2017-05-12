@@ -27,7 +27,7 @@ function bar() {
   return function() {
     return function(a: number) {
 
-    };
+    }
   };
 };
 

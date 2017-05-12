@@ -1,0 +1,15 @@
+module Objects
+
+imports
+
+  Expressions
+  Names
+
+context-free syntax
+
+  ObjectLiteral.empty = <{}>
+  ObjectLiteral.fields = <{<{PropertyDefinition ","}+>}>
+  ObjectLiteral.fieldsTrailingComma = <{<{PropertyDefinition ","}+>,}>
+  
+  PropertyDefinition.identifier = BindingIdentifier
+  PropertyDefinition.property = <<PropertyName>: <PrimaryExpression>>

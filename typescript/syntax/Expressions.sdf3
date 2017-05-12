@@ -1,0 +1,20 @@
+module Expressions
+
+imports
+
+  Common
+  Functions
+  Names
+  Objects
+
+context-free syntax
+
+  PrimaryExpression.this = <this>
+  PrimaryExpression.identifier = BindingIdentifier
+  PrimaryExpression.literal = Literal
+  PrimaryExpression.object = ObjectLiteral
+  PrimaryExpression.call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
+  PrimaryExpression.function = FunctionDeclaration
+  
+  MemberExpression.primary = PrimaryExpression
+  MemberExpression.property = <<MemberExpression>.<ID>>

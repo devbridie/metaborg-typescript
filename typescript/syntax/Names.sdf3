@@ -1,0 +1,21 @@
+module Names
+
+imports
+
+  Common
+  Expressions
+
+context-free syntax
+
+  PropertyName.literal = LiteralPropertyName
+  PropertyName.computed = <[<PrimaryExpression>]>
+  
+  LiteralPropertyName.identifier = ID
+  LiteralPropertyName.string = STRING
+  LiteralPropertyName.number = NumericLiteral
+  
+  BindingIdentifier.identifier = ID
+  
+  BindingIdentifierOrPattern.identifier = BindingIdentifier
+
+  

@@ -12,8 +12,3 @@ fileNames.forEach(fileName => {
       console.log(statement);
     })
 });
-
-
-function(public a) {
-  
-}

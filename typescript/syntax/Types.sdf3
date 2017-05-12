@@ -1,0 +1,39 @@
+module Types
+
+imports
+  
+  Common
+  Names
+
+context-free syntax
+
+  PrimaryType.object = ObjectType
+  
+  ObjectType.object = <{<TypeBody?>}>
+  
+  TypeBody.body = TypeMemberList
+  TypeBody.semiColon = <<TypeMemberList><SemiColon>>
+  TypeBody.comma = <<TypeMemberList><Comma>>
+  
+  TypeMemberList.typemember = TypeMember
+  TypeMemberList.semiColon = <<TypeMemberList><SemiColon><TypeMember>>
+  TypeMemberList.comma = <<TypeMemberList><Comma><TypeMember>>
+  
+  TypeMember.property = PropertySignature
+  
+  PropertySignature.property = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
+  
+  TypeAnnotation.typeAnnotation = <: <Type>>
+  
+  TypeParameters.typeParameters = <\<<{TypeParameter ","}+>\>>
+ 
+  TypeParameter.typeParameter = <<BindingIdentifier> <Constraint?>>
+
+  Constraint.constraint = <extends <Type>>
+
+  Type.void = <void>
+  Type.number = <number>
+  Type.boolean = <boolean>
+  Type.string = <string>
+  Type.reference = TypeID
+  Type.object = ObjectType

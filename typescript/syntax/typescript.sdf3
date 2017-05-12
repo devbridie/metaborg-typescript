@@ -3,6 +3,12 @@ module typescript
 imports
   
   Common
+  Declarations
+  Expressions
+  Names
+  Objects
+  Statements
+  Types
  
 template options
 
@@ -15,126 +21,3 @@ context-free start-symbols
 context-free syntax
  
   Program.program = StatementListItem*
-  
-  Statement.variableStatement = VariableStatement
-  Statement.return = ReturnStatement
-  Statement.expression = <<PrimaryExpression>;>
-  
-  VariableStatement.variable = <var <{VariableDeclaration ","}+>;>
-  
-  Declaration.interfaceDeclaration = InterfaceDeclaration
-  Declaration.hoistable = HoistableDeclaration
-  Declaration.lexical = LexicalDeclaration
-  
-  HoistableDeclaration.function = FunctionDeclaration
-  
-  FunctionDeclaration.function = <
-  function <BindingIdentifier?><CallSignature> {
-    <FunctionBody>
-  }
-  >
-  
-  LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+>;>
-  
-  ReturnStatement.empty = <return;>
-  ReturnStatement.value = <return <PrimaryExpression>;> 
-  
-//  TODO
-//  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>
-  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><ObjectType>>
-  
-//  TODO
-//  InterfaceExtendsClause.extends = <extends <{ ","}+>>
-
-  PrimaryType.object = ObjectType
-  
-  ObjectType.object = <{<TypeBody?>}>
-  
-  TypeBody.body = TypeMemberList
-  TypeBody.semiColon = <<TypeMemberList><SemiColon>>
-  TypeBody.comma = <<TypeMemberList><Comma>>
-  
-  TypeMemberList.typemember = TypeMember
-  TypeMemberList.semiColon = <<TypeMemberList><SemiColon><TypeMember>>
-  TypeMemberList.comma = <<TypeMemberList><Comma><TypeMember>>
-  
-  TypeMember.property = PropertySignature
-  
-  PropertySignature.property = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
-  
-  FunctionBody.statementList = StatementListItem*
-  
-  StatementListItem.statement = Statement
-  StatementListItem.declaration = Declaration
-  
-  LetOrConst.letDeclaration = <let>
-  LetOrConst.constDeclaration = <const>
-  
-  VariableDeclaration.simpleVariableDeclaration = <<BindingIdentifier> <TypeAnnotation?> <Initializer?>>
-  
-  TypeAnnotation.typeAnnotation = <: <Type>>
-  
-  BindingIdentifier.identifier = ID
-  
-  BindingIdentifierOrPattern.identifier = BindingIdentifier
-//  TODO
-//  BindingIdentifierOrPattern.pattern = BindingPattern
-  
-  CallSignature.callSignature = <<TypeParameters?>(<ParameterList?>)<TypeAnnotation?>>
-  
-  TypeParameters.typeParameters = <\<<{TypeParameter ","}+>\>>
- 
-  TypeParameter.typeParameter = <<BindingIdentifier> <Constraint?>>
-
-  Constraint.constraint = <extends <Type>>
-  
-  ParameterList.requiredParameterList = {RequiredParameter ","}+
-// TODO
-//  OptionalParameterList
-//   RestParameter
-//   RequiredParameterList , OptionalParameterList
-//   RequiredParameterList , RestParameter
-//   OptionalParameterList , RestParameter
-//   RequiredParameterList , OptionalParameterList , RestParameter
-  
-  RequiredParameter.requiredParameter = /*<AccessibilityModifier?>*/<<BindingIdentifierOrPattern> <TypeAnnotation?>>
-  
-  AccessibilityModifier.public = <public>
-  AccessibilityModifier.private = <private>
-  AccessibilityModifier.protected = <protected>
-  
-  Initializer.initializer = <= <PrimaryExpression>>
-  
-  PrimaryExpression.this = <this>
-  PrimaryExpression.identifier = BindingIdentifier
-  PrimaryExpression.literal = Literal
-  PrimaryExpression.object = ObjectLiteral
-  PrimaryExpression.call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
-  PrimaryExpression.function = FunctionDeclaration
-  
-  MemberExpression.primary = PrimaryExpression
-  MemberExpression.property = <<MemberExpression>.<ID>>
-  
-  ObjectLiteral.empty = <{}>
-  ObjectLiteral.fields = <{<{PropertyDefinition ","}+>}>
-  ObjectLiteral.fieldsTrailingComma = <{<{PropertyDefinition ","}+>,}>
-  
-  PropertyDefinition.identifier = BindingIdentifier
-  PropertyDefinition.property = <<PropertyName>: <PrimaryExpression>>
-  
-  PropertyName.literal = LiteralPropertyName
-  PropertyName.computed = <[<PrimaryExpression>]>
-  
-  LiteralPropertyName.identifier = ID
-  LiteralPropertyName.string = STRING
-  LiteralPropertyName.number = NumericLiteral
-  
-//  PrimaryExpression.undefined = <undefined>
-//  PrimaryExpression.binary = <<PrimaryExpression> <Operator> <PrimaryExpression>>
-  
-  Type.void = <void>
-  Type.number = <number>
-  Type.boolean = <boolean>
-  Type.string = <string>
-  Type.reference = TypeID
-  Type.object = ObjectType

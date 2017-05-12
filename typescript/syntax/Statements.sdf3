@@ -1,0 +1,20 @@
+module Statements
+
+imports
+
+  Declarations
+  Expressions
+
+context-free syntax
+
+  Statement.variableStatement = VariableStatement
+  Statement.return = ReturnStatement
+  Statement.expression = <<PrimaryExpression>;>
+  
+  VariableStatement.variable = <var <{VariableDeclaration ","}+>;>
+  
+  ReturnStatement.empty = <return;>
+  ReturnStatement.value = <return <PrimaryExpression>;> 
+  
+  StatementListItem.statement = Statement
+  StatementListItem.declaration = Declaration

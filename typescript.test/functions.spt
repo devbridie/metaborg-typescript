@@ -61,6 +61,16 @@ function bar(b: obj) {
 }
 ]] parse succeeds
 
+test recursive function definitions [[
+function bar() {
+  return function() {
+    return function(a: number) {
+
+    };
+  };
+}
+]] parse succeeds
+
 // TODO
 //test function multiple arguments with types and accessibility modifier [[
 //function (public a: string, private b: number) {

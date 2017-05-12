@@ -1,0 +1,23 @@
+module Functions
+
+imports
+
+  Names
+  Types
+  Statements
+
+context-free syntax
+
+  FunctionDeclaration.function = <
+  function <BindingIdentifier?><CallSignature> {
+    <FunctionBody>
+  }
+  >
+  
+  CallSignature.callSignature = <<TypeParameters?>(<ParameterList?>)<TypeAnnotation?>>
+  
+  ParameterList.requiredParameterList = {RequiredParameter ","}+
+  
+  RequiredParameter.requiredParameter = /*<AccessibilityModifier?>*/<<BindingIdentifierOrPattern> <TypeAnnotation?>>
+  
+  FunctionBody.statementList = StatementListItem*

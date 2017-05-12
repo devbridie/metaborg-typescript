@@ -1,0 +1,31 @@
+module Declarations
+
+imports
+
+  Common
+  Expressions
+  Functions
+  Names
+  Statements
+  Types
+
+context-free syntax
+
+  Declaration.interfaceDeclaration = InterfaceDeclaration
+  Declaration.hoistable = HoistableDeclaration
+  Declaration.lexical = LexicalDeclaration
+  
+  HoistableDeclaration.function = FunctionDeclaration
+  
+  LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+>;>
+  
+  LetOrConst.letDeclaration = <let>
+  LetOrConst.constDeclaration = <const>
+  
+  VariableDeclaration.simpleVariableDeclaration = <<BindingIdentifier> <TypeAnnotation?> <Initializer?>>
+  
+  Initializer.initializer = <= <PrimaryExpression>>
+  
+//  TODO
+//  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>
+  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><ObjectType>>
