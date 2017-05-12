@@ -6,6 +6,11 @@ lexical syntax
   ID             = Keyword {reject}
   ID             = NullLiteral {reject}
   ID             = BooleanLiteral {reject}
+  TypeID         = ID
+  TypeID         = PredefinedType {reject}
+  TypeID         = Keyword {reject}
+  TypeID         = NullLiteral {reject}
+  TypeID         = BooleanLiteral {reject}
   INT            = "-"? [0-9]+ 
   STRING         = "\"" StringChar* "\"" 
   StringChar     = ~[\"\n] 
@@ -78,6 +83,12 @@ lexical syntax
   // FutureReservedWord
   Keyword = "enum"
   Keyword = "await"
+  
+  PredefinedType = "any"
+  PredefinedType = "boolean"
+  PredefinedType = "number"
+  PredefinedType = "string"
+  PredefinedType = "symbol"
   
 lexical restrictions
 

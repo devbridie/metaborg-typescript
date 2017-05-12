@@ -6,7 +6,7 @@ imports
  
 template options
 
-  tokenize: "(,[;{.="
+  tokenize: "(,[;{."
 
 context-free start-symbols
   
@@ -50,8 +50,9 @@ context-free syntax
   
   ObjectType.object = <{<TypeBody?>}>
   
-  TypeBody.semiColon = <<TypeMemberList><SemiColon?>>
-  TypeBody.comma = <<TypeMemberList><Comma?>>
+  TypeBody.body = TypeMemberList
+  TypeBody.semiColon = <<TypeMemberList><SemiColon>>
+  TypeBody.comma = <<TypeMemberList><Comma>>
   
   TypeMemberList.typemember = TypeMember
   TypeMemberList.semiColon = <<TypeMemberList><SemiColon><TypeMember>>
@@ -109,6 +110,7 @@ context-free syntax
   PrimaryExpression.literal = Literal
   PrimaryExpression.object = ObjectLiteral
   PrimaryExpression.call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
+  PrimaryExpression.function = FunctionDeclaration
   
   MemberExpression.primary = PrimaryExpression
   MemberExpression.property = <<MemberExpression>.<ID>>
@@ -134,3 +136,5 @@ context-free syntax
   Type.number = <number>
   Type.boolean = <boolean>
   Type.string = <string>
+  Type.reference = TypeID
+  Type.object = ObjectType

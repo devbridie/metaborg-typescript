@@ -1,7 +1,7 @@
 module functions
 
 language typescript
-start symbol Statement
+start symbol Declaration
 
 test simple function [[
 function() {
@@ -53,6 +53,11 @@ function (a, b,) {
 
 test function multiple arguments with types [[
 function (a: string, b: number) {
+}
+]] parse succeeds
+
+test function with identifier [[
+function bar(b: obj) {
 }
 ]] parse succeeds
 
