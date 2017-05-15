@@ -5,11 +5,15 @@ imports
   Expressions
   Names
 
+template options
+
+  tokenize: "},{:"
+
 context-free syntax
 
   ObjectLiteral.Empty = "{" "}"
   ObjectLiteral.Fields = <{<{PropertyDefinition ","}+>}>
   ObjectLiteral.FieldsTrailingComma = "{" {PropertyDefinition ","}+ "," "}"
-  
+
   PropertyDefinition = BindingIdentifier
   PropertyDefinition.Property = <<PropertyName>: <PrimaryExpression>>

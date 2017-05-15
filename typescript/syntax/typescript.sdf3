@@ -10,10 +10,6 @@ imports
   Statements
   Types
  
-template options
-
-  tokenize: "(,[;{."
-
 context-free start-symbols
   
   PrimaryExpression Statement Program Declaration ObjectType
