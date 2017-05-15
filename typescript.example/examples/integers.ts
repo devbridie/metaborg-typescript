@@ -1,12 +1,12 @@
 let a = 3;
-const b = 3;
+const b = 3
 const c = 5;
 
 
 interface foo {
   bar: {
     foo: string,
-  }
+  };
 }
 
 interface A {
@@ -14,7 +14,7 @@ interface A {
 }
 interface B {
   next?: A
-}
+};
 // A == B?
 
 const number = 5;
@@ -28,9 +28,9 @@ function bar() {
     return function(a: number) {
 
     }
-  };
-};
+  }
+}
 
-bar()()(5);
+bar()()(5)
 
 foo("asdf");

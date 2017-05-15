@@ -15,9 +15,9 @@ context-free syntax
   Declaration.hoistable = HoistableDeclaration
   Declaration.lexical = LexicalDeclaration
   
-  HoistableDeclaration.function = FunctionDeclaration
+  HoistableDeclaration.function = <<FunctionDeclaration><SemiColon?>>
   
-  LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+>;>
+  LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+><SemiColon?>>
   
   LetOrConst.letDeclaration = <let>
   LetOrConst.constDeclaration = <const>
@@ -28,4 +28,4 @@ context-free syntax
   
 //  TODO
 //  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>
-  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><ObjectType>>
+  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><ObjectType><SemiColon?>>
