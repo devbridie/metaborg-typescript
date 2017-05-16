@@ -1,0 +1,32 @@
+module statements
+
+language typescript
+start symbol Statement
+
+test var integer assignment [[
+var a = 5;
+]] parse succeeds
+
+test requires one assignemnt [[
+var ;
+]] parse fails
+
+test requires identifier [[
+var = 5;
+]] parse fails
+
+test requires expression [[
+var a =;
+]] parse fails
+
+test var declaration with type [[
+var a: number = 5;
+]] parse succeeds
+
+test var declaration with type uninitialized [[
+var a: number;
+]] parse succeeds
+
+test var declaration without type uninitialized [[
+var a;
+]] parse succeeds
