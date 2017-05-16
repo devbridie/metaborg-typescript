@@ -20,4 +20,4 @@ context-free start-symbols
 
 context-free syntax
  
-  Program.program = StatementListItem*
+  Program.Program = StatementListItem*

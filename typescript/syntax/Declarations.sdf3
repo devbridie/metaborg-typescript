@@ -11,21 +11,21 @@ imports
 
 context-free syntax
 
-  Declaration.interfaceDeclaration = InterfaceDeclaration
-  Declaration.hoistable = HoistableDeclaration
-  Declaration.lexical = LexicalDeclaration
+  Declaration = InterfaceDeclaration
+  Declaration = HoistableDeclaration
+  Declaration = LexicalDeclaration
   
-  HoistableDeclaration.function = <<FunctionDeclaration><SemiColon?>>
+  HoistableDeclaration.Function = <<FunctionDeclaration><SemiColon?>>
   
-  LexicalDeclaration.lexical = <<LetOrConst> <{VariableDeclaration ","}+><SemiColon?>>
+  LexicalDeclaration.Lexical = <<LetOrConst> <{VariableDeclaration ","}+><SemiColon?>>
   
-  LetOrConst.letDeclaration = <let>
-  LetOrConst.constDeclaration = <const>
+  LetOrConst.Let = <let>
+  LetOrConst.Const = <const>
   
-  VariableDeclaration.simpleVariableDeclaration = <<BindingIdentifier> <TypeAnnotation?> <Initializer?>>
+  VariableDeclaration.SimpleVariableDeclaration = <<BindingIdentifier> <TypeAnnotation?> <Initializer?>>
   
-  Initializer.initializer = <= <PrimaryExpression>>
+  Initializer.Initializer = <= <PrimaryExpression>>
   
 //  TODO
 //  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><InterfaceExtendsClause?><ObjectType>>
-  InterfaceDeclaration.interface = <interface <BindingIdentifier><TypeParameters?><ObjectType><SemiColon?>>
+  InterfaceDeclaration.Interface = <interface <BindingIdentifier><TypeParameters?><ObjectType><SemiColon?>>

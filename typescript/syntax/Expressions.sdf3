@@ -9,12 +9,12 @@ imports
 
 context-free syntax
 
-  PrimaryExpression.this = <this>
-  PrimaryExpression.identifier = BindingIdentifier
-  PrimaryExpression.literal = Literal
-  PrimaryExpression.object = ObjectLiteral
-  PrimaryExpression.call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
-  PrimaryExpression.function = FunctionDeclaration
+  PrimaryExpression.This = <this>
+  PrimaryExpression = BindingIdentifier
+  PrimaryExpression = Literal
+  PrimaryExpression = ObjectLiteral
+  PrimaryExpression.Call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
+  PrimaryExpression = FunctionDeclaration
   
-  MemberExpression.primary = PrimaryExpression
-  MemberExpression.property = <<MemberExpression>.<ID>>
+  MemberExpression = PrimaryExpression
+  MemberExpression.Property = <<MemberExpression>.<ID>>

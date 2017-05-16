@@ -8,16 +8,16 @@ imports
 
 context-free syntax
 
-  FunctionDeclaration.function = <
+  FunctionDeclaration.Function = <
   function <BindingIdentifier?><CallSignature> {
     <FunctionBody>
   }
   >
   
-  CallSignature.callSignature = <<TypeParameters?>(<ParameterList?>)<TypeAnnotation?>>
+  CallSignature.CallSignature = <<TypeParameters?>(<ParameterList?>)<TypeAnnotation?>>
   
-  ParameterList.requiredParameterList = {RequiredParameter ","}+
+  ParameterList.RequiredParameterList = {RequiredParameter ","}+
   
-  RequiredParameter.requiredParameter = /*<AccessibilityModifier?>*/<<BindingIdentifierOrPattern> <TypeAnnotation?>>
+  RequiredParameter.RequiredParameter = /*<AccessibilityModifier?>*/<<BindingIdentifierOrPattern> <TypeAnnotation?>>
   
-  FunctionBody.statementList = StatementListItem*
+  FunctionBody.Body = StatementListItem*

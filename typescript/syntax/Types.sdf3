@@ -7,33 +7,33 @@ imports
 
 context-free syntax
 
-  PrimaryType.object = ObjectType
+  PrimaryType = ObjectType
   
-  ObjectType.object = <{<TypeBody?>}>
+  ObjectType.Object = <{<TypeBody?>}>
   
-  TypeBody.body = TypeMemberList
-  TypeBody.semiColon = <<TypeMemberList><SemiColon>>
-  TypeBody.comma = <<TypeMemberList><Comma>>
+  TypeBody = TypeMemberList
+  TypeBody.SemiColon = <<TypeMemberList><SemiColon>>
+  TypeBody.Comma = <<TypeMemberList><Comma>>
   
-  TypeMemberList.typemember = TypeMember
-  TypeMemberList.semiColon = <<TypeMemberList><SemiColon><TypeMember>>
-  TypeMemberList.comma = <<TypeMemberList><Comma><TypeMember>>
+  TypeMemberList = TypeMember
+  TypeMemberList.SemiColon = <<TypeMemberList><SemiColon><TypeMember>>
+  TypeMemberList.Comma = <<TypeMemberList><Comma><TypeMember>>
   
-  TypeMember.property = PropertySignature
+  TypeMember = PropertySignature
   
-  PropertySignature.property = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
+  PropertySignature.Property = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
   
-  TypeAnnotation.typeAnnotation = <: <Type>>
+  TypeAnnotation.TypeAnnotation = <: <Type>>
   
-  TypeParameters.typeParameters = <\<<{TypeParameter ","}+>\>>
+  TypeParameters.TypeParameters = <\<<{TypeParameter ","}+>\>>
  
-  TypeParameter.typeParameter = <<BindingIdentifier> <Constraint?>>
+  TypeParameter.TypeParameter = <<BindingIdentifier> <Constraint?>>
 
-  Constraint.constraint = <extends <Type>>
+  Constraint.Constraint = <extends <Type>>
 
-  Type.void = <void>
-  Type.number = <number>
-  Type.boolean = <boolean>
-  Type.string = <string>
-  Type.reference = TypeID
-  Type.object = ObjectType
+  Type.Void = <void>
+  Type.Number = <number>
+  Type.Boolean = <boolean>
+  Type.String = <string>
+  Type = TypeID
+  Type = ObjectType

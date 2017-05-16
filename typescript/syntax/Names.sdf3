@@ -7,15 +7,15 @@ imports
 
 context-free syntax
 
-  PropertyName.literal = LiteralPropertyName
-  PropertyName.computed = <[<PrimaryExpression>]>
+  PropertyName = LiteralPropertyName
+  PropertyName.Computed = <[<PrimaryExpression>]>
   
-  LiteralPropertyName.identifier = ID
-  LiteralPropertyName.string = STRING
-  LiteralPropertyName.number = NumericLiteral
+  LiteralPropertyName = ID
+  LiteralPropertyName = STRING
+  LiteralPropertyName = NumericLiteral
   
-  BindingIdentifier.identifier = ID
+  BindingIdentifier = ID
   
-  BindingIdentifierOrPattern.identifier = BindingIdentifier
+  BindingIdentifierOrPattern = BindingIdentifier
 
   

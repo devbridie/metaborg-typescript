@@ -9,21 +9,21 @@ imports
  
 context-free priorities
 
-  ReturnStatement.value > ReturnStatement.empty
+  ReturnStatement.ValueReturn > ReturnStatement.EmptyReturn
 
 context-free syntax
 
-  Statement.variableStatement = VariableStatement
-  Statement.return = ReturnStatement
-  Statement.expression = <<ExpressionInStatement><SemiColon?>>
+  Statement = VariableStatement
+  Statement = ReturnStatement
+  Statement.Expression = <<ExpressionInStatement><SemiColon?>>
   
   ExpressionInStatement = PrimaryExpression
   ExpressionInStatement = FunctionDeclaration {reject}
   
-  VariableStatement.variable = <var <{VariableDeclaration ","}+><SemiColon?>>
+  VariableStatement.Variable = <var <{VariableDeclaration ","}+><SemiColon?>>
   
-  ReturnStatement.empty = <return;>
-  ReturnStatement.value = <return <PrimaryExpression><SemiColon?>>
+  ReturnStatement.EmptyReturn = <return;>
+  ReturnStatement.ValueReturn = <return <PrimaryExpression><SemiColon?>>
   
-  StatementListItem.statement = Statement
-  StatementListItem.declaration = Declaration
+  StatementListItem = Statement
+  StatementListItem = Declaration

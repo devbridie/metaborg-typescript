@@ -7,9 +7,9 @@ imports
 
 context-free syntax
 
-  ObjectLiteral.empty = <{}>
-  ObjectLiteral.fields = <{<{PropertyDefinition ","}+>}>
-  ObjectLiteral.fieldsTrailingComma = <{<{PropertyDefinition ","}+>,}>
+  ObjectLiteral.Empty = "{" "}"
+  ObjectLiteral.Fields = <{<{PropertyDefinition ","}+>}>
+  ObjectLiteral.FieldsTrailingComma = "{" {PropertyDefinition ","}+ "," "}"
   
-  PropertyDefinition.identifier = BindingIdentifier
-  PropertyDefinition.property = <<PropertyName>: <PrimaryExpression>>
+  PropertyDefinition = BindingIdentifier
+  PropertyDefinition.Property = <<PropertyName>: <PrimaryExpression>>
