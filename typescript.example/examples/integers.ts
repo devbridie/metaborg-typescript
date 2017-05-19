@@ -1,6 +1,6 @@
 let a = 3;
 const b = 3
-const c = 5;
+const c = 5
 
 
 interface foo {

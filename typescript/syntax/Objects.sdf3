@@ -11,9 +11,9 @@ template options
 
 context-free syntax
 
-  ObjectLiteral.Empty = "{" "}"
-  ObjectLiteral.Fields = <{<{PropertyDefinition ","}+>}>
-  ObjectLiteral.FieldsTrailingComma = "{" {PropertyDefinition ","}+ "," "}"
+  ObjectLiteral.ObjectEmpty = "{" "}"
+  ObjectLiteral.ObjectFields = <{<{PropertyDefinition ","}+>}>
+  ObjectLiteral.ObjectFieldsTrailingComma = "{" {PropertyDefinition ","}+ "," "}"
 
   PropertyDefinition = BindingIdentifier
   PropertyDefinition.Property = <<PropertyName>: <PrimaryExpression>>

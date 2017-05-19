@@ -1,0 +1,96 @@
+module typechecking/typescript
+
+imports
+
+  signatures/-
+  typechecking/-
+  
+signature
+    
+    
+    constructors
+    	RECORD	: scope -> Type
+    	
+    	NUMBER	: Type
+		STRING	: Type
+		
+
+	name resolution
+		labels
+	      P I
+	
+	    order
+	      D < I,
+	      D < P,
+	      I < P
+	
+	    well-formedness
+	      P* . I*
+      
+		namespaces
+			Field
+			Type
+			Value
+      
+rules
+	
+	init ^ (s) :=
+    	new s.
+    
+    [[ Program(statements) ^ (s) ]] :=
+    	Map1 [[ statements ^ (s) ]].
+    	
+    [[ InterfaceDecl(name, _, fields) ^ (s) ]] :=
+    	Type{name} <- s,
+    	Type{name} : ty !,
+    	[[ fields ^ (s): ty ]].
+    
+    [[ ObjectType(fields) ^ (s): ty ]] :=
+    	new record_scope,
+    	ty == RECORD(record_scope),
+    	record_scope -P-> s,
+    	distinct D(record_scope)/Field | error $[Duplicate declaration of field] @ NAMES,
+    	Map1 [[ fields ^ (record_scope) ]].
+    
+    [[ TypeMember(name, _, None()) ^ (s) ]] := false.
+    
+   	[[ TypeMember(name, _, Some(type)) ^ (s) ]] :=
+   		Field{name} <- s,
+   		Field{name} : ty !,
+   		[[ type ^ (s): ty]].
+   	
+   	[[ TypeAnnotation(Number()) ^(_): NUMBER()]] := true.
+   	[[ TypeAnnotation(String()) ^(_): STRING()]] := true.
+    	
+    [[ TypeAnnotation(name) ^ (s): ty ]] :=
+    	Type{name} -> s,
+    	Type{name} |-> d | error $[Cannot resolve [name]],
+        d : ty.
+    	
+    [[ Lexical(_, declarations, _) ^ (s) ]] :=
+    	Map1 [[ declarations ^ (s) ]].
+    
+    [[ SimpleVariableDeclaration(name, None(), _) ^ (s) ]] := false.
+    [[ SimpleVariableDeclaration(name, Some(type), None()) ^ (s) ]] :=
+    	Type{name} <- s,
+    	Type{name} : ty !,
+    	[[ type ^ (s) : ty ]].
+    [[ SimpleVariableDeclaration(name, Some(type), Some(value)) ^ (s) ]] :=
+    	Type{name} <- s,
+    	Type{name} : ty !,
+    	[[ type ^ (s) : ty ]],
+    	[[ value ^ (s) : valueTy ]],
+    	pair == PAIR(ty, valueTy),
+    	[[ pair ^ (s) ]].
+    
+    [[ PAIR(NUMBER(), NUMBER()) ^(_) ]] := true.
+    [[ PAIR(STRING(), STRING()) ^(_) ]] := true.
+    
+    [[ PAIR(one, other) ^ (s) ]] :=
+    	one == RECORD(one_scope) | error $[object type expected],
+    	other == RECORD(other_scope) | error $[object type expected].
+    	
+    	
+    	
+    	
+    	

@@ -83,6 +83,12 @@ lexical syntax
   // FutureReservedWord
   Keyword = "enum"
   Keyword = "await"
+  Keyword = "implements"
+  Keyword = "package"
+  Keyword = "protected"
+  Keyword = "interface"
+  Keyword = "private"
+  Keyword = "public"
   
   PredefinedType = "any"
   PredefinedType = "boolean"

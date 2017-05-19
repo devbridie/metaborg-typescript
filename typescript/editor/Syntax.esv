@@ -1,6 +1,7 @@
+
 module Syntax
 
-imports 
+imports
 
   libspoofax/color/default
   completion/colorer/typescript-cc-esv
@@ -15,13 +16,14 @@ language
   fences        : [ ] ( ) { }
 
 menus
-  
+
   menu: "Syntax" (openeditor)
-    
+
     action: "Format"          = editor-format (source)
     action: "Show parsed AST" = debug-show-aterm (source)
+    action: "Show desugared syntax" = editor-desugar (source)
 
 views
-  
+
   outline view: editor-outline (source)
     expand to level: 3

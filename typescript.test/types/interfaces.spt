@@ -1,0 +1,18 @@
+module interfaces
+
+language typescript
+start symbol Program
+
+test interface [[
+interface A {
+	foo: number
+}
+]] 0 errors 0 warnings
+
+test name resolution [[
+interface [[A]] {
+	foo: [[A]]
+}
+]] resolve #2 to #1
+
+

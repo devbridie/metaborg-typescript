@@ -12,16 +12,16 @@ context-free syntax
   ObjectType.Object = <{<TypeBody?>}>
   
   TypeBody = TypeMemberList
-  TypeBody.SemiColon = <<TypeMemberList><SemiColon>>
-  TypeBody.Comma = <<TypeMemberList><Comma>>
+  TypeBody.TypeBodySemiColon = <<TypeMemberList><SemiColon>>
+  TypeBody.TypeBodyComma = <<TypeMemberList><Comma>>
   
-  TypeMemberList = TypeMember
-  TypeMemberList.SemiColon = <<TypeMemberList><SemiColon><TypeMember>>
-  TypeMemberList.Comma = <<TypeMemberList><Comma><TypeMember>>
+  TypeMemberList.TypeMemberListSingle = TypeMember
+  TypeMemberList.TypeMemberListSemiColon = <<TypeMemberList><SemiColon><TypeMember>>
+  TypeMemberList.TypeMemberListComma = <<TypeMemberList><Comma><TypeMember>>
   
   TypeMember = PropertySignature
   
-  PropertySignature.Property = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
+  PropertySignature.TypeMember = <<LiteralPropertyName><QuestionMark?><TypeAnnotation?>>
   
   TypeAnnotation.TypeAnnotation = <: <Type>>
   

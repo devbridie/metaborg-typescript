@@ -1,0 +1,41 @@
+module desugar
+
+imports
+	signatures/-
+	pp
+
+signature
+	constructors
+		InterfaceDecl: String * TypeParameters * ObjectType -> InterfaceDecl
+		ObjectType: List(TypeMember) -> ObjectType
+		ObjectDecl: List(Property) -> ObjectDecl
+		PAIR	: Type * Type -> PAIR
+
+rules
+
+	desugar: Interface(name, extends, fields, _) -> InterfaceDecl(name, extends, fields)
+	desugar: Object(None()) -> ObjectType([])
+	desugar: Object(Some(property)) -> ObjectType(property)
+		
+	desugar: TypeBodySemiColon(properties, _) -> properties
+	desugar: TypeBodyComma(properties, _) -> properties
+	desugar: TypeMemberListSemiColon(properties, _, property) -> [property | properties]
+	desugar: TypeMemberListComma(properties, _, property) -> [property | properties]
+	desugar: TypeMemberListSingle(property) -> [property]
+	
+	desugar: ObjectEmpty() -> ObjectDecl([])
+	desugar: ObjectFields(fields) -> ObjectDecl(fields)
+	desugar: ObjectFieldsTrailingComma(fields) -> ObjectDecl(fields)
+	
+	desugar: Initializer(type) -> type
+	
+strategies
+  	desugar-all = bottomup(try(desugar))
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
