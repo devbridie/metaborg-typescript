@@ -4,8 +4,6 @@ lexical syntax
 
   ID             = [a-zA-Z] [a-zA-Z0-9]* 
   ID             = Keyword {reject}
-  ID             = NullLiteral {reject}
-  ID             = BooleanLiteral {reject}
   TypeID         = ID
   TypeID         = PredefinedType {reject}
   TypeID         = Keyword {reject}
@@ -68,17 +66,12 @@ lexical syntax
   Keyword = "import"
   Keyword = "try"
   
-  Literal.null = NullLiteral
-  Literal.boolean = BooleanLiteral
-  Literal.number = NumericLiteral
-  Literal.string = STRING
+  // BooleanLiteral
+  Keyword = "true"
+  Keyword = "false"
   
-  NullLiteral.null = "null"
-  
-  BooleanLiteral.true = "true"
-  BooleanLiteral.false = "false"
-  
-  NumericLiteral.number = INT
+  // NullLiteral
+  Keyword = "null"
   
   // FutureReservedWord
   Keyword = "enum"
@@ -95,18 +88,34 @@ lexical syntax
   PredefinedType = "number"
   PredefinedType = "string"
   PredefinedType = "symbol"
+ 
+context-free syntax
+
+  Literal = NullLiteral
+  Literal = BooleanLiteral
+  Literal = NumericLiteral
+  Literal = StringLiteral
+  
+  NullLiteral.Null = "null"
+  
+  BooleanLiteral.True = "true"
+  BooleanLiteral.False = "false"
+  
+  NumericLiteral.Number = INT
+  StringLiteral.String = STRING
   
 lexical restrictions
 
   // Ensure greedy matching for lexicals
   
-  CommentChar   -/- [\/]
-  INT           -/- [0-9]
-  ID            -/- [a-zA-Z0-9\_]
+  CommentChar     -/- [\/]
+  INT             -/- [0-9]
+  ID              -/- [a-zA-Z0-9\_]
+  "true" "false"  -/- [a-zA-Z0-9\_]
   
   // EOF may not be followed by any char
   
-  EOF           -/- ~[]
+  EOF             -/- ~[]
   
   // Backslash chars in strings may not be followed by " 
   

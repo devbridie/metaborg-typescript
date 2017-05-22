@@ -10,7 +10,7 @@ imports
 context-free syntax
 
   PrimaryExpression.This = <this>
-  PrimaryExpression = BindingIdentifier
+  PrimaryExpression.Id = BindingIdentifier
   PrimaryExpression = Literal
   PrimaryExpression = ObjectLiteral
   PrimaryExpression.Call = <<MemberExpression>(<{PrimaryExpression ","}*>)>

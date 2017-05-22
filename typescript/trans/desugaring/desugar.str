@@ -29,6 +29,12 @@ rules
 	
 	desugar: Initializer(type) -> type
 	
+	desugar: Function(Function(name, callSignature, body), _) -> Function(name, callSignature, body)
+	
+	desugar: Body(statements) -> statements
+	
+	desugar: Expression(expressions, _) -> expressions
+	
 strategies
   	desugar-all = bottomup(try(desugar))
   	

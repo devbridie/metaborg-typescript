@@ -35,5 +35,6 @@ context-free syntax
   Type.Number = <number>
   Type.Boolean = <boolean>
   Type.String = <string>
-  Type = TypeID
-  Type = ObjectType
+  Type.Id = TypeID
+  Type.Object = ObjectType
+  

@@ -6,3 +6,6 @@ target/
 *.iml
 node_modules/
 *.aterm
+*.constraints
+*.name-resolution
+*.scope-graph

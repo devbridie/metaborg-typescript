@@ -1,7 +1,11 @@
-let a = 3;
-const b = 3
-const c = 5
-
+const a = 3;
+const b = 3;
+const c = 5;
+const d = "asdf";
+const e = true;
+const f = false;
+const g = c;
+const g = b;
 
 interface foo {
   bar: {
@@ -19,18 +23,20 @@ interface B {
 
 const number = 5;
 
-function foo(a: void) {
+function foo(a: number, b: string): number {
   return a;
 }
 
-function bar() {
-  return function() {
-    return function(a: number) {
+const a = foo;
 
-    }
-  }
-}
+//function bar() {
+//  return function() {
+//    return function(a: number) {
+//
+//    }
+//  }
+//}
 
-bar()()(5)
+//bar()()(5)
 
-foo("asdf");
+const h = foo(5, "asdf");

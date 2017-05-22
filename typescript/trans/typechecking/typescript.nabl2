@@ -12,7 +12,9 @@ signature
     	RECORD	: scope -> Type
     	
     	NUMBER	: Type
-		STRING	: Type
+		  STRING	: Type
+		  BOOLEAN : Type
+		  FUNCTION: list(Type) * Type -> Type
 		
 
 	name resolution
@@ -38,7 +40,9 @@ rules
     	new s.
     
     [[ Program(statements) ^ (s) ]] :=
-    	Map1 [[ statements ^ (s) ]].
+    	Map1 [[ statements ^ (s) ]],
+    	distinct D(s)/Value | error @ NAMES.
+    	
     	
     [[ InterfaceDecl(name, _, fields) ^ (s) ]] :=
     	Type{name} <- s,
@@ -61,8 +65,11 @@ rules
    	
    	[[ TypeAnnotation(Number()) ^(_): NUMBER()]] := true.
    	[[ TypeAnnotation(String()) ^(_): STRING()]] := true.
+   	
+   	[[ TypeAnnotation(Object(objectType)) ^ (s): ty ]] :=
+   	  [[ objectType ^ (s) : ty ]].
     	
-    [[ TypeAnnotation(name) ^ (s): ty ]] :=
+    [[ TypeAnnotation(Id(name)) ^ (s): ty ]] :=
     	Type{name} -> s,
     	Type{name} |-> d | error $[Cannot resolve [name]],
         d : ty.
@@ -70,14 +77,19 @@ rules
     [[ Lexical(_, declarations, _) ^ (s) ]] :=
     	Map1 [[ declarations ^ (s) ]].
     
-    [[ SimpleVariableDeclaration(name, None(), _) ^ (s) ]] := false.
+    [[ SimpleVariableDeclaration(name, None(), Some(value)) ^ (s) ]] := 
+      [[ value ^ (s) : valueTy ]],
+      Value{name} <- s,
+      Value{name} : valueTy.
+
     [[ SimpleVariableDeclaration(name, Some(type), None()) ^ (s) ]] :=
-    	Type{name} <- s,
-    	Type{name} : ty !,
+    	Value{name} <- s,
+    	Value{name} : ty !,
     	[[ type ^ (s) : ty ]].
+
     [[ SimpleVariableDeclaration(name, Some(type), Some(value)) ^ (s) ]] :=
-    	Type{name} <- s,
-    	Type{name} : ty !,
+    	Value{name} <- s,
+    	Value{name} : ty !,
     	[[ type ^ (s) : ty ]],
     	[[ value ^ (s) : valueTy ]],
     	pair == PAIR(ty, valueTy),
@@ -89,7 +101,43 @@ rules
     [[ PAIR(one, other) ^ (s) ]] :=
     	one == RECORD(one_scope) | error $[object type expected],
     	other == RECORD(other_scope) | error $[object type expected].
-    	
+    
+    [[ Number(_) ^ (_): NUMBER() ]] := true.
+    [[ String(_) ^ (_): STRING() ]] := true.
+    [[ True() ^ (_): BOOLEAN() ]] := true.
+    [[ False() ^ (_): BOOLEAN() ]] := true.
+    
+    [[ Id(name) ^ (s) : ty ]] :=
+      Value{name} -> s,
+      Value{name} |-> d | error $[Cannot resolve [name]],
+        d : ty.
+    
+    [[ Function(Some(name), CallSignature(_, Some(parameters), Some(returnType)), body) ^ (s) ]] :=
+      new function_scope,
+      Value{name} <- s,
+      Value{name} : FUNCTION(paramsTy, ty) !,
+      [[ parameters ^ (s, function_scope): paramsTy ]],
+      [[ returnType ^ (s) : ty ]],
+      Map1T [[ body ^ (function_scope): bodyType ]].
+     
+    [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
+      Map2T [[ parameters ^ (s, function_scope): ty ]].
+    
+    [[ RequiredParameter(name, None()) ^ (s, function_scope) : ty ]] := false.
+     
+    [[ RequiredParameter(name, Some(type)) ^ (s, function_scope) : ty ]] :=
+      Value{name} <- function_scope,
+      Value{name} : ty !,
+      [[ type ^ (s) : ty ]].
+    
+    [[ ValueReturn(value, _) ^ (s) : ty ]] :=
+      [[ value ^ (s) : ty ]].
+    
+    [[ Call(function, arguments) ^ (s) : ty ]] :=
+      [[ function ^ (s) : functionTy ]],
+      functionTy == FUNCTION(paramsTy, ty),
+      Map1T [[ arguments ^ (s): argsTy ]],
+      argsTy <? paramsTy.
     	
     	
     	
