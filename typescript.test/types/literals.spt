@@ -1,0 +1,8 @@
+module literals
+
+language typescript
+start symbol Program
+
+test number2 [[
+const foo = [[5]];
+]] run nabl2-get-type on #1 to NUMBER()

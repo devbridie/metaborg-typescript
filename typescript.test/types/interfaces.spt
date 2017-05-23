@@ -7,12 +7,11 @@ test interface [[
 interface A {
 	foo: number
 }
-]] 0 errors 0 warnings
+]] 0 errors
 
 test name resolution [[
 interface [[A]] {
 	foo: [[A]]
 }
 ]] resolve #2 to #1
-
 
