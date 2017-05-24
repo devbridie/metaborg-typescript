@@ -42,7 +42,8 @@ rules
     
     [[ Program(statements) ^ (s) ]] :=
     	Map1 [[ statements ^ (s) ]],
-    	distinct/name D(s)/Value | error @ NAMES.
+    	distinct/name D(s)/Value | error @ NAMES,
+    	distinct/name D(s)/Type | error @ NAMES.
     	
     	
     [[ InterfaceDecl(name, _, fields) ^ (s) ]] :=
@@ -77,6 +78,9 @@ rules
     	
     [[ Lexical(_, declarations, _) ^ (s) ]] :=
     	Map1 [[ declarations ^ (s) ]].
+    
+    [[ Variable(declarations, _) ^ (s) ]] :=
+      Map1 [[ declarations ^ (s) ]].
     
     [[ SimpleVariableDeclaration(name, None(), Some(value)) ^ (s) ]] := 
       [[ value ^ (s) : valueTy ]],

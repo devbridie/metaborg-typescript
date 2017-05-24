@@ -1,0 +1,14 @@
+module lexical-declarations
+
+language typescript
+start symbol Program
+
+test duplicate names [[
+const a = 5;
+const a = 4;
+]] 2 errors
+
+test duplicate types [[
+interface A {}
+interface A {}
+]] 2 errors
