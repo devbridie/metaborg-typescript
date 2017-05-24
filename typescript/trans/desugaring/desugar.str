@@ -33,8 +33,6 @@ rules
 	
 	desugar: Body(statements) -> statements
 	
-	desugar: Expression(expressions, _) -> expressions
-	
 strategies
   	desugar-all = bottomup(try(desugar))
   	

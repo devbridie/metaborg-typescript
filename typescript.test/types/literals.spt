@@ -3,6 +3,20 @@ module literals
 language typescript
 start symbol Program
 
-test number2 [[
+test number [[
 const foo = [[5]];
-]] run nabl2-get-type on #1 to NUMBER()
+]] run nabl2-get-ast-type on #1 to NUMBER()
+
+test number reference [[
+const foo = 5;
+[[foo]];
+]] run nabl2-get-ast-type on #1 to NUMBER()
+
+test string [[
+const foo = [["asdf"]];
+]] run nabl2-get-ast-type on #1 to STRING()
+
+test string reference [[
+const foo = "asdf";
+[[foo]];
+]] run nabl2-get-ast-type on #1 to STRING()
