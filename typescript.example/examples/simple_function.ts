@@ -1,8 +1,20 @@
-function foo(a: number): number {
+function foo(a: number) {
+  const foo = 5;
   return a;
 }
 
-foo(5);
+function baz() {
+  if (true) {
+    if (false) {
+      return 5;
+    }
+    return 3;
+  }
+
+  return 0;
+}
+
+const f = foo(5);
 
 interface obj {
   foo: string;
@@ -10,6 +22,7 @@ interface obj {
 }
 
 function bar(b: obj) {
+  return 0;
 }
 
 bar({

@@ -9,6 +9,12 @@ signature
 		InterfaceDecl: String * TypeParameters * ObjectType -> InterfaceDecl
 		ObjectType: List(TypeMember) -> ObjectType
 		ObjectDecl: List(Property) -> ObjectDecl
+		NoParameters: NoParameters
+		NoReturnType: NoReturnType
+		FunctionName: String -> FunctionName
+		NoName: NoName
+		Parameters: ParameterList -> Parameters
+		ReturnType: TypeAnnotation -> ReturnType
 		PAIR	: Type * Type -> PAIR
 
 rules
@@ -29,9 +35,15 @@ rules
 	
 	desugar: Initializer(type) -> type
 	
-	desugar: Function(Function(name, callSignature, body), _) -> Function(name, callSignature, body)
+	desugar: FunctionDeclaration(function, _) -> function
 	
-	desugar: Body(statements) -> statements
+	desugar: Function(Some(name), callSignature, body) -> Function(FunctionName(name), callSignature, body)
+	desugar: Function(None(), callSignature, body) -> Function(NoName(), callSignature, body)
+	
+  desugar: CallSignature(typeParameters, None(), None()) -> CallSignature(typeParameters, NoParameters(), NoReturnType())
+  desugar: CallSignature(typeParameters, Some(parameters), None()) -> CallSignature(typeParameters, Parameters(parameters), NoReturnType())
+  desugar: CallSignature(typeParameters, None(), Some(returnType)) -> CallSignature(typeParameters, NoParameters(), ReturnType(returnType))
+  desugar: CallSignature(typeParameters, Some(parameters), Some(returnType)) -> CallSignature(typeParameters, Parameters(parameters), ReturnType(returnType))
 	
 strategies
   	desugar-all = bottomup(try(desugar))

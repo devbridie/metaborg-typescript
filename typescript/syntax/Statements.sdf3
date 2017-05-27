@@ -6,6 +6,11 @@ imports
   Declarations
   Expressions
   Functions
+  Objects
+
+template options
+
+  tokenize: "({;"
  
 context-free priorities
 
@@ -15,15 +20,31 @@ context-free syntax
 
   Statement = VariableStatement
   Statement = ReturnStatement
+  Statement = IfStatement
+  Statement = BlockStatement
   Statement.Expression = <<ExpressionInStatement><SemiColon?>>
   
   ExpressionInStatement = PrimaryExpression
   ExpressionInStatement = FunctionDeclaration {reject}
+  ExpressionInStatement = ObjectLiteral {reject}
   
   VariableStatement.Variable = <var <{VariableDeclaration ","}+><SemiColon?>>
   
   ReturnStatement.EmptyReturn = <return;>
   ReturnStatement.ValueReturn = <return <PrimaryExpression><SemiColon?>>
   
+  IfStatement.IfElse = <
+    if (<PrimaryExpression>) <Statement>
+    else <Statement>
+  >
+  IfStatement.If = <if (<PrimaryExpression>) <Statement>>
+  
+  BlockStatement.Block = <{
+    <StatementList>
+  }>
+  
+  StatementList = <<{StatementListItem "\n"}*>>
+  
   StatementListItem = Statement
   StatementListItem = Declaration
+  
