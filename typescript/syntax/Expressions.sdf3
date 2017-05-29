@@ -14,7 +14,7 @@ context-free syntax
   PrimaryExpression = Literal
   PrimaryExpression = ObjectLiteral
   PrimaryExpression.Call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
-  PrimaryExpression = FunctionDeclaration
+  PrimaryExpression.FunctionExpression = FunctionDeclaration
   
   MemberExpression = PrimaryExpression
   MemberExpression.Property = <<MemberExpression>.<ID>>

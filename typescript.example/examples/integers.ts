@@ -5,7 +5,6 @@ const d = "asdf";
 const e = true;
 const f = false;
 const g = c;
-const g = b;
 
 interface foo {
   bar: {
@@ -27,16 +26,14 @@ function foo(a: number, b: string): number {
   return a;
 }
 
-const a = foo;
+function bar() {
+  return function() {
+    return function(a: number) {
+      return a;
+    }
+  }
+}
 
-//function bar() {
-//  return function() {
-//    return function(a: number) {
-//
-//    }
-//  }
-//}
-
-//bar()()(5)
+bar()()(5)
 
 const h = foo(5, "asdf");

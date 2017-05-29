@@ -11,11 +11,11 @@ signature
     constructors
     	RECORD	: scope -> Type
     	
-    	NUMBER	: Type
-		  STRING	: Type
-		  BOOLEAN : Type
-		  VOID    : Type
-		  FUNCTION: list(Type) * Type -> Type
+    	NUMBER	  : Type
+		  STRING	  : Type
+		  BOOLEAN   : Type
+		  UNDEFINED : Type
+		  FUNCTION  : list(Type) * Type -> Type
 		
 
 	name resolution
@@ -34,6 +34,7 @@ signature
 			Field
 			Type
 			Value
+			Return
       
 rules
 	
@@ -85,8 +86,7 @@ rules
     [[ SimpleVariableDeclaration(name, None(), Some(value)) ^ (s) ]] := 
       [[ value ^ (s) : valueTy ]],
       Value{name} <- s,
-      Value{name} : valueTy,
-      valueTy != VOID().
+      Value{name} : valueTy.
 
     [[ SimpleVariableDeclaration(name, Some(type), None()) ^ (s) ]] :=
     	Value{name} <- s,
@@ -99,13 +99,6 @@ rules
     	[[ type ^ (s) : ty ]],
     	[[ value ^ (s) : valueTy ]],
     	ty <? valueTy.
-    
-    [[ PAIR(NUMBER(), NUMBER()) ^(_) ]] := true.
-    [[ PAIR(STRING(), STRING()) ^(_) ]] := true.
-    
-    [[ PAIR(one, other) ^ (s) ]] :=
-    	one == RECORD(one_scope) | error $[object type expected],
-    	other == RECORD(other_scope) | error $[object type expected].
     
     [[ Number(_) ^ (_): NUMBER() ]] := true.
     [[ String(_) ^ (_): STRING() ]] := true.
@@ -120,21 +113,35 @@ rules
       Value{name} |-> d | error $[Cannot resolve [name]],
         d : ty.
     
-    [[ Function(Some(name), CallSignature(_, Some(parameters), None()), body) ^ (s) ]] :=
+    [[ Function(name, CallSignature(_, parameters, returnType), body) ^ (s) ]] :=
       new function_scope,
-      Value{name} <- s,
-      Value{name} : FUNCTION(paramsTy, VOID()) !,
+      [[ name ^ (s): FUNCTION(paramsTy, returnTy) ]],
       [[ parameters ^ (s, function_scope): paramsTy ]],
-      [[ returnType ^ (s) : ty ]],
-      Map1T [[ body ^ (function_scope): bodyType ]].
+      [[ returnType ^ (s) : returnTy ]],
+      Return{"function"} <- function_scope,
+      Return{"function"} : returnTy,
+      Map1 [[ body ^ (function_scope) ]].
     
-    [[ Function(Some(name), CallSignature(_, Some(parameters), Some(returnType)), body) ^ (s) ]] :=
-      new function_scope,
+    [[ FunctionName(name) ^ (s) : ty ]] :=
       Value{name} <- s,
-      Value{name} : FUNCTION(paramsTy, ty) !,
+      Value{name} : ty !.
+    [[ NoName() ^ (_) : ty ]].
+    
+    [[ NoParameters() ^ (_) : [] ]].
+    [[ Parameters(parameters) ^ (s, function_scope) : paramsTy ]] :=
+      [[ parameters ^ (s, function_scope): paramsTy ]].
+    
+    [[ NoReturnType() ^ (_) : ty ]].
+    [[ ReturnType(type) ^ (s) : returnTy ]] :=
+      [[ type ^ (s): returnTy ]].
+    
+    [[ FunctionExpression(Function(_, CallSignature(_, parameters, returnType), body)) ^ (s): FUNCTION(paramsTy, returnTy) ]] :=
+      new function_scope,
       [[ parameters ^ (s, function_scope): paramsTy ]],
-      [[ returnType ^ (s) : ty ]],
-      Map1T [[ body ^ (function_scope): bodyType ]].
+      [[ returnType ^ (s) : returnTy ]],
+      Return{"function"} <- function_scope,
+      Return{"function"} : returnTy,
+      Map1 [[ body ^ (function_scope) ]].
      
     [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
       Map2T [[ parameters ^ (s, function_scope): ty ]].
@@ -146,8 +153,32 @@ rules
       Value{name} : ty !,
       [[ type ^ (s) : ty ]].
     
-    [[ ValueReturn(value, _) ^ (s) : ty ]] :=
-      [[ value ^ (s) : ty ]].
+    [[ If(condition, trueBlock) ^ (s) ]] :=
+      [[ condition ^ (s) : valueTy ]],
+      valueTy == BOOLEAN() | error $[Boolean expected, got [valueTy]],
+      [[ trueBlock ^ (s) ]].
+    
+    [[ IfElse(condition, trueBlock, falseBlock) ^ (s) ]] :=
+      [[ condition ^ (s) : valueTy ]],
+      valueTy == BOOLEAN() | error $[Boolean expected, got [valueTy]],
+      [[ trueBlock ^ (s) ]],
+      [[ falseBlock ^ (s) ]].
+    
+    [[ Block(statements) ^ (s) ]] :=
+      Map1 [[ statements ^ (s) ]].
+    
+    [[ ValueReturn(value, _) ^ (s) ]] :=
+      [[ value ^ (s) : valueTy ]],
+      Return{"function"} -> s,
+      Return{"function"} |-> d | error $[Can not use return outside of a function scope],
+      d: ty,
+      ty == valueTy.
+    
+    [[ EmptyReturn() ^ (s) ]] :=
+      Return{"function"} -> s,
+      Return{"function"} |-> d | error $[Can not use return outside of a function scope],
+      d: ty,
+      ty == UNDEFINED().
     
     [[ Call(function, arguments) ^ (s) : ty ]] :=
       [[ function ^ (s) : functionTy ]],
