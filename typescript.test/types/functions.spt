@@ -9,12 +9,19 @@ function foo(): number {
 }
 ]] 0 errors
 
-test function with no return [[
+test function with return results in number [[
 function foo() {
   return 0;
 }
 [[foo()]];
 ]] run nabl2-get-ast-type on #1 to NUMBER()
+
+test function with empty return [[
+function foo() {
+  return;
+}
+[[foo()]];
+]] run nabl2-get-ast-type on #1 to UNDEFINED()
 
 test function with incompatible return type [[
 function foo(): string {
