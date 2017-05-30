@@ -22,7 +22,7 @@ interface obj {
 }
 
 function bar(b: obj) {
-  return 0;
+  return;
 }
 
 bar({

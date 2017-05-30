@@ -34,6 +34,6 @@ function bar() {
   }
 }
 
-bar()()(5)
+const nu: number = bar()()(5)
 
 const h = foo(5, "asdf");

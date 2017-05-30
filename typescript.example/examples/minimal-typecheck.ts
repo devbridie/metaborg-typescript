@@ -5,4 +5,4 @@ interface A {
 interface B {}
 
 const b: A = { foo: 5 }
-const b: A = 512
+const c: A = 512
