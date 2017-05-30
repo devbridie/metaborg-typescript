@@ -13,8 +13,9 @@ context-free syntax
   PrimaryExpression.Id = BindingIdentifier
   PrimaryExpression = Literal
   PrimaryExpression = ObjectLiteral
-  PrimaryExpression.Call = <<MemberExpression>(<{PrimaryExpression ","}*>)>
+  PrimaryExpression.Call = <<PrimaryExpression>(<{PrimaryExpression ","}*>)>
   PrimaryExpression.FunctionExpression = FunctionDeclaration
+  PrimaryExpression.PropertyLookup = <<PrimaryExpression>.<ID>>
+//  TODO: Introduces ambiguity with Call()
+//  PrimaryExpression = <(<PrimaryExpression>)> {bracket}
   
-  MemberExpression = PrimaryExpression
-  MemberExpression.Property = <<MemberExpression>.<ID>>

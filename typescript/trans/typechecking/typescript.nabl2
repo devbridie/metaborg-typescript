@@ -186,6 +186,24 @@ rules
       Map1T [[ arguments ^ (s): argsTy ]],
       argsTy <? paramsTy.
     	
-    	
+    [[ ObjectDecl(properties) ^ (s): ty ]] :=
+      new record_scope,
+      ty == RECORD(record_scope),
+      Map2 [[ properties ^ (s, record_scope) ]],
+      distinct/name D(record_scope)/Field | error $[Duplicate declaration of field] @ NAMES.
+    
+    [[ Property(name, value) ^ (s, record_scope) ]] :=
+      [[ value ^ (s) : valueTy ]],
+      Field{name} <- record_scope,
+      Field{name} : valueTy !.
+    
+    [[ PropertyLookup(record, field) ^ (s) : ty ]] :=
+      [[ record ^ (s) : recordTy ]],
+      recordTy == RECORD(record_scope) | error $[Record expected, got $[recordTy]],
+      new s_use,
+      s_use -I-> record_scope,
+      Field{field} -> s_use,
+      Field{field} |-> d | error $[Can not find field $[field] in record $[record]],
+      d: ty.   
     	
     	
