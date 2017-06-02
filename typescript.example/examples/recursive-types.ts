@@ -29,23 +29,23 @@ var d: { get: number, next: { get: number, next: { get: number, next: { get: num
 // their fully expanded types are equal.
 // This makes me think TypeScript is equi-recursive.
 //   (Modulo the directly recursive case with type aliases, explained above)
-f(a)
-g(a)
-h(a)
-i(a)
-
-f(b)
-g(b)
-h(b)
-i(b)
-
-f(c)
-g(c)
-h(c)
-i(c)
-
-f(d)
-g(d)
-h(d)
-i(c)
+//f(a)
+//g(a)
+//h(a)
+//i(a)
+//
+//f(b)
+//g(b)
+//h(b)
+//i(b)
+//
+//f(c)
+//g(c)
+//h(c)
+//i(c)
+//
+//f(d)
+//g(d)
+//h(d)
+//i(c)
 

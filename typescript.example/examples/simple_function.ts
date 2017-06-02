@@ -25,7 +25,7 @@ function bar(b: obj) {
   return;
 }
 
-bar({
-  foo: "asdf",
-  bar: 5
-});
+//bar({
+//  foo: "asdf",
+//  bar: 5
+//});

@@ -4,5 +4,5 @@ interface A {
 
 interface B {}
 
-const b: A = { foo: 5 }
-const c: A = 512
+//const b: A = { foo: 5 }
+//const c: A = 512
