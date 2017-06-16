@@ -15,7 +15,7 @@ context-free syntax
   Declaration = HoistableDeclaration
   Declaration = LexicalDeclaration
   
-  HoistableDeclaration.Function = <<FunctionDeclaration><SemiColon?>>
+  HoistableDeclaration.FunctionDeclaration = <<FunctionDeclaration><SemiColon?>>
   
   LexicalDeclaration.Lexical = <<LetOrConst> <{VariableDeclaration ","}+><SemiColon?>>
   

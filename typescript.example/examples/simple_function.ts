@@ -1,18 +1,32 @@
-function foo(a: number): number {
+function foo(a: number) {
+  const foo = 5;
   return a;
 }
 
-foo(5);
+function baz() {
+  if (true) {
+    if (false) {
+      return 5;
+    }
+    return 3;
+  }
+
+  return 0;
+}
+
+const f = foo(5);
 
 interface obj {
   foo: string;
   bar: number;
+  baz: {}
 }
 
 function bar(b: obj) {
+  return;
 }
 
-bar({
-  foo: "asdf",
-  bar: 5
-});
+//bar({
+//  foo: "asdf",
+//  bar: 5
+//});

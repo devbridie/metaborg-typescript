@@ -10,7 +10,7 @@ context-free syntax
 
   FunctionDeclaration.Function = <
   function <BindingIdentifier?><CallSignature> {
-    <FunctionBody>
+    <StatementList>
   }
   >
   
@@ -20,4 +20,3 @@ context-free syntax
   
   RequiredParameter.RequiredParameter = /*<AccessibilityModifier?>*/<<BindingIdentifierOrPattern> <TypeAnnotation?>>
   
-  FunctionBody.Body = StatementListItem*

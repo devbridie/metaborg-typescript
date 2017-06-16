@@ -2,57 +2,39 @@ module analysis
 
 imports
   
-  libspoofax/core/language
-  runtime/index/-
-  runtime/nabl/-
-  runtime/properties/-
-  runtime/types/-
-  runtime/task/-
-  runtime/analysis/-
-  
+  nabl2shared
+  nabl2runtime 
+  nabl2/api
+
+  typechecking/-
+  desugaring/desugar
   pp
 
 rules // Analysis
 
-  editor-analyze = analyze-all(id, id, id|<language>)
+  editor-analyze = nabl2-analyze(desugar-all)
 
-rules // Editor services
+ nabl2-debug-analysis-hook = id
 
-  editor-resolve:
-    (node, _, _, _, project-path) -> definition
-    where
-      definition := <analysis-resolve(|<language>, project-path)> node
-
-  editor-hover:
-    (node, _, _, _, project-path) -> label
-    where
-      label := <get-editor-properties(pp-partial-typescript-string|<language>, project-path); properties-to-html> node
+  nabl2-debug-constraint-generation-hook = id
 
 rules // Debugging
   
-  debug-show-analyzed:
-    (_, _, ast, path, _) -> (filename, result)
-    with
-      filename := <guarantee-extension(|"analyzed.aterm")> path;
-      result   := ast
-  
-  debug-index-project =
-    analysis-debug-index-project(|<language>)
-  debug-index-project-resolve = 
-    analysis-debug-index-project-resolve(|<language>)
-  debug-index-partition =
-    analysis-debug-index-partition(|<language>)
+  // Prints the abstract syntax ATerm of a selection.
+  debug-show-aterm: (selected, _, _, path, project-path) -> (filename, result)
+    with filename := <guarantee-extension(|"aterm")> path
+       ; result   := selected
 
-  debug-task-project =
-    analysis-debug-task-project(|<language>)
-  debug-task-partition =
-    analysis-debug-task-partition(|<language>)
-  debug-task-selection =
-    analysis-debug-task-selection(|<language>)
-  debug-index-partition-resolve =
-    analysis-debug-index-partition-resolve(|<language>)
-    
-  debug-project =
-    analysis-debug-project(|<language>)
-  debug-partition =
-    analysis-debug-partition(|<language>)
+  // Prints the analyzed annotated abstract syntax ATerm of a selection.
+  debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)
+    with filename := <guarantee-extension(|"analyzed.aterm")> path
+       ; result   := selected
+
+signature
+	sorts
+		Origin
+
+	constructors
+		Field: Origin
+		Param: Origin
+		Local: Origin

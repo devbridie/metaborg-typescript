@@ -24,7 +24,19 @@
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
-      <artifactId>org.metaborg.meta.lang.nabl</artifactId>
+      <artifactId>org.metaborg.meta.nabl2.lang</artifactId>
+      <type>spoofax-language</type>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.metaborg.meta.nabl2.shared</artifactId>
+      <type>spoofax-language</type>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.metaborg.meta.nabl2.runtime</artifactId>
       <type>spoofax-language</type>
       <version>${metaborg-version}</version>
     </dependency>
