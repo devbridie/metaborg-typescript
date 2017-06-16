@@ -44,6 +44,12 @@ rules
   desugar: CallSignature(typeParameters, Some(parameters), None()) -> CallSignature(typeParameters, Parameters(parameters), NoReturnType())
   desugar: CallSignature(typeParameters, None(), Some(returnType)) -> CallSignature(typeParameters, NoParameters(), ReturnType(returnType))
   desugar: CallSignature(typeParameters, Some(parameters), Some(returnType)) -> CallSignature(typeParameters, Parameters(parameters), ReturnType(returnType))
+  
+  desugar: Module(Module(name, Some(body))) -> Module(name, body)
+  desugar: Module(Module(name, None())) -> Module(name, [])
+  
+  desugar: ModuleItemsWithExport(items, item, items3) -> <concat> [items, [item], items3]
+  desugar: ModuleItemsWithImport(items, item, items3) -> <concat> [items, [item], items3]
 	
 strategies
   	desugar-all = bottomup(try(desugar))

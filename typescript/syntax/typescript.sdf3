@@ -5,6 +5,7 @@ imports
   Common
   Declarations
   Expressions
+  Modules
   Names
   Objects
   Statements
@@ -16,4 +17,5 @@ context-free start-symbols
 
 context-free syntax
  
+  Program.Module  = Module
   Program.Program = StatementListItem*

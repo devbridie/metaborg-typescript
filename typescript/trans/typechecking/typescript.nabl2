@@ -6,22 +6,28 @@ imports
   typechecking/-
   
 signature
+
+	constraint generator
+		Map3	[[ list(a) ^ (b,c,d) ]]
+		Map3(X)	[[ list(a) ^ (b,c,d) ]]
     
     
     constructors
     	RECORD	: scope -> Type
+    	MODULE  : scope -> Type
     	
     	NUMBER	  : Type
 		  STRING	  : Type
 		  BOOLEAN   : Type
 		  UNDEFINED : Type
 		  FUNCTION  : list(Type) * Type -> Type
+		  MODULE	: occurrence -> Type
 		
 
 	name resolution
 		labels
 	      P I
-	
+	      
 	    order
 	      D < I,
 	      D < P,
@@ -37,15 +43,64 @@ signature
 			Return
       
 rules
+
+	Map3	[[ xs ^ (b,c,d) ]] := Map3(default) [[ xs ^ (b,c,d) ]].
+	Map3(X)	[[ [x|xs] ^ (s1,s2,s3) ]] :=
+	    X[[ x ^ (s1,s2,s3) ]],
+	    Map3(X)[[ xs ^ (s1,s2,s3) ]].
+	Map3(X)[[ [] ^ (s1,s2,s3) ]].
 	
 	init ^ (s) :=
     	new s.
     
     [[ Program(statements) ^ (s) ]] :=
-    	Map1 [[ statements ^ (s) ]],
-    	distinct/name D(s)/Value | error @ NAMES,
-    	distinct/name D(s)/Type | error @ NAMES.
-    	
+      new program_scope,
+      program_scope -P-> s,
+    	Map1 [[ statements ^ (program_scope) ]],
+    	distinct/name D(program_scope)/Value | error @ NAMES,
+    	distinct/name D(program_scope)/Type | error @ NAMES.
+    
+    [[ Module(name, body) ^ (s) ]] :=
+      new module_scope,
+      new statement_scope,
+      new export_scope,
+      module_scope -I-> export_scope,
+      module_scope -P-> s,
+      statement_scope -P-> module_scope,
+      export_scope -P-> statement_scope,
+      Module{name} <- s,
+      Module{name} ===> module_scope,
+      Module{name} : moduleType,
+      moduleType == MODULE(Module{name}),
+      Map3 [[ body ^ (module_scope, export_scope, statement_scope) ]],
+      distinct/name (D(statement_scope)/Value union D(export_scope)/Value) | error @ NAMES,
+      distinct/name (D(statement_scope)/Type union D(export_scope)/Type) | error @ NAMES.
+      
+    [[ ExportDeclaration(declaration) ^ (module_scope, export_scope, statement_scope) ]] :=
+      [[ declaration ^ (export_scope) ]].
+    
+    [[ ModuleStatement(statement) ^ (module_scope, export_scope, statement_scope) ]] :=
+      [[ statement ^ (statement_scope) ]].
+    
+    [[ ImportClause(imports, From(filename), _) ^ (module_scope, export_scope, statement_scope) ]] :=
+      Module{filename} -> module_scope,
+      Module{filename} |-> d | error $[Could not find module [filename]],
+      d : ty,
+      ty == MODULE(m),
+      m ?===> imported_module_scope,
+      new import_scope,
+      import_scope -P-> imported_module_scope,
+      [[ imports ^ (import_scope, statement_scope) ]].
+    
+    [[ ImportsList(list, _) ^ (import_scope, statement_scope) ]] :=
+      Map2 [[ list ^ (import_scope, statement_scope) ]].
+    
+    [[ NamedImport(name) ^ (import_scope, statement_scope) ]] :=
+      Value{name} -> import_scope,
+      Value{name} |-> d | error $[Could not find exported value [name].],
+      d: ty,
+      Value{name} <- statement_scope,
+      Value{name} : ty !.
     	
     [[ InterfaceDecl(name, _, fields) ^ (s) ]] :=
     	Type{name} <- s,

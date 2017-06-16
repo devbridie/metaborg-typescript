@@ -1,0 +1,35 @@
+unifier {
+  ?examples/modules/single-import/import.ts-moduleType-1 := MODULE(Module{""import"" @examples/modules/single-import/import.ts:1})
+  ?examples/modules/single-import/export.ts-valueTy-2 := NUMBER()
+  ?examples/modules/single-import/export.ts-valueTy-3 := NUMBER()
+  ?examples/modules/single-import/import.ts-tys-3 := [?examples/modules/single-import/import.ts-ty-12]
+  ?examples/modules/single-import/export.ts-moduleType-1 := MODULE(Module{""export"" @examples/modules/single-import/export.ts:1})
+  ?examples/modules/single-import/export.ts-valueTy-1 := NUMBER()
+  ?examples/modules/single-import/import.ts-tys-4 := []
+  ?examples/modules/single-import/export.ts-valueTy-4 := NUMBER()
+  ?examples/modules/single-import/export.ts-d-2 := Value{"foo" @examples/modules/single-import/export.ts:3}
+  ?examples/modules/single-import/import.ts-ty-1 := MODULE(Module{""export"" @examples/modules/single-import/export.ts:1})
+  ?examples/modules/single-import/export.ts-d-1 := Value{"bar" @examples/modules/single-import/export.ts:17}
+  ?examples/modules/single-import/import.ts-ty-3 := FUNCTION([NUMBER()],?examples/modules/single-import/import.ts-ty-7)
+  ?examples/modules/single-import/import.ts-ty-5 := NUMBER()
+  ?examples/modules/single-import/import.ts-ty-4 := [NUMBER()]
+  ?examples/modules/single-import/import.ts-returnTy-1 := ?examples/modules/single-import/import.ts-ty-7
+  ?examples/modules/single-import/import.ts-ty-6 := NUMBER()
+  ?examples/modules/single-import/import.ts-ty-9 := ?examples/modules/single-import/import.ts-ty-7
+  ?examples/modules/single-import/import.ts-ty-8 := ?examples/modules/single-import/import.ts-ty-7
+  ?examples/modules/single-import/import.ts-imported_module_scope-1 := #examples/modules/single-import/export.ts-module_scope-1
+  ?examples/modules/single-import/import.ts-paramsTy-1 := [NUMBER()]
+  ?examples/modules/single-import/import.ts-paramsTy-3 := [NUMBER()]
+  ?examples/modules/single-import/import.ts-paramsTy-2 := [NUMBER()]
+  ?examples/modules/single-import/export.ts-ty-1 := NUMBER()
+  ?examples/modules/single-import/export.ts-ty-2 := NUMBER()
+  ?examples/modules/single-import/import.ts-argsTy-1 := [?examples/modules/single-import/import.ts-ty-12]
+  ?examples/modules/single-import/import.ts-ty-11 := ?examples/modules/single-import/import.ts-ty-12
+  ?examples/modules/single-import/import.ts-m-1 := Module{""export"" @examples/modules/single-import/export.ts:1}
+  ?examples/modules/single-import/import.ts-ty-10 := FUNCTION([NUMBER()],?examples/modules/single-import/import.ts-ty-7)
+  ?examples/modules/single-import/import.ts-tys-1 := [NUMBER()]
+  ?examples/modules/single-import/import.ts-d-1 := Module{""export"" @examples/modules/single-import/export.ts:1}
+  ?examples/modules/single-import/import.ts-tys-2 := []
+  ?examples/modules/single-import/import.ts-functionTy-1 := FUNCTION([NUMBER()],?examples/modules/single-import/import.ts-ty-7)
+  ?examples/modules/single-import/import.ts-d-3 := Value{"bar" @examples/modules/single-import/import.ts:14}
+}

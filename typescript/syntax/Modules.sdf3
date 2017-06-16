@@ -1,0 +1,53 @@
+module Modules
+
+imports
+
+  Common
+  Declarations
+  Names
+  Statements
+
+template options
+
+  tokenize: "},{"
+
+context-free syntax
+
+  Module.Module = <
+    filename:<STRING>
+    <ModuleBody?>
+  >
+  
+  // Without these productions, a full statement list is ambiguous in that it can
+  // also be a Module. Thus we have to force that at least one export or import
+  // is inside a module, to thus distinguish between modules and normal programs
+  ModuleBody.ModuleItemsWithExport = StatementListItem* ExportDeclaration ModuleItem*
+  ModuleBody.ModuleItemsWithImport = StatementListItem* ImportDeclaration ModuleItem*
+  
+  ModuleItem = ImportDeclaration
+  ModuleItem = ExportDeclaration
+  ModuleItem.ModuleStatement = StatementListItem
+  
+  ImportDeclaration.ImportClause = <import <ImportClause> <FromClause> <SemiColon?>>
+  
+  ImportClause = NamespaceImport
+  ImportClause = NamedImports
+  
+  NamespaceImport.NameSpaceImport = <* as <ImportedBinding>>
+  
+  ImportedBinding = BindingIdentifier
+  
+  NamedImports.ImportsEmpty = <{}>
+  NamedImports.ImportsList = <{<{ImportSpecifier ","}+><Comma?>}>
+  
+  FromClause.From = <from <ModuleSpecifier>>
+  
+  ModuleSpecifier = STRING
+  
+  ImportSpecifier.NamedImport = ImportedBinding
+  ImportSpecifier.AsImport = <<BindingIdentifier> as <ImportedBinding>>
+  
+  ExportDeclaration.ExportStar = <export * <FromClause>>
+  ExportDeclaration.ExportDeclaration = <export <Declaration>>
+  
+  

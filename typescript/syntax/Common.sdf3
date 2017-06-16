@@ -11,9 +11,13 @@ lexical syntax
   TypeID         = BooleanLiteral {reject}
   INT            = "-"? [0-9]+ 
   STRING         = "\"" StringChar* "\"" 
+  STRING         = "'" StringCharSingle* "'"
   StringChar     = ~[\"\n] 
   StringChar     = "\\\"" 
-  StringChar     = BackSlashChar 
+  StringChar     = BackSlashChar
+  StringCharSingle = ~[\'\n]
+  StringCharSingle = "\\'" 
+  StringCharSingle = BackSlashChar
   BackSlashChar  = "\\" 
   LAYOUT         = [\ \t\n\r] 
   CommentChar    = [\*] 
