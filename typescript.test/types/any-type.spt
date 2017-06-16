@@ -1,0 +1,75 @@
+module any-type
+
+language typescript
+start symbol Program
+
+test const has any type [[
+var a: any;
+[[a]];
+]] run nabl2-get-ast-type on #1 to ANY()
+
+test const without type annotation has any type [[
+var a;
+[[a]];
+]] run nabl2-get-ast-type on #1 to ANY()
+
+test any type is subtype of numbers [[
+var a: any;
+const b: number = a;
+]] 0 errors
+
+
+test any type is subtype of string [[
+var a: any;
+const b: string = a;
+]] 0 errors
+
+
+test any type can be passed as whatever argument [[
+var a;
+
+function f(a: string) {
+	return a;
+}
+
+f(a);
+]] 0 errors
+
+// TODO: Nabl2 does not support custom relations
+//test any is a subtype of an interface [[ 
+//interface X {}
+//var a: any;
+//const b: X = a;
+//]] 0 errors
+
+// TODO: Nabl2 does not support both top and bottom type
+//test anything else is also a subtype of any [[
+//interface X {}
+//var a: X;
+//const b: any = a;
+//]] 0 errors
+
+test void is a subtype of any [[
+var a: void;
+const c: any = a;
+]] 0 errors
+
+test null is a subtype of void [[
+var a: null;
+const c: void = a;
+]] 0 errors
+
+test undefined is a subtype of void [[
+var a: undefined;
+const c: void = a;
+]] 0 errors
+
+test null is not a subtype of undefined [[
+var a: null;
+const c: undefined = a;
+]] 1 errors
+
+test undefined is not a subtype of null [[
+var a: undefined;
+const c: null = a;
+]] 1 errors

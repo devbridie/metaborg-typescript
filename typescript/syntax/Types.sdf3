@@ -31,6 +31,9 @@ context-free syntax
 
   Constraint.Constraint = <extends <Type>>
 
+  Type.Any = <any>
+  Type.NullType = <null>
+  Type.UndefinedType = <undefined>
   Type.Void = <void>
   Type.Number = <number>
   Type.Boolean = <boolean>

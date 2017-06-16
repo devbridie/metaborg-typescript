@@ -14,14 +14,16 @@ signature
     
     constructors
     	RECORD	: scope -> Type
-    	MODULE  : scope -> Type
     	
+    	VOID      : Type
+    	NULL      : Type
+  		ANY       : Type
     	NUMBER	  : Type
 		  STRING	  : Type
 		  BOOLEAN   : Type
 		  UNDEFINED : Type
 		  FUNCTION  : list(Type) * Type -> Type
-		  MODULE	: occurrence -> Type
+		  MODULE	  : occurrence -> Type
 		
 
 	name resolution
@@ -41,7 +43,11 @@ signature
 			Type
 			Value
 			Return
-      
+
+	constraint generator
+		ConstainsInitializer [[ list(a) ^ (s) ]]
+		MapLast(X) [[ list(a) ^ (s) ]]   
+		   
 rules
 
 	Map3	[[ xs ^ (b,c,d) ]] := Map3(default) [[ xs ^ (b,c,d) ]].
@@ -51,7 +57,22 @@ rules
 	Map3(X)[[ [] ^ (s1,s2,s3) ]].
 	
 	init ^ (s) :=
-    	new s.
+    	new s,
+    	
+    	NULL() <! ANY(),
+      UNDEFINED() <! ANY(),
+      VOID() <! ANY(),
+      
+      NULL() <! STRING(),
+      UNDEFINED() <! STRING(),
+      ANY() <! STRING(),
+      
+      NULL() <! NUMBER(),
+      UNDEFINED() <! NUMBER(),
+      ANY() <! NUMBER(),
+      
+      UNDEFINED() <! VOID(),
+      NULL() <! VOID().
     
     [[ Program(statements) ^ (s) ]] :=
       new program_scope,
@@ -121,22 +142,48 @@ rules
    		Field{name} : ty !,
    		[[ type ^ (s): ty]].
    	
+   	[[ TypeAnnotation(UndefinedType()) ^(_): UNDEFINED() ]] := true.
+   	[[ TypeAnnotation(NullType()) ^(_): NULL() ]] := true.
+   	[[ TypeAnnotation(Void()) ^(_): VOID() ]] := true.
+   	[[ TypeAnnotation(Any()) ^(_): ANY()]] := true.
    	[[ TypeAnnotation(Number()) ^(_): NUMBER()]] := true.
    	[[ TypeAnnotation(String()) ^(_): STRING()]] := true.
    	
    	[[ TypeAnnotation(Object(objectType)) ^ (s): ty ]] :=
-   	  [[ objectType ^ (s) : ty ]].
+		[[ objectType ^ (s) : ty ]],
+		NULL() <! ty,
+		UNDEFINED() <! ty,
+		ANY() <! ty.
     	
     [[ TypeAnnotation(Id(name)) ^ (s): ty ]] :=
     	Type{name} -> s,
     	Type{name} |-> d | error $[Cannot resolve [name]],
-        d : ty.
-    	
-    [[ Lexical(_, declarations, _) ^ (s) ]] :=
+        d : ty,
+        NULL() <! ty,
+		UNDEFINED() <! ty,
+   	  	ANY() <! ty.
+    
+    MapLast(X) [[ [] ^ (_) ]] := true.
+    MapLast(X) [[ [x] ^ (s) ]] := X [[ x ^ (s) ]].
+    MapLast(X) [[ [x|xs] ^ (s) ]] :=  MapLast(X) [[ xs ^ (s) ]].
+    
+    ContainsInitializer [[ SimpleVariableDeclaration(_, _, None()) ^ (_) ]] := false | error "const declarations must be initialized.".
+    ContainsInitializer [[ SimpleVariableDeclaration(_, _, Some(_)) ^ (_) ]] := true.
+    
+    
+    [[ Lexical(Const(), declarations, _) ^(s) ]] :=
+    	MapLast(ContainsInitializer) [[ declarations ^ (s) ]],
+    	Map1 [[ declarations ^ (s) ]].
+    
+    [[ Lexical(Let(), declarations, _) ^ (s) ]] :=
     	Map1 [[ declarations ^ (s) ]].
     
     [[ Variable(declarations, _) ^ (s) ]] :=
       Map1 [[ declarations ^ (s) ]].
+    
+    [[ SimpleVariableDeclaration(name, None(), None()) ^ (s) ]] := 
+      Value{name} <- s,
+      Value{name} : ANY().
     
     [[ SimpleVariableDeclaration(name, None(), Some(value)) ^ (s) ]] := 
       [[ value ^ (s) : valueTy ]],
@@ -160,8 +207,10 @@ rules
     	Value{name} : ty !,
     	[[ type ^ (s) : ty ]],
     	[[ value ^ (s) : valueTy ]],
-    	ty <? valueTy.
+    	valueTy <? ty.
     
+	[[ Undefined() ^ (_): UNDEFINED() ]] := true.
+	[[ Null() ^ (_): NULL() ]] := true.
     [[ Number(_) ^ (_): NUMBER() ]] := true.
     [[ String(_) ^ (_): STRING() ]] := true.
     [[ True() ^ (_): BOOLEAN() ]] := true.

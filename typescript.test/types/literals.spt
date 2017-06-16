@@ -8,7 +8,7 @@ const foo = [[5]];
 ]] run nabl2-get-ast-type on #1 to NUMBER()
 
 test number reference [[
-const foo = 5;
+const foo: number;
 [[foo]];
 ]] run nabl2-get-ast-type on #1 to NUMBER()
 

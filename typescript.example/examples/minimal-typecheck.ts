@@ -1,8 +1,15 @@
-interface A {
-	foo: number
+var a;
+
+function f(x: string) {
+  return x;
 }
 
-interface B {}
+f(a);
 
-//const b: A = { foo: 5 }
-//const c: A = 512
+interface X {}
+
+//const b: X = a;
+const d: any = a;
+var c: string = undefined;
+//const e: A = { foo: 5 }
+//const f: A = 512

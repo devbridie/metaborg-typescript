@@ -76,6 +76,8 @@ lexical syntax
   
   // NullLiteral
   Keyword = "null"
+  // UndefinedLiteral
+  Keyword = "undefined"
   
   // FutureReservedWord
   Keyword = "enum"
@@ -96,11 +98,13 @@ lexical syntax
 context-free syntax
 
   Literal = NullLiteral
+  Literal = UndefinedLiteral
   Literal = BooleanLiteral
   Literal = NumericLiteral
   Literal = StringLiteral
   
   NullLiteral.Null = "null"
+  UndefinedLiteral.Undefined = "undefined"
   
   BooleanLiteral.True = "true"
   BooleanLiteral.False = "false"

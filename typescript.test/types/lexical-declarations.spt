@@ -3,6 +3,14 @@ module lexical-declarations
 language typescript
 start symbol Program
 
+test const must be initialized [[
+const a;
+]] 1 error
+
+test let may be uninitialized [[
+let a;
+]] 0 errors
+
 test duplicate names [[
 const a = 5;
 const a = 4;
