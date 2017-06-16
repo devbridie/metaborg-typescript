@@ -17,6 +17,7 @@ signature
 		ReturnType: TypeAnnotation -> ReturnType
 		PAIR	: Type * Type -> PAIR
 		ClassProperty: String * TypeAnnotation * Initializer -> ClassProperty
+		UnionType: List(Type) -> UnionType
 
 rules
 
@@ -29,6 +30,9 @@ rules
 	desugar: TypeMemberListSemiColon(properties, _, property) -> [property | properties]
 	desugar: TypeMemberListComma(properties, _, property) -> [property | properties]
 	desugar: TypeMemberListSingle(property) -> [property]
+	
+	desugar: Union(UnionType(xs), z) -> UnionType(<concat> [xs , [z]]) 
+	desugar: Union(type1, type2) -> UnionType([type1, type2])
 	
 	desugar: ObjectEmpty() -> ObjectDecl([])
 	desugar: ObjectFields(fields) -> ObjectDecl(fields)

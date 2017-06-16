@@ -29,7 +29,8 @@ signature
 		  FUNCTION  : list(Type) * Type -> Type
 		  MODULE	  : occurrence -> Type
 		TYPEOF    : Type -> Type
-
+		UNION     : list(Type) -> Type
+		
 	name resolution
 		labels
 	      P I
@@ -184,6 +185,9 @@ rules
    	[[ Any() ^(_): ANY()]] := true.
    	[[ Number() ^(_): NUMBER()]] := true.
    	[[ String() ^(_): STRING()]] := true.
+   	
+	[[ UnionType(xs) ^ (s): UNION(ts) ]] :=
+		Map1T [[ xs ^ (s):  ts ]].
    	
    	[[ Object(objectType) ^ (s): ty ]] :=
 		[[ objectType ^ (s) : ty ]],

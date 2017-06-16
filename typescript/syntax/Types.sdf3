@@ -40,4 +40,5 @@ context-free syntax
   Type.String = <string>
   Type.Id = TypeID
   Type.Object = ObjectType
+  Type.Union = <<Type> | <Type>> {left}
   
