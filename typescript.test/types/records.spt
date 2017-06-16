@@ -34,3 +34,42 @@ const record = {
   foo: "asdf"
 }
 ]] >= 1 errors
+
+
+test assigning interfaces [[
+interface B {
+  foo: string
+}
+interface X {
+  foo: string,
+  bar: number
+}
+var a: X;
+const b: B = a;
+]] 0 errors
+
+test assigning interfaces with incompatible types works it's a feature! [[
+interface B {
+  foo: number
+}
+interface X {
+  foo: string,
+  bar: number
+}
+var a: X;
+const b: B = a;
+]] 0 errors
+
+test assigning interfaces with non-overlapping names fails [[
+interface B {
+  oo: string
+}
+interface X {
+  foo: string,
+  bar: number
+}
+var a: X;
+const b: B = a;
+]] 1 errors
+
+

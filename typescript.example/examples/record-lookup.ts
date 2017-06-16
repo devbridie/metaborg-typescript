@@ -8,6 +8,11 @@ const a = {
   }
 }
 
+interface b {
+  foo: string
+}
+
 const nu: number = a.foo;
 const nu2: number = a.bar(nu);
 //const nu3 = a.baz.foo;
+const value: b = a;

@@ -147,6 +147,13 @@ rules
     	Value{name} <- s,
     	Value{name} : ty !,
     	[[ type ^ (s) : ty ]].
+    	
+    [[ SimpleVariableDeclaration(name, Some(t@TypeAnnotation(Id(_))), Some(value)) ^ (s) ]] :=
+      Value{name} <- s,
+      Value{name} : ty !,
+      [[ t ^ (s) : RECORD(type_scope) ]],
+      [[ value ^ (s) : RECORD(value_scope) ]],
+      D(type_scope)/Field subseteq/name D(value_scope)/Field | error $[Field [NAME] not initialized].
 
     [[ SimpleVariableDeclaration(name, Some(type), Some(value)) ^ (s) ]] :=
     	Value{name} <- s,
