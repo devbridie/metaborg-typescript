@@ -19,11 +19,14 @@ const f = foo(5);
 interface obj {
   foo: string;
   bar: number;
-  baz: {}
 }
 
 function bar(b: obj) {
   return;
+}
+
+function generic<T>(b: T): T {
+  return b;
 }
 
 //bar({

@@ -224,9 +224,14 @@ rules
       Value{name} |-> d | error $[Cannot resolve [name]],
         d : ty.
     
-    [[ Function(name, CallSignature(_, parameters, returnType), body) ^ (s) ]] :=
+    [[ f@Function(_, _, _) ^ (s) ]] :=
+      TypeCheckFunction [[ f ^ (s): _ ]].
+      
+    TypeCheckFunction [[ Function(name, CallSignature(typeParameters, parameters, returnType), body) ^ (s): functionTy ]] :=
       new function_scope,
-      [[ name ^ (s): FUNCTION(paramsTy, returnTy) ]],
+      TypeParameters [[ typeParameters ^ (s) ]],
+      [[ name ^ (s): functionTy ]],
+      functionTy genOf(vars) FUNCTION(paramsTy, returnTy),
       [[ parameters ^ (s, function_scope): paramsTy ]],
       [[ returnType ^ (s) : returnTy ]],
       Return{"function"} <- function_scope,
@@ -246,13 +251,16 @@ rules
     [[ ReturnType(type) ^ (s) : returnTy ]] :=
       [[ type ^ (s): returnTy ]].
     
-    [[ FunctionExpression(Function(_, CallSignature(_, parameters, returnType), body)) ^ (s): FUNCTION(paramsTy, returnTy) ]] :=
-      new function_scope,
-      [[ parameters ^ (s, function_scope): paramsTy ]],
-      [[ returnType ^ (s) : returnTy ]],
-      Return{"function"} <- function_scope,
-      Return{"function"} : returnTy,
-      Map1 [[ body ^ (function_scope) ]].
+    TypeParameters [[ None() ^ (_) ]] := true.
+    TypeParameters [[ Some(TypeParameters(typeParameters)) ^ (s) ]] :=
+      Map1(TypeParameter) [[ typeParameters ^ (s) ]].
+    
+    TypeParameter [[ TypeParameter(name, None()) ^ (s) ]] :=
+      Type{name} <- s,
+      Type{name} : ty !.
+    
+    [[ FunctionExpression(f@Function(_, _, _)) ^ (s): ty ]] :=
+      TypeCheckFunction [[ f ^ (s) : ty ]].
      
     [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
       Map2T [[ parameters ^ (s, function_scope): ty ]].
@@ -293,7 +301,8 @@ rules
     
     [[ Call(function, arguments) ^ (s) : ty ]] :=
       [[ function ^ (s) : functionTy ]],
-      functionTy == FUNCTION(paramsTy, ty),
+      functionTyGeneric instOf functionTy,
+      functionTyGeneric == FUNCTION(paramsTy, ty),
       Map1T [[ arguments ^ (s): argsTy ]],
       argsTy <? paramsTy.
     	
