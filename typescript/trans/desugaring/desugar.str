@@ -50,7 +50,8 @@ rules
   
   desugar: ModuleItemsWithExport(items, item, items3) -> <concat> [items, [item], items3]
   desugar: ModuleItemsWithImport(items, item, items3) -> <concat> [items, [item], items3]
-	
+  
+  desugar: MethodFunction(name, callSignature, body) -> Function(FunctionName(name), callSignature, body)
 strategies
   	desugar-all = bottomup(try(desugar))
   	

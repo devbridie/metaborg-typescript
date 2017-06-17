@@ -24,6 +24,7 @@ signature
 		  UNDEFINED : Type
 		  FUNCTION  : list(Type) * Type -> Type
 		  MODULE	  : occurrence -> Type
+		  CLASS     : occurrence -> Type
 		
 
 	name resolution
@@ -43,6 +44,7 @@ signature
 			Type
 			Value
 			Return
+			Class
 
 	constraint generator
 		ConstainsInitializer [[ list(a) ^ (s) ]]
@@ -253,7 +255,36 @@ rules
       Return{"function"} <- function_scope,
       Return{"function"} : returnTy,
       Map1 [[ body ^ (function_scope) ]].
-     
+    
+    
+    [[ ClassDeclaration(None(), _, parent, members) ^ (s) ]] :=
+      new clazz,
+      clazz -P-> s,
+      Map1 [[ members ^ (clazz) ]],
+      ClassParent [[ parent ^ (s): parentTy ]].
+      
+    [[ ClassDeclaration(Some(name), _, parent, members) ^ (s) ]] :=
+      new clazz,
+      clazz -P-> s,
+      Value{name} <- s,
+      classTy == RECORD(clazz),
+      Value{name} : classTy !,
+      Type{name} <- s,
+      Type{name} : classTy !,
+      Value{"this"} <- clazz,
+      Value{"this"} : classTy !,
+      ClassParent [[ parent ^ (s): parentTy ]],
+      classTy <! parentTy,
+      Map1 [[ members ^ (clazz) ]].
+    
+    ClassParent [[ None() ^ (s): RECORD(s) ]] := true.
+    ClassParent [[ Some(ClassExtends(parent)) ^ (s): parentTy ]] :=
+       [[ parent ^ (s): parentTy ]],
+       parentTy == RECORD(parentScope) | error $[Expected class as parent, but got [ty]],
+       Value{"this"} -> parentScope,
+       Value{"this"} |-> d | error $[Expected a class, but got [parentScope]],
+       d: ty.
+    
     [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
       Map2T [[ parameters ^ (s, function_scope): ty ]].
     
@@ -316,5 +347,13 @@ rules
       Field{field} -> s_use,
       Field{field} |-> d | error $[Can not find field $[field] in record $[record]],
       d: ty.   
-    	
+    
+    [[ New(clazz, arguments) ^ (s): clazzTy ]] :=
+      [[ clazz ^ (s): clazzTy ]],
+      clazzTy == RECORD(clazzScope) | error $[Expected a record-like, but got [clazzTy]],
+      Value{"this"} -> clazzScope,
+      Value{"this"} |-> d | error $[Expected a class, but got [clazzScope]],
+      d: ty.
+      
+      
     	

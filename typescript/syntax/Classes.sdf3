@@ -1,0 +1,30 @@
+module Classes
+
+imports
+
+  Common
+  Declarations
+  Expressions
+  Functions
+  Names
+  Statements
+  Types
+
+context-free syntax
+
+  ClassDeclaration.ClassDeclaration = <class <BindingIdentifier?> <TypeParameters?> <ClassHeritage?> {
+    <{ClassElement "\n"}*>
+  }>
+  
+  ClassHeritage.ClassExtends = <extends <PrimaryExpression>> 
+  
+  ClassElement = MethodDefinition
+  ClassElement.StaticClassMethod = <static <MethodDefinition>>
+  ClassElement = SemiColon
+  ClassElement = PropertyMemberDeclaration
+  
+  MethodDefinition.MethodFunction = <<PropertyName><CallSignature> {
+    <FunctionBody>
+  }>
+  
+  PropertyMemberDeclaration.ClassProperty = <<PropertyName> <TypeAnnotation?> <Initializer?><SemiColon?>>
