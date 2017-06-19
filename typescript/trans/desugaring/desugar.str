@@ -52,6 +52,8 @@ rules
   desugar: ModuleItemsWithImport(items, item, items3) -> <concat> [items, [item], items3]
   
   desugar: MethodFunction(name, callSignature, body) -> Function(FunctionName(name), callSignature, body)
+  
+  desugar: ClassDeclaration(name, tParams, Some(ClassExtends(extends)), members) -> ClassDeclaration(name, tParams, Some(extends), members)
 strategies
   	desugar-all = bottomup(try(desugar))
   	

@@ -10,6 +10,9 @@ signature
 	constraint generator
 		Map3	[[ list(a) ^ (b,c,d) ]]
 		Map3(X)	[[ list(a) ^ (b,c,d) ]]
+		ConstainsInitializer [[ list(a) ^ (s) ]]
+		MapLast(X) [[ list(a) ^ (s) ]]   
+		DefineClass [[ x ^ (s) ]]
     
     
     constructors
@@ -24,7 +27,6 @@ signature
 		  UNDEFINED : Type
 		  FUNCTION  : list(Type) * Type -> Type
 		  MODULE	  : occurrence -> Type
-		  CLASS     : occurrence -> Type
 		
 
 	name resolution
@@ -46,10 +48,6 @@ signature
 			Return
 			Class
 
-	constraint generator
-		ConstainsInitializer [[ list(a) ^ (s) ]]
-		MapLast(X) [[ list(a) ^ (s) ]]   
-		   
 rules
 
 	Map3	[[ xs ^ (b,c,d) ]] := Map3(default) [[ xs ^ (b,c,d) ]].
@@ -257,33 +255,46 @@ rules
       Map1 [[ body ^ (function_scope) ]].
     
     
-    [[ ClassDeclaration(None(), _, parent, members) ^ (s) ]] :=
+    [[ ClassDeclaration(None(), _, None(), members) ^ (s) ]] :=
       new clazz,
       clazz -P-> s,
-      Map1 [[ members ^ (clazz) ]],
-      ClassParent [[ parent ^ (s): parentTy ]].
-      
-    [[ ClassDeclaration(Some(name), _, parent, members) ^ (s) ]] :=
-      new clazz,
-      clazz -P-> s,
-      Value{name} <- s,
-      classTy == RECORD(clazz),
-      Value{name} : classTy !,
-      Type{name} <- s,
-      Type{name} : classTy !,
-      Value{"this"} <- clazz,
-      Value{"this"} : classTy !,
-      ClassParent [[ parent ^ (s): parentTy ]],
-      classTy <! parentTy,
       Map1 [[ members ^ (clazz) ]].
+      
+    [[ ClassDeclaration(None(), _, Some(parent), members) ^ (s) ]] :=
+      new clazz,
+      clazz -P-> s,
+      [[ parent ^ (s) : RECORD(inherited_class_scope) ]],
+      clazz -I-> inherited_class_scope,
+      Map1 [[ members ^ (clazz) ]].
+      
+    [[ c@ClassDeclaration(Some(name), _, None(), members) ^ (s) ]] :=
+      DefineClass [[ c ^ (s): RECORD(class_scope) ]],
+      Map1 [[ members ^ (class_scope) ]].
+      
+    [[ c@ClassDeclaration(Some(name), _, Some(parent), members) ^ (s) ]] :=
+      DefineClass [[ c ^ (s): RECORD(class_scope) ]],
+      [[ parent ^ (s) : RECORD(inherited_class_scope) ]],
+      class_scope -I-> inherited_class_scope,
+      Map1 [[ members ^ (class_scope) ]].
+      
+     
+    DefineClass [[ ClassDeclaration(Some(name), _, parent, members) ^ (s) : classTy ]] :=
+	  new clazz,
+	  clazz -P-> s,
+	  Value{name} <- s,
+	  classTy == RECORD(clazz),
+	  Value{name} : classTy !,
+	  Type{name} <- s,
+	  Type{name} : classTy !,
+	  Value{"this"} <- clazz,
+	  Value{"this"} : classTy !.
+
     
-    ClassParent [[ None() ^ (s): RECORD(s) ]] := true.
-    ClassParent [[ Some(ClassExtends(parent)) ^ (s): parentTy ]] :=
-       [[ parent ^ (s): parentTy ]],
-       parentTy == RECORD(parentScope) | error $[Expected class as parent, but got [ty]],
-       Value{"this"} -> parentScope,
-       Value{"this"} |-> d | error $[Expected a class, but got [parentScope]],
-       d: ty.
+    [[ ClassProperty(name, Some(typeAnnotation), _, _) ^ (s) ]] :=
+    	Field{name} <- s,
+    	Field{name} : ty !,
+    	[[ typeAnnotation ^ (s) : ty ]].
+    
     
     [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
       Map2T [[ parameters ^ (s, function_scope): ty ]].
@@ -350,10 +361,7 @@ rules
     
     [[ New(clazz, arguments) ^ (s): clazzTy ]] :=
       [[ clazz ^ (s): clazzTy ]],
-      clazzTy == RECORD(clazzScope) | error $[Expected a record-like, but got [clazzTy]],
-      Value{"this"} -> clazzScope,
-      Value{"this"} |-> d | error $[Expected a class, but got [clazzScope]],
-      d: ty.
+      clazzTy == RECORD(clazzScope) | error $[Expected a record-like, but got [clazzTy]].
       
       
     	

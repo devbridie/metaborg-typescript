@@ -1,15 +1,18 @@
-var a;
-
-function f(x: string) {
-  return x;
+class Vehicle {
+	wheels: number
 }
 
-f(a);
+class Car extends Vehicle { 
+   engine: string
+} 
+ 
+var c: Car = new Car();
+const x = c;
 
-interface X {}
+interface E {
+	engine: string,
+	wheels: number
+}
+var z: E = c;
 
-//const b: X = a;
-const d: any = a;
-var c: string = undefined;
-//const e: A = { foo: 5 }
-//const f: A = 512
+//var x: Car = z;
