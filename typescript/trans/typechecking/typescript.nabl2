@@ -196,11 +196,12 @@ rules
     	[[ type ^ (s) : ty ]].
     	
     [[ SimpleVariableDeclaration(name, Some(t@TypeAnnotation(Id(_))), Some(value)) ^ (s) ]] :=
-      Value{name} <- s,
-      Value{name} : ty !,
-      [[ t ^ (s) : RECORD(type_scope) ]],
+      [[ t ^ (s) : ty ]],
+      ty == RECORD(type_scope),
       [[ value ^ (s) : RECORD(value_scope) ]],
-      D(type_scope)/Field subseteq/name D(value_scope)/Field | error $[Field [NAME] not initialized].
+      D(type_scope)/Field subseteq/name D(value_scope)/Field | error $[Field [NAME] not initialized],
+      Value{name} <- s,
+      Value{name} : ty !.
 
     [[ SimpleVariableDeclaration(name, Some(type), Some(value)) ^ (s) ]] :=
     	Value{name} <- s,
@@ -360,8 +361,6 @@ rules
       d: ty.   
     
     [[ New(clazz, arguments) ^ (s): clazzTy ]] :=
-      [[ clazz ^ (s): clazzTy ]],
-      clazzTy == RECORD(clazzScope) | error $[Expected a record-like, but got [clazzTy]].
-      
+      [[ clazz ^ (s): clazzTy ]].      
       
     	
