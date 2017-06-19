@@ -233,7 +233,7 @@ rules
       Return{"function"} <- function_scope,
       Return{"function"} : returnTy,
       Map1 [[ body ^ (function_scope) ]].
-    
+      
     [[ FunctionName(name) ^ (s) : ty ]] :=
       Value{name} <- s,
       Value{name} : ty !.
@@ -291,10 +291,15 @@ rules
 	  Value{"this"} : classTy !.
 
     
-    [[ ClassProperty(name, Some(typeAnnotation), _, _) ^ (s) ]] :=
+    [[ ClassProperty(name, Some(typeAnnotation), _) ^ (s) ]] :=
     	Field{name} <- s,
     	Field{name} : ty !,
     	[[ typeAnnotation ^ (s) : ty ]].
+    	
+    [[ ClassProperty(name, None(), Some(init)) ^ (s) ]] :=
+    	Field{name} <- s,
+    	Field{name} : ty !,
+    	[[ init ^ (s) : ty ]].
     
     
     [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
@@ -361,6 +366,7 @@ rules
       d: ty.   
     
     [[ New(clazz, arguments) ^ (s): clazzTy ]] :=
-      [[ clazz ^ (s): clazzTy ]].      
+      [[ clazz ^ (s): clazzTy ]],
+      clazzTy == RECORD(_) | error $[Expected a record-like, but got [clazzTy]].      
       
     	
