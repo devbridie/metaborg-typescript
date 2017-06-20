@@ -46,7 +46,6 @@ signature
 			Type
 			Value
 			Return
-			Class
 
 rules
 
@@ -291,9 +290,15 @@ rules
 	  Value{"this"} : classTy !.
 
     
-    [[ ClassProperty(name, Some(typeAnnotation), _) ^ (s) ]] :=
+    [[ ClassProperty(name, Some(typeAnnotation), None()) ^ (s) ]] :=
     	Field{name} <- s,
     	Field{name} : ty !,
+    	[[ typeAnnotation ^ (s) : ty ]].
+    	
+    [[ ClassProperty(name, Some(typeAnnotation), Some(init)) ^ (s) ]] :=
+    	Field{name} <- s,
+    	Field{name} : ty !,
+    	[[ init ^ (s) : ty ]],
     	[[ typeAnnotation ^ (s) : ty ]].
     	
     [[ ClassProperty(name, None(), Some(init)) ^ (s) ]] :=
