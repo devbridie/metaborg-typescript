@@ -12,6 +12,7 @@ class Car extends Vehicle {
 }
 
 //const some: Car = undefined;
+const wrong: string = new Car();
 
 var a = Car;
 var c: Car = new a();

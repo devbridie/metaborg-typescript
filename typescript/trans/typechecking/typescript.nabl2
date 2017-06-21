@@ -88,7 +88,6 @@ rules
     // For other types, this does not matter
     LookupType [[ t ^ (s) : ty ]] := 
     	[[t ^ (s) : ty ]].
-
     	
 	init ^ (s) :=
     	new s,
@@ -107,6 +106,8 @@ rules
       
       UNDEFINED() <! VOID(),
       NULL() <! VOID().
+      
+      
     
     [[ Program(statements) ^ (s) ]] :=
       new program_scope,
@@ -236,7 +237,8 @@ rules
     	Value{name} <- s,
     	Value{name} : ty !,
     	LookupType [[ type ^ (s) : ty ]],
-    	[[ value ^ (s) : valueTy ]].
+    	[[ value ^ (s) : valueTy ]],
+    	valueTy <? ty.
     
 	[[ Undefined() ^ (_): UNDEFINED() ]] := true.
 	[[ Null() ^ (_): NULL() ]] := true.
