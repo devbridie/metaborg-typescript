@@ -10,7 +10,11 @@ signature
 	constraint generator
 		Map3	[[ list(a) ^ (b,c,d) ]]
 		Map3(X)	[[ list(a) ^ (b,c,d) ]]
-    
+		ConstainsInitializer [[ list(a) ^ (s) ]]
+		MapLast(X) [[ list(a) ^ (s) ]]   
+		DefineClass [[ x ^ (s) ]]
+		LookupValue [[ x ^ (s) : valueType ]]
+		LookupType [[ x ^ (s) : ty ]]
     
     constructors
     	RECORD	: scope -> Type
@@ -24,7 +28,7 @@ signature
 		  UNDEFINED : Type
 		  FUNCTION  : list(Type) * Type -> Type
 		  MODULE	  : occurrence -> Type
-		
+		TYPEOF    : Type -> Type
 
 	name resolution
 		labels
@@ -44,10 +48,6 @@ signature
 			Value
 			Return
 
-	constraint generator
-		ConstainsInitializer [[ list(a) ^ (s) ]]
-		MapLast(X) [[ list(a) ^ (s) ]]   
-		   
 rules
 
 	Map3	[[ xs ^ (b,c,d) ]] := Map3(default) [[ xs ^ (b,c,d) ]].
@@ -56,10 +56,43 @@ rules
 	    Map3(X)[[ xs ^ (s1,s2,s3) ]].
 	Map3(X)[[ [] ^ (s1,s2,s3) ]].
 	
+	MapLast(X) [[ [] ^ (_) ]] := true.
+    MapLast(X) [[ [x] ^ (s) ]] := X [[ x ^ (s) ]].
+    MapLast(X) [[ [x|xs] ^ (s) ]] :=  MapLast(X) [[ xs ^ (s) ]].
+    
+    ContainsInitializer [[ SimpleVariableDeclaration(_, _, None()) ^ (_) ]] := false | error "const declarations must be initialized.".
+    ContainsInitializer [[ SimpleVariableDeclaration(_, _, Some(_)) ^ (_) ]] := true.
+	
+	DefineClass [[ ClassDeclaration(Some(name), _, parent, members, _) ^ (s) : classTy ]] :=
+	  new clazz,
+	  clazz -P-> s,
+	  Value{name} <- s,
+	  classTy == RECORD(clazz),
+	  Value{name} : TYPEOF(classTy) !,
+	  Type{name} <- s,
+	  Type{name} : classTy !,
+	  Value{"this"} <- clazz,
+	  Value{"this"} : classTy !.
+	  
+	LookupValue [[ name ^ (s) : ty ]] :=
+	  Value{name} -> s,
+      Value{name} |-> d | error $[Cannot resolve [name]],
+      d : ty.
+      
+    // Type identifiers should be looked up in the Type namespace only 
+	LookupType [[ Id(name) ^ (s) : ty ]] :=
+	  Type{name} -> s,
+      Type{name} |-> d | error $[Cannot resolve type [name]],
+      d : ty.
+      
+    // For other types, this does not matter
+    LookupType [[ t ^ (s) : ty ]] := 
+    	[[t ^ (s) : ty ]].
+    	
 	init ^ (s) :=
     	new s,
     	
-    	NULL() <! ANY(),
+      NULL() <! ANY(),
       UNDEFINED() <! ANY(),
       VOID() <! ANY(),
       
@@ -73,6 +106,8 @@ rules
       
       UNDEFINED() <! VOID(),
       NULL() <! VOID().
+      
+      
     
     [[ Program(statements) ^ (s) ]] :=
       new program_scope,
@@ -140,36 +175,23 @@ rules
    	[[ TypeMember(name, _, Some(type)) ^ (s) ]] :=
    		Field{name} <- s,
    		Field{name} : ty !,
-   		[[ type ^ (s): ty]].
+   		LookupType [[ type ^ (s): ty]].
    	
-   	[[ TypeAnnotation(UndefinedType()) ^(_): UNDEFINED() ]] := true.
-   	[[ TypeAnnotation(NullType()) ^(_): NULL() ]] := true.
-   	[[ TypeAnnotation(Void()) ^(_): VOID() ]] := true.
-   	[[ TypeAnnotation(Any()) ^(_): ANY()]] := true.
-   	[[ TypeAnnotation(Number()) ^(_): NUMBER()]] := true.
-   	[[ TypeAnnotation(String()) ^(_): STRING()]] := true.
+   	[[ TypeAnnotation(t) ^(s) : ty ]] :=
+   		LookupType [[ t ^ (s) : ty]].
+   		
+   	[[ UndefinedType() ^(_): UNDEFINED() ]] := true.
+   	[[ NullType() ^(_): NULL() ]] := true.
+   	[[ Void() ^(_): VOID() ]] := true.
+   	[[ Any() ^(_): ANY()]] := true.
+   	[[ Number() ^(_): NUMBER()]] := true.
+   	[[ String() ^(_): STRING()]] := true.
    	
-   	[[ TypeAnnotation(Object(objectType)) ^ (s): ty ]] :=
+   	[[ Object(objectType) ^ (s): ty ]] :=
 		[[ objectType ^ (s) : ty ]],
 		NULL() <! ty,
 		UNDEFINED() <! ty,
 		ANY() <! ty.
-    	
-    [[ TypeAnnotation(Id(name)) ^ (s): ty ]] :=
-    	Type{name} -> s,
-    	Type{name} |-> d | error $[Cannot resolve [name]],
-        d : ty,
-        NULL() <! ty,
-		UNDEFINED() <! ty,
-   	  	ANY() <! ty.
-    
-    MapLast(X) [[ [] ^ (_) ]] := true.
-    MapLast(X) [[ [x] ^ (s) ]] := X [[ x ^ (s) ]].
-    MapLast(X) [[ [x|xs] ^ (s) ]] :=  MapLast(X) [[ xs ^ (s) ]].
-    
-    ContainsInitializer [[ SimpleVariableDeclaration(_, _, None()) ^ (_) ]] := false | error "const declarations must be initialized.".
-    ContainsInitializer [[ SimpleVariableDeclaration(_, _, Some(_)) ^ (_) ]] := true.
-    
     
     [[ Lexical(Const(), declarations, _) ^(s) ]] :=
     	MapLast(ContainsInitializer) [[ declarations ^ (s) ]],
@@ -190,22 +212,23 @@ rules
       Value{name} <- s,
       Value{name} : valueTy.
 
-    [[ SimpleVariableDeclaration(name, Some(type), None()) ^ (s) ]] :=
+    [[ SimpleVariableDeclaration(name, Some(typeAnnotation), None()) ^ (s) ]] :=
     	Value{name} <- s,
     	Value{name} : ty !,
-    	[[ type ^ (s) : ty ]].
+    	[[ typeAnnotation ^ (s) : ty ]].
     	
     [[ SimpleVariableDeclaration(name, Some(t@TypeAnnotation(Id(_))), Some(value)) ^ (s) ]] :=
-      Value{name} <- s,
-      Value{name} : ty !,
-      [[ t ^ (s) : RECORD(type_scope) ]],
+      [[ t ^ (s) : ty ]],
+      ty == RECORD(type_scope),
       [[ value ^ (s) : RECORD(value_scope) ]],
-      D(type_scope)/Field subseteq/name D(value_scope)/Field | error $[Field [NAME] not initialized].
+      D(type_scope)/Field subseteq/name D(value_scope)/Field | error $[Field [NAME] not initialized],
+      Value{name} <- s,
+      Value{name} : ty !.
 
     [[ SimpleVariableDeclaration(name, Some(type), Some(value)) ^ (s) ]] :=
     	Value{name} <- s,
     	Value{name} : ty !,
-    	[[ type ^ (s) : ty ]],
+    	LookupType [[ type ^ (s) : ty ]],
     	[[ value ^ (s) : valueTy ]],
     	valueTy <? ty.
     
@@ -220,9 +243,7 @@ rules
       [[ expression ^ (s): ty ]].
     
     [[ Id(name) ^ (s) : ty ]] :=
-      Value{name} -> s,
-      Value{name} |-> d | error $[Cannot resolve [name]],
-        d : ty.
+	    LookupValue [[ name ^ (s) : ty ]].
     
     [[ Function(name, CallSignature(_, parameters, returnType), body) ^ (s) ]] :=
       new function_scope,
@@ -232,10 +253,10 @@ rules
       Return{"function"} <- function_scope,
       Return{"function"} : returnTy,
       Map1 [[ body ^ (function_scope) ]].
-    
+      
     [[ FunctionName(name) ^ (s) : ty ]] :=
-      Value{name} <- s,
-      Value{name} : ty !.
+       Value{name} <- s,
+       Value{name} : ty !.
     [[ NoName() ^ (_) : ty ]].
     
     [[ NoParameters() ^ (_) : [] ]].
@@ -253,7 +274,47 @@ rules
       Return{"function"} <- function_scope,
       Return{"function"} : returnTy,
       Map1 [[ body ^ (function_scope) ]].
-     
+    
+    
+    [[ ClassDeclaration(None(), _, None(), members, _) ^ (s) ]] :=
+      new clazz,
+      clazz -P-> s,
+      Map1 [[ members ^ (clazz) ]].
+      
+    [[ ClassDeclaration(None(), _, Some(parent), members, _) ^ (s) ]] :=
+      new clazz,
+      clazz -P-> s,
+      [[ parent ^ (s) : RECORD(inherited_class_scope) ]],
+      clazz -I-> inherited_class_scope,
+      Map1 [[ members ^ (clazz) ]].
+      
+    [[ c@ClassDeclaration(Some(name), _, None(), members, _) ^ (s) ]] :=
+      DefineClass [[ c ^ (s): RECORD(class_scope) ]],
+      Map1 [[ members ^ (class_scope) ]].
+      
+    [[ c@ClassDeclaration(Some(name), _, Some(parent), members, _) ^ (s) ]] :=
+      DefineClass [[ c ^ (s): RECORD(class_scope) ]],
+      [[ parent ^ (s) : TYPEOF(RECORD(inherited_class_scope)) ]],
+      class_scope -I-> inherited_class_scope,
+      Map1 [[ members ^ (class_scope) ]].
+      
+    [[ ClassProperty(name, Some(typeAnnotation), None()) ^ (s) ]] :=
+    	Field{name} <- s,
+    	Field{name} : ty !,
+    	[[ typeAnnotation ^ (s) : ty ]].
+    	
+    [[ ClassProperty(name, Some(typeAnnotation), Some(init)) ^ (s) ]] :=
+    	Field{name} <- s,
+    	Field{name} : ty !,
+    	[[ init ^ (s) : ty ]],
+    	[[ typeAnnotation ^ (s) : ty ]].
+    	
+    [[ ClassProperty(name, None(), Some(init)) ^ (s) ]] :=
+    	Field{name} <- s,
+    	Field{name} : ty !,
+    	[[ init ^ (s) : ty ]].
+    
+    
     [[ RequiredParameterList(parameters) ^ (s, function_scope) : ty ]] :=
       Map2T [[ parameters ^ (s, function_scope): ty ]].
     
@@ -316,5 +377,9 @@ rules
       Field{field} -> s_use,
       Field{field} |-> d | error $[Can not find field $[field] in record $[record]],
       d: ty.   
-    	
+    
+    [[ New(clazz, arguments) ^ (s): clazzTy ]] :=
+      [[ clazz ^ (s): TYPEOF(clazzTy) ]],
+      clazzTy == RECORD(_) | error $[Expected a record-like, but got [clazzTy]].      
+      
     	

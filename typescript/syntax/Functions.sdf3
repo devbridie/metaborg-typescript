@@ -10,9 +10,11 @@ context-free syntax
 
   FunctionDeclaration.Function = <
   function <BindingIdentifier?><CallSignature> {
-    <StatementList>
+    <FunctionBody>
   }
   >
+  
+  FunctionBody = StatementList
   
   CallSignature.CallSignature = <<TypeParameters?>(<ParameterList?>)<TypeAnnotation?>>
   

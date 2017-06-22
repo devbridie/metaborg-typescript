@@ -16,6 +16,6 @@ context-free syntax
   PrimaryExpression.Call = <<PrimaryExpression>(<{PrimaryExpression ","}*>)>
   PrimaryExpression.FunctionExpression = FunctionDeclaration
   PrimaryExpression.PropertyLookup = <<PrimaryExpression>.<ID>>
+  PrimaryExpression.New = <new <PrimaryExpression>(<{PrimaryExpression ","}*>)>
 //  TODO: Introduces ambiguity with Call()
 //  PrimaryExpression = <(<PrimaryExpression>)> {bracket}
-  
