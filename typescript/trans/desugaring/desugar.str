@@ -55,7 +55,7 @@ rules
   desugar: ClassProperty(name, type, init, _) -> ClassProperty(name, type, init)
   desugar: MethodFunction(name, callSignature, body) -> ClassProperty(name, None(), Some(FunctionExpression(Function(NoName(), callSignature, body))))
   
-  desugar: ClassDeclaration(name, tParams, Some(ClassExtends(extends)), members) -> ClassDeclaration(name, tParams, Some(extends), members)
+  desugar: ClassDeclaration(name, tParams, Some(ClassExtends(extends)), members, colon) -> ClassDeclaration(name, tParams, Some(extends), members, colon)
 strategies
   	desugar-all = bottomup(try(desugar))
   	

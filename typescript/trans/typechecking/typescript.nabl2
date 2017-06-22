@@ -63,7 +63,7 @@ rules
     ContainsInitializer [[ SimpleVariableDeclaration(_, _, None()) ^ (_) ]] := false | error "const declarations must be initialized.".
     ContainsInitializer [[ SimpleVariableDeclaration(_, _, Some(_)) ^ (_) ]] := true.
 	
-	DefineClass [[ ClassDeclaration(Some(name), _, parent, members) ^ (s) : classTy ]] :=
+	DefineClass [[ ClassDeclaration(Some(name), _, parent, members, _) ^ (s) : classTy ]] :=
 	  new clazz,
 	  clazz -P-> s,
 	  Value{name} <- s,
@@ -284,23 +284,23 @@ rules
       Map1 [[ body ^ (function_scope) ]].
     
     
-    [[ ClassDeclaration(None(), _, None(), members) ^ (s) ]] :=
+    [[ ClassDeclaration(None(), _, None(), members, _) ^ (s) ]] :=
       new clazz,
       clazz -P-> s,
       Map1 [[ members ^ (clazz) ]].
       
-    [[ ClassDeclaration(None(), _, Some(parent), members) ^ (s) ]] :=
+    [[ ClassDeclaration(None(), _, Some(parent), members, _) ^ (s) ]] :=
       new clazz,
       clazz -P-> s,
       [[ parent ^ (s) : RECORD(inherited_class_scope) ]],
       clazz -I-> inherited_class_scope,
       Map1 [[ members ^ (clazz) ]].
       
-    [[ c@ClassDeclaration(Some(name), _, None(), members) ^ (s) ]] :=
+    [[ c@ClassDeclaration(Some(name), _, None(), members, _) ^ (s) ]] :=
       DefineClass [[ c ^ (s): RECORD(class_scope) ]],
       Map1 [[ members ^ (class_scope) ]].
       
-    [[ c@ClassDeclaration(Some(name), _, Some(parent), members) ^ (s) ]] :=
+    [[ c@ClassDeclaration(Some(name), _, Some(parent), members, _) ^ (s) ]] :=
       DefineClass [[ c ^ (s): RECORD(class_scope) ]],
       [[ parent ^ (s) : TYPEOF(RECORD(inherited_class_scope)) ]],
       class_scope -I-> inherited_class_scope,

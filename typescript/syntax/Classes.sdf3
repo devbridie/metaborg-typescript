@@ -13,14 +13,13 @@ imports
 context-free syntax
 
   ClassDeclaration.ClassDeclaration = <class <BindingIdentifier?> <TypeParameters?> <ClassHeritage?> {
-    <{ClassElement "\n"}*>
+    <{ClassElement "\n"}*><SemiColon?>
   }>
   
   ClassHeritage.ClassExtends = <extends <PrimaryExpression>> 
   
   ClassElement = MethodDefinition
   ClassElement.StaticClassMethod = <static <MethodDefinition>>
-  ClassElement = SemiColon
   ClassElement = PropertyMemberDeclaration
   
   MethodDefinition.MethodFunction = <<PropertyName><CallSignature> {

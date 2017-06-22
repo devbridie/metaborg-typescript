@@ -1,8 +1,8 @@
 class Bar {}
 
 class Foo extends Bar {
-//  foo() {
-//  }
+  foo() {
+  }
 }
 
-//new Bar();
+new Bar();
