@@ -192,14 +192,6 @@ rules
 		NULL() <! ty,
 		UNDEFINED() <! ty,
 		ANY() <! ty.
-    	
-//    [[ TypeAnnotation(Id(name)) ^ (s): ty ]] :=
-//    	Type{name} -> s,
-//    	Type{name} |-> d | error $[Cannot resolve [name]],
-//        d : ty,
-//        NULL() <! ty,
-//		UNDEFINED() <! ty,
-//   	  	ANY() <! ty.
     
     [[ Lexical(Const(), declarations, _) ^(s) ]] :=
     	MapLast(ContainsInitializer) [[ declarations ^ (s) ]],
