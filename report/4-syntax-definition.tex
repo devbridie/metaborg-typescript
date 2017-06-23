@@ -4,4 +4,83 @@ Eventhough this specification is not up-to-date for TypeScript 2, the syntax has
 The specification builds upon the ECMAScript® 2015 Language Specification\footnote{http://www.ecma-international.org/ecma-262/6.0/}, as TypeScript is primarily a superset of ECMAScript.
 While it is defined as a superset with additions to the syntax definitions, several productions in the TypeScript grammar modify/replace the productions with the same name in the ECMAScript definition.
 
-% The translation of the syntax definition into the SDF3\citep{Vollebregt:2012:DST:2427048.2427056} productions started
+The translation of the syntax definition into the SDF3\citep{Vollebregt:2012:DST:2427048.2427056} productions starts with the ECMAScript productions and is then updated with the TypeScript productions.
+All SDF3 production symbol names are taken from the language specification(s), while the constructor labels are either a copy of the symbol name or a self-invented name.
+An example of a translation of \textit{IfStatement} is shown in Figure \ref{fig:if-statement}.
+For multi-line productions, whitespace and indentation is inserted based on personal preferences of the authors.
+The SDF3 templates adhere to the indentation to achieve formatted code completion in the editor, which the language specification does not.
+The ECMAScript language specification also includes parameters, denoted by a suffix in subscript, which are disregarded in the SDF3 production notation.
+
+\begin{figure*}
+  \begin{lstlisting}[caption=Definition of \textit{IfStatement} in the ECMAScript language specification,mathescape]
+IfStatement$\textsubscript{[Yield, Return]}$ : See 13.6
+  if ( Expression$\textsubscript{[In, ?Yield]}$ ) Statement$\textsubscript{[?Yield, ?Return]}$ else Statement$\textsubscript{[?Yield, ?Return]}$
+  if ( Expression$\textsubscript{[In, ?Yield]}$ ) Statement$\textsubscript{[?Yield, ?Return]}$
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Definition of \textit{IfStatement} in SDF3 production notation]
+IfStatement.IfElse = <
+  if (<PrimaryExpression>) <Statement>
+  else <Statement>
+>
+IfStatement.If = <if (<PrimaryExpression>) <Statement>>
+  \end{lstlisting}
+  \caption{The translation of \textit{IfStatement} from the ECMAScript language specification to SDF3 production notation.}
+  \label{fig:if-statement}
+\end{figure*}
+
+Some productions in the ECMAScript only directly inject other productions.
+For these productions, the SDF3 notation does not define a constructor label, unless the label is required in the type-checking phase to prevent ambiguation on the constructor labels in the constraint generation phase.
+An example of a production with only directly injected other productions is shown in Figure \ref{fig:direct-production}.
+In the example, the extra constructor label \textit{ModuleStatement} is defined, to prevent disambiguation in programs and modules.
+
+\begin{figure*}
+  \begin{minipage}[t]{.8\columnwidth}
+    \begin{lstlisting}[caption=Definition of \textit{ModuleItem} in the ECMAScript language specification]
+ModuleItem : See 15.2
+  ImportDeclaration
+  ExportDeclaration
+  StatementListItem
+    \end{lstlisting}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{1.1\columnwidth}
+    \begin{lstlisting}[caption=Definition of \textit{ModuleItem} in SDF3 production notation]
+ModuleItem = ImportDeclaration
+ModuleItem = ExportDeclaration
+ModuleItem.ModuleStatement = StatementListItem
+    \end{lstlisting}
+  \end{minipage}
+  \caption{The translation of \textit{ModuleItem} from the ECMAScript language specification to SDF3 production notation.}
+  \label{fig:direct-production}
+\end{figure*}
+
+Lastly, Figure \ref{fig:override-syntax} shows a production that is modified by TypeScript and thus overrides the original definition from the ECMAScript language specification.
+Note that the second production as defined in the TypeScript language definition has not been implemented in SDF3 production notation at the time of writing.
+
+\begin{figure*}
+  \begin{lstlisting}[caption=Definition of \textit{FunctionDeclaration} in the ECMAScript language specification,mathescape]
+FunctionDeclaration$\textsubscript{[Yield, Default]}$ : See 14.1
+  function BindingIdentifier$\textsubscript{[?Yield]}$ ( FormalParameters ) { FunctionBody }
+  [+Default] function ( FormalParameters ) { FunctionBody }
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Definition of \textit{FunctionDeclaration} in the TypeScript language specification,mathescape]
+FunctionDeclaration: ( Modified )
+  function BindingIdentifier$\textsubscript{opt}$ CallSignature { FunctionBody }
+  function BindingIdentifier$\textsubscript{opt}$ CallSignature ;
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Definition of \textit{FunctionDeclaration} in SDF3 production notation]
+FunctionDeclaration.Function = <
+function <BindingIdentifier?><CallSignature> {
+  <FunctionBody>
+}
+>
+  \end{lstlisting}
+  \caption{The translation of \textit{FunctionDeclaration} from both the ECMAScript and TypeScript language specifications to SDF3 production notation.}
+  \label{fig:override-syntax}
+\end{figure*}
+
+Disambiguation based on context-free priorities are encoded in the production hierarchy of the ECMAScript language specification.
+The primary target for disambiguation is \textit{PrimaryExpression}.
+The production rule in SDF3 includes all \textit{PrimaryExpression}, while the ECMAScript defines a strict ordering of the production rules in the production hierarchy.
+At the time of writing, no explicit \textit{context-free-priorities} have been defined in SDF3.
+In the examples implemented in the language project, no ambiguation has been detected thus far.
