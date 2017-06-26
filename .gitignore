@@ -10,3 +10,5 @@ node_modules/
 *.name-resolution
 *.scope-graph
 .settings/org.eclipse.core.resources.prefs
+.log
+.vscodelog
