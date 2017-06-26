@@ -12,3 +12,12 @@ node_modules/
 .settings/org.eclipse.core.resources.prefs
 .log
 .vscodelog
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.synctex.gz
