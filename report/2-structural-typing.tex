@@ -1,5 +1,5 @@
 \section{Structural Typing}
-This section gives a high level overview of how structural type systems work and their motivation in TypeScript.
+This section gives a high level overview of how structural type systems work.
 Structural subtyping stands oposed to nominal subtyping. 
 Many of the top languages in use in industry today emply a nominal type system.
 In such languages, subtype relationships are explicitly declared.
@@ -16,7 +16,7 @@ The programmer does not have to specify any relationship by hand,
 every time the compiler has to check compatibility between two types, a structural comparisson of the types is done.
 One major consequence of this approach is that names for types become purely cosmetic.
 The programmer can still assign names to types, and refer to those types by their names,
-but checking whether one type is a subtype of another is completely dependent on their strucrure.
+but checking whether one type is a subtype of another is completely dependent on their structure.
 Generally this means that a type A is a subtype of B when the structure of A has at least as much information as the strucrure of B.
 This means that a value of type A can be assigned to B by simply removing all information present in A that is not required by B.
 For most languages that implement structural subtyping, the information that types carry consists of names paired with another type.
@@ -26,7 +26,31 @@ For example, in TypeScript we may write:
 type A = { first: string, second: string }
 \end{lstlisting}
 
-
-
-This defines the type A to be an object that contains tw named fields of type 'string'.
+This defines the type A to be an object that contains two named fields of type 'string'.
 Values of type A can be passed to anywhere a subset of \texttt{\{ first: string, second: string \}} is required.
+So all the following statements are valid because the types of $x$, $y$ and $z$ are structurally subsets of $A$:
+
+\begin{lstlisting}
+const a: A = // ... some value with type A
+
+const x: { first: string } = a
+const y: { second: string } = a
+const z: {} = a
+\end{lstlisting}
+
+The nature of such type systems makes implementing a type checker slightly more difficult than with a nominal type system.
+To demonstrate this, we consider recursive types:
+\begin{lstlisting}
+type Nil = {}
+type Cons = { head: number, tail: NumList }
+type NumList = Cons | Nil
+\end{lstlisting}
+
+The \texttt{|} operator describes that $NumList$ is the discriminated union of $Cons$ and $Nil$.
+Note that $Cons$ and $NumList$ are mutually recursive.
+To check whether we can assign a $NumList$ value to another value, 
+we need to check if their unfoldings are equal.
+Since unfolding a recursive type yields an infinite tree, 
+the type checker has to make sure that this process terminates regardless of the possibly infinite type.
+This approach to type checking is called \textit{equi-recursive} because a recursive type should
+be a subtype of its one step unfolding.
