@@ -1,2 +1,33 @@
 \section{Structural Typing in Typescript}
 \label{sec:structural-typing-typescript}
+TypeScript was built with structural typing as it's backbone, 
+nearly any feature in the language can be described in terms of structual types.
+The reason for this being that the goal of the language is to provide a type system
+on top of the dynamically typed JavaScript language while not introducing any 
+abstractions that have a conceptually high distance to the semantics of JavaScript.
+The result of this effort means that compiled TypeScript code should be suitable 
+for human consumption. Structural typing provides an excellent bridge from the 
+dynamically typed JavaScript world to the statically typed world of TypeScript.
+In this section we will introduce the most important features of TypeScript and
+how they relate to structural types.
+\\
+\\
+Structural types manifest themselves in TypeScript as \textit{Record Types}.
+In the examples above, we have already encountered some record types, a set of name-type pairs.
+Built directly on top of record types are some of the most important aspects of the language:
+\begin{itemize}
+\item classes
+\item interfaces
+\item union types
+\item intersection types
+\end{itemize}
+
+Other notable features include: first class and higher order functions, parametric and ad-hoc polymorphism 
+(generics) and several types for special values like \texttt{null} and \texttt{undefined}. It is 
+worth noting that the subtype relation within TypeScript does not form a proper latice due to 
+the \texttt{any} type. Namely, a value of type \texttt{any} is a subtype of every other type, 
+while every type is simultaniously a subtype of any.
+\\
+\\
+- describe classes / interfaces in terms of sugar for records
+- describe union / intersection in terms of operations on records
