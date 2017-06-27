@@ -30,7 +30,7 @@ while every type is simultaniously a subtype of any.
 \\
 \\
 \subsection{Classes and Interfaces}
-While syntax for defining classes in TypeScript is similar to Java, the structural typing makes classes semantically quite different form nominally typed languages.
+While syntax for defining classes in TypeScript is similar to Java, the structural typing makes classes semantically different form nominally typed languages.
 The following snippet defines a simple class in TypeScript:
 
 \begin{lstlisting}
@@ -98,12 +98,16 @@ class NonEmptyList<A> {
     ...
   }
 }
-const a = NonEmptyList;
-const xs = new a(42);
+const a: typeof NonEmptyList = NonEmptyList;
+const xs: NonEmptyList<number> = new a(42);
 \end{lstlisting}
 
-From this we can see that constructors are also first class values,
-although the type of a constructor is different from the type of a function because the former can only be called with the $new$ keyword.
+From this it appears that classes live in both the value namespace as well as the type namespace,
+because an instance of $NonEmptyList$ ($xs$) can be created from a runtime value ($a$) on the last line.
+In reality, $a$ represents the constructor for $NonEmptyList$ rather than the class itself.
+We can therefore conclude that class constructors are first class values just like class methods.
+The type of a constructor must different from the type of a function because the former can only be called with the $new$ keyword.
+The $typeof$ keyword in the definition of $a$ is used in this case to signal that $a$ is a constructor.
 Since constructors do not live inside the class scope, they have no impact type checking when handling instances of a class.
 \\
 \\
