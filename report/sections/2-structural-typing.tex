@@ -1,7 +1,7 @@
 \section{Structural Typing}
 This section gives a high level overview of how structural type systems work.
-Structural subtyping stands oposed to nominal subtyping. 
-Many of the top languages in use in industry today emply a nominal type system.
+Structural subtyping stands opposed to nominal subtyping. 
+A majority of the most used programming languages employ a nominal type system.
 In such languages, subtype relationships are explicitly declared.
 The programmer has to relate two types to each other by their name,
 after which the compiler will check whether the structures refered to by these names are compatible.
@@ -13,7 +13,7 @@ a simple table lookup for the two names is sufficient.
 \\
 With structural subtyping on the other hand, the relationships between types are implicit.
 The programmer does not have to specify any relationship by hand,
-every time the compiler has to check compatibility between two types, a structural comparisson of the types is done.
+every time the compiler has to check compatibility between two types, a structural comparison of the types is done.
 One major consequence of this approach is that names for types become purely cosmetic.
 The programmer can still assign names to types, and refer to those types by their names,
 but checking whether one type is a subtype of another is completely dependent on their structure.
@@ -31,7 +31,7 @@ Values of type A can be passed to anywhere a subset of \texttt{\{ first: string,
 So all the following statements are valid because the types of $x$, $y$ and $z$ are structurally subsets of $A$:
 
 \begin{lstlisting}
-const a: A = // ... some value with type A
+const a: A =  { first: 'x', second: 'y' }
 
 const x: { first: string } = a
 const y: { second: string } = a
