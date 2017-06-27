@@ -29,5 +29,94 @@ the \texttt{any} type. Namely, a value of type \texttt{any} is a subtype of ever
 while every type is simultaniously a subtype of any.
 \\
 \\
-- describe classes / interfaces in terms of sugar for records
-- describe union / intersection in terms of operations on records
+\subsection{Classes and Interfaces}
+While syntax for defining classes in TypeScript is similar to Java, the structural typing makes classes semantically quite different form nominally typed languages.
+The following snippet defines a simple class in TypeScript:
+
+\begin{lstlisting}
+class NonEmptyList<A> {
+  head: A;
+  tail: List<A>;
+  constructor(head: A) {
+    this.head = head;
+    this.tail = new List();
+  }
+}
+\end{lstlisting}
+
+In any nominally typed language, it would not be possible to assign a $NonEmptyList$ to any variable that is not also a $NonEmptyList$.
+In TypeScript this restriction does not apply. 
+Any instance of a class can be assigned a variable with any type as long as the two are structurally in a subtype relationship.
+This means that the following snippet is perfectly legal:
+
+\begin{lstlisting}
+class SignletonList<A> {
+  head: A;
+}
+
+const s: SingletonList<number> = 
+  new NonEmptyList(42);
+\end{lstlisting}
+
+Since names are irrelevant to the type checker, the following is also valid because the type of 
+$s$ is structurally equivalent to $NonEmptyList<number>$.
+\\
+\\
+\begin{lstlisting}
+const s: { head: number, tail: List<number> } =
+  new NonEmptyList(42);
+\end{lstlisting}
+
+This situation remains unchanged when we add 'methods' to the $NonEmptyList$ class:
+
+\begin{lstlisting}
+class NonEmptyList<A> {
+  head: A;
+  tail: List<A>;
+  ...
+  size(): number {
+    return 1 + tail.size();
+  }
+}
+
+const s: { 
+  head: number, tail: List<number>,
+  size: () => number  
+} = new NonEmptyList(42);
+\end{lstlisting}
+
+From the above snippet we can see that classes are simply sugar for named object types.
+The fields are directly translated to object members, and class methods are translated
+to object members that have a function type corresponding to the method signature.
+A consequence of this is that class methods are first class values.
+Class constructors are translated to a special type of function outside the class scope that has the exact name of the class:
+
+\begin{lstlisting}
+class NonEmptyList<A> {
+  ...
+  constructor(head: A) {
+    ...
+  }
+}
+const a = NonEmptyList;
+const xs = new a(42);
+\end{lstlisting}
+
+From this we can see that constructors are also first class values,
+although the type of a constructor is different from the type of a function because the former can only be called with the $new$ keyword.
+Since constructors do not live inside the class scope, they have no impact type checking when handling instances of a class.
+\\
+\\
+Inheritance is also handled in a straightforward manner.
+When checking whether an instance of a class can be assigned to an object type, the compiler
+simply takes all class members and all members of any parent class into account.
+The rules that apply to classes can similarly be applied to interfaces, with the exception that interfaces do not have a constructor.
+
+\subsection{Union and Intersection types}
+Union and intersection types provide for a way to compose types, similar to sum and product types in many functional languages.
+\begin{lstlisting}
+interface X = { x: number }
+interface Y = { y: string }
+type U = X | Y
+\end{lstlisting}
+

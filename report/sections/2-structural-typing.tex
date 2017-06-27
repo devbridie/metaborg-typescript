@@ -46,7 +46,7 @@ type Cons = { head: number, tail: NumList }
 type NumList = Cons | Nil
 \end{lstlisting}
 
-The \texttt{|} operator describes that $NumList$ is the discriminated union of $Cons$ and $Nil$.
+The \texttt{|} operator describes that $NumList$ can either be $Cons$ nil $Nil$.
 Note that $Cons$ and $NumList$ are mutually recursive.
 To check whether we can assign a $NumList$ value to another value, 
 we need to check if their unfoldings are equal.
