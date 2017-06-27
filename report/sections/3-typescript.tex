@@ -10,8 +10,7 @@ for human consumption. Structural typing provides an excellent bridge from the
 dynamically typed JavaScript world to the statically typed world of TypeScript.
 In this section we will introduce the most important features of TypeScript and
 how they relate to structural types.
-\\
-\\
+\bigskip
 Structural types manifest themselves in TypeScript as \textit{Record Types}.
 In the examples above, we have already encountered some record types, a set of name-type pairs.
 Built directly on top of record types are some of the most important aspects of the language:
@@ -27,8 +26,7 @@ Other notable features include: first class and higher order functions, parametr
 worth noting that the subtype relation within TypeScript does not form a proper latice due to 
 the \texttt{any} type. Namely, a value of type \texttt{any} is a subtype of every other type, 
 while every type is simultaniously a subtype of any.
-\\
-\\
+\bigskip
 \subsection{Classes and Interfaces}
 While syntax for defining classes in TypeScript is similar to Java, the structural typing makes classes semantically different form nominally typed languages.
 The following snippet defines a simple class in TypeScript:
@@ -60,8 +58,7 @@ const s: SingletonList<number> =
 
 Since names are irrelevant to the type checker, the following is also valid because the type of 
 $s$ is structurally equivalent to $NonEmptyList<number>$.
-\\
-\\
+\bigskip
 \begin{lstlisting}
 const s: { head: number, tail: List<number> } =
   new NonEmptyList(42);
@@ -109,8 +106,7 @@ We can therefore conclude that class constructors are first class values just li
 The type of a constructor must different from the type of a function because the former can only be called with the $new$ keyword.
 The $typeof$ keyword in the definition of $a$ is used in this case to signal that $a$ is a constructor.
 Since constructors do not live inside the class scope, they have no impact type checking when handling instances of a class.
-\\
-\\
+\bigskip
 Inheritance is also handled in a straightforward manner.
 When checking whether an instance of a class can be assigned to an object type, the compiler
 simply takes all class members and all members of any parent class into account.
@@ -123,4 +119,71 @@ interface X = { x: number }
 interface Y = { y: string }
 type U = X | Y
 \end{lstlisting}
+
+The last line in the code above defines $U$ to be the union of $X$ and $Y$. 
+This means that $U$ can be either $X$ or $Y$ but not both, similar to discriminated unions in other languages.
+Union types have the following subtype relationships:
+\begin{itemize}
+\item A union type $U$ is a subtype of a type $T$ if each type in $U$ is a subtype of $T$.
+\item A type $T$ is a subtype of a union type $U$ if $T$ is a subtype of any type in $U$.
+\end{itemize}
+Similarly, union types have the following assignability relationships:
+\begin{itemize}
+\item A union type $U$ is assignable to a type $T$ if each type in $U$ is assignable to $T$.
+\item A type $T$ is assignable to a union type $U$ if $T$ is assignable to any type in $U$.
+\end{itemize}
+
+When the types that make up the union have overlapping members, those members themselves become unions:
+\begin{lstlisting}
+interface X = { q: number }
+interface Y = { q: string }
+type U = X | Y
+// U is equivalent to { q: number | string }
+\end{lstlisting}
+\bigskip
+Intersection types describe values with multiple simultanious types. 
+\begin{lstlisting}
+interface X = { x: number }
+interface Y = { y: string }
+type I = X & Y
+// I is equivalent to { x: number, y: string }
+\end{lstlisting}
+
+Just as with unions, when the types that make up an intersection have overlapping members, those members themselves become intersections:
+\begin{lstlisting}
+interface X = { q: number }
+interface Y = { q: string }
+type I = X & Y
+// I is equivalent to { q: number & string }
+\end{lstlisting}
+
+Intersection types have the following subtype relationships:
+\begin{itemize}
+\item An intersection type $I$ is a subtype of a type $T$ if any type in $I$ is a subtype of $T$.
+\item A type $T$ is a subtype of an intersection type $I$ if $T$ is a subtype of each type in $I$.
+\end{itemize}
+Similarly, intersection types have the following assignability relationships:
+\begin{itemize}
+\item An intersection type $I$ is assignable to a type $T$ if any type in $I$ is assignable to $T$.
+\item A type $T$ is assignable to an intersection type $I$ if $T$ is assignable to each type in $I$.
+\end{itemize}
+\bigskip
+Since functions are values in TypeScript, we can even define unions and intersections over functions.
+The following example demonstrates the intersting case of an intersection over functions:
+\begin{lstlisting}
+type F1 = (a: string, b: string) => void;  
+type F2 = (a: number, b: number) => void;
+
+var f: F1 & F2 = (a: string | number, b: string | number) => { };  
+f("hello", "world");
+f(1, 2);
+f(1, "test");
+\end{lstlisting}
+
+The last call to $f$ will be rejected by the compiler.
+The type signature of $f$ makes it possible for the type checker to infer
+that this function should only be called with two strings or two numbers.
+If the type signature were removed, this program would be well-typed.
+\bigskip
+In the next sections we will discuss how these features would ideally be implemented in Spoofax.
 
