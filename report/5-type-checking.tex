@@ -1,2 +1,81 @@
 \section{Type Checking}
 \label{sec:type-checking}
+
+The AST as defined by the syntax described in the previous section is traversed using NaBl \citep{Antwerpen:2016:CLS:2847538.2847543} to implement the type checking constraints as explained in section \ref{sec:structural-typing-typescript}.
+NaBl is a constraint generation language, for which for every node in the AST a constraint can be generated.
+As such, the typescript type checker consists of rules matching on various patterns of AST nodes to be able to generate the relevant constraints.
+
+An example constraint for the \textit{IfStatement} defined in the previous section is shown in figure \ref{fig:if-constraints}.
+These constraints are similar to the constraints defined in type checkers for programming languages such as (Mini-)Java and F\#.
+
+\begin{figure*}
+  \begin{lstlisting}[caption=Constraint generation for an \textit{If} AST node (representing an \textit{IfStatement})]
+[[ If(condition, trueBlock) ^ (s) ]] :=
+  [[ condition ^ (s) : valueTy ]],
+  valueTy == BOOLEAN() | error $[Boolean expected, got [valueTy]],
+  [[ trueBlock ^ (s) ]].
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Constraint generation for an \textit{IfElse} AST node (representing an \textit{IfStatement})]
+[[ IfElse(condition, trueBlock, falseBlock) ^ (s) ]] :=
+  [[ condition ^ (s) : valueTy ]],
+  valueTy == BOOLEAN() | error $[Boolean expected, got [valueTy]],
+  [[ trueBlock ^ (s) ]],
+  [[ falseBlock ^ (s) ]].
+  \end{lstlisting}
+  \caption{The constraints for the two forms of an \textit{IfStatement}.}
+  \label{fig:if-constraints}
+\end{figure*}
+
+\subsection{Structural type checking}
+
+In general, NaBl is well-suited for statements and expressions that are common in programming languages, such as the shown \textit{IfStatement}.
+During this project, our research focussed to what extend does NaBl support structural type checking and, in the case that it does not, what is required to support it?
+At the start of the project, the syntax definition included several language constructs that could be used to implement structural type checkings.
+These constructs included: object declarations, variable assignments, interfaces, functions, function calls and primitives.
+With these constructs several test cases and examples were developed that tested various aspects of structural type checking.
+Most notably, the examples focused on function calls with object types while the test focused on variable declarations.
+
+While NaBl does not assume any property of the programming language, structural type checking proved to be impossible at the time of writing.
+The concrete problem was that at the moment of constraint generation, the run-time types were unknown.
+In other words: for a variable assignment, it is not known which types are used in the type declaration and derived from the assigned value.
+Normally, in NaBl the corresponding constraint is an equality or contravariance check (using respectively \textit{==} or \textit{<?}).
+However, in a structural typed language, identity and sub-class relations are defined based on the current structure.
+Thus, when generating constraints for a variable assignment, special checks need to be implemented if one of the arguments is an object.
+
+\subsection{NaBl syntax proposal}
+
+To support structural type checking, there is a syntax proposal for NaBl as shown in figure \ref{fig:nabl-syntax-proposal}.
+The syntax proposal provides new syntax which is agnostic of the structural typing problem, but the new NaBl constructs can be used to implement structural type checking.
+
+\begin{figure*}
+  \begin{lstlisting}[caption=New constraint syntax constructs for NaBl]
+Constraint.Exists  = <
+  exists <VarId>@<Occurrence> in <Names> =\> <Constraint>>
+Constraint.ForAll  = <
+  forall <VarId>@<Occurrence> in <Names> =\> <Constraint>>
+  \end{lstlisting}
+  \begin{lstlisting}[caption=New custom relation definition syntax]
+RelationPattern.RelationPattern = <
+	(<RelationDefVariant>, <RelationDefVariant>) := <Constraint>.>
+
+VarIds = {VarId ","}*
+  \end{lstlisting}
+  \begin{lstlisting}[caption=Example usage of the new syntax constructs]
+relations
+  sub: Type * Type {
+    (List(one), List(other)) := true.
+    ,
+    (RECORD(one), RECORD(other)) :=
+      forall d1@Field{x} in D(one)/Field => (
+        d1 : ty1,
+        exists d2@Field{x} in D(other)/Field => (
+          d2 : ty2,
+          ty1 <? ty2
+        )
+      ).
+  }
+}
+  \end{lstlisting}
+  \caption{The syntax proposal for NaBl using SDF3 templates.}
+  \label{fig:nabl-syntax-proposal}
+\end{figure*}
