@@ -1,3 +1,4 @@
+\newpage
 \section{Type Checking}
 \label{sec:type-checking}
 
@@ -20,10 +21,9 @@ These constructs included: object declarations, variable assignments, interfaces
 Several test cases and examples were developed that tested various aspects of structural type checking with these constructs.
 
 To demonstrate our attempt at implementing structural types, we will use object assignment as example.
-Figure \ref{fig:running-example} shows a TypeScript program that should be rejected by the type checker 
+The code below shows a TypeScript program that should be rejected by the type checker 
 because \texttt{Person} is a structural subtype of \texttt{Developer}. 
 The assignment of \texttt{john} to a \texttt{Developer} on the last line is therefore illegal.
-\begin{figure}[H]
 \begin{lstlisting}
 type Person = {
   name: string
@@ -35,11 +35,8 @@ type Developer = {
 var john: Person = { name: 'John' }
 var devJohn: Developer = john
 \end{lstlisting}
-\caption{Illegal object assignment in TypeScript.}
-\label{fig:running-example}
-\end{figure}
 
-\subsection{Initial solution}
+\subsection{Naive solution}
 Object types can be modeled cleanly using scope graphs. 
 The general approach is to define a type, \texttt{RECORD}, that wraps a \texttt{scope}.
 The wrapped scope should contain the declatations of each field in the object type.
@@ -53,7 +50,7 @@ The second generation rule traverses over variable declarations.
 The second component of a \texttt{VariableDeclaration} is the declared type, 
 while the third component denotes the value assigned to the variable.
 Notice that \texttt{subseteq} is used to check that the left-hand side is a subset of the right-hand side.
-Running this code on the example in Figure \ref{fig:running-example} produces the desired result.
+Running this code on the example above produces the desired result.
 NaBL2 will reject the last line based on the subset check.
 \begin{figure*}[h]
 \begin{lstlisting}
@@ -133,7 +130,7 @@ We propose adding a new relation pattern with two elements:
 \end{itemize}
 Note that this relation pattern supports one constraint, 
 since multiple constraint can easilly be composed into one.
-We also propose two new constraint construts: \texttt{forall} and \texttt{exists} as shown in Figure \ref{fig:nabl-syntax-proposal-constraint}.
+We also propose two new constraint constructs: \texttt{forall} and \texttt{exists} as shown in Figure \ref{fig:nabl-syntax-proposal-constraint}.
 These constructs can be used to check that a constraint holds over all declarations in a scope, 
 or that there exists a declaration in a scope that satisfies a constraint.
 These three new syntactical constructs can be used to define a subtype relation for the \texttt{RECORD} type,
@@ -145,12 +142,13 @@ which can be referenced in constraint generation rules as either \texttt{<sub?} 
 Different relations could be made for different purposes, and each relation can be overloaded for multiple types of arguments.
 For example, as shown in the last lines of \ref{fig:nabl-syntax-proposal-usage}, one could define another subtype relation over \texttt{List} types.
 Therefore, this syntax is not restricted to structural types and can also be useful when designing other kinds of type systems.
+The additional \texttt{forall} and \texttt{exists} constraints are not restricted to the scope of relation definitions.
+Since both are normal constraints, they can also be used in normal constraint generation rules.
 
 \begin{figure*}
 \begin{lstlisting}
 RelationPattern.RelationPattern = <
 	(<RelationDefVariant>, <RelationDefVariant>) := <Constraint>.>
-
 VarIds = {VarId ","}*
 \end{lstlisting}
 \caption{The syntax proposal for NaBL2 relation definitions.}
