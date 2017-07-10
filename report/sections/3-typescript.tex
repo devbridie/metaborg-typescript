@@ -42,7 +42,7 @@ class NonEmptyList<A> {
 }
 \end{lstlisting}
 
-In any nominally typed language, it would not be possible to assign a $NonEmptyList$ to any variable that is not also a $NonEmptyList$.
+In any nominally typed language, it would not be possible to assign a \texttt{NonEmptyList} to any variable that is not also a \texttt{NonEmptyList}.
 In TypeScript this restriction does not apply. 
 Any instance of a class can be assigned a variable with any type as long as the two are structurally in a subtype relationship.
 This means that the following snippet is perfectly legal:
@@ -57,14 +57,15 @@ const s: SingletonList<number> =
 \end{lstlisting}
 
 Since names are irrelevant to the type checker, the following is also valid because the type of 
-$s$ is structurally equivalent to $NonEmptyList<number>$.
+\texttt{s} is structurally equivalent to \texttt{NonEmptyList<number>}.
 \bigskip
 \begin{lstlisting}
-const s: { head: number, tail: List<number> } =
-  new NonEmptyList(42);
+const s: { 
+  head: number, tail: List<number> 
+} = new NonEmptyList(42);
 \end{lstlisting}
 
-This situation remains unchanged when we add 'methods' to the $NonEmptyList$ class:
+This situation remains unchanged when we add 'methods' to the \texttt{NonEmptyList} class:
 
 \begin{lstlisting}
 class NonEmptyList<A> {
@@ -95,16 +96,16 @@ class NonEmptyList<A> {
     ...
   }
 }
-const a: typeof NonEmptyList = NonEmptyList;
-const xs: NonEmptyList<number> = new a(42);
+const a: typeof NonEmptyList = NonEmptyList
+const xs: NonEmptyList<number> = new a(42)
 \end{lstlisting}
 
 From this it appears that classes live in both the value namespace as well as the type namespace,
-because an instance of $NonEmptyList$ ($xs$) can be created from a runtime value ($a$) on the last line.
-In reality, $a$ represents the constructor for $NonEmptyList$ rather than the class itself.
+because an instance of \texttt{NonEmptyList} ($xs$) can be created from a runtime value ($a$) on the last line.
+In reality, $a$ represents the constructor for \texttt{NonEmptyList} rather than the class itself.
 We can therefore conclude that class constructors are first class values just like class methods.
-The type of a constructor must different from the type of a function because the former can only be called with the $new$ keyword.
-The $typeof$ keyword in the definition of $a$ is used in this case to signal that $a$ is a constructor.
+The type of a constructor must different from the type of a function because the former can only be called with the \texttt{new} keyword.
+The \texttt{typeof} keyword in the definition of $a$ is used in this case to signal that $a$ is a constructor.
 Since constructors do not live inside the class scope, they have no impact type checking when handling instances of a class.
 \bigskip
 Inheritance is also handled in a straightforward manner.
@@ -115,8 +116,8 @@ The rules that apply to classes can similarly be applied to interfaces, with the
 \subsection{Union and Intersection types}
 Union and intersection types provide for a way to compose types, similar to sum and product types in many functional languages.
 \begin{lstlisting}
-interface X = { x: number }
-interface Y = { y: string }
+interface X { x: number }
+interface Y { y: string }
 type U = X | Y
 \end{lstlisting}
 
@@ -135,26 +136,26 @@ Similarly, union types have the following assignability relationships:
 
 When the types that make up the union have overlapping members, those members themselves become unions:
 \begin{lstlisting}
-interface X = { q: number }
-interface Y = { q: string }
+interface X { q: number }
+interface Y { q: string }
 type U = X | Y
-// U is equivalent to { q: number | string }
+// U is equal to { q: number | string }
 \end{lstlisting}
 \bigskip
 Intersection types describe values with multiple simultanious types. 
 \begin{lstlisting}
-interface X = { x: number }
-interface Y = { y: string }
+interface X { x: number }
+interface Y { y: string }
 type I = X & Y
-// I is equivalent to { x: number, y: string }
+// I is equal to { x: number, y: string }
 \end{lstlisting}
 
 Just as with unions, when the types that make up an intersection have overlapping members, those members themselves become intersections:
 \begin{lstlisting}
-interface X = { q: number }
-interface Y = { q: string }
+interface X { q: number }
+interface Y { q: string }
 type I = X & Y
-// I is equivalent to { q: number & string }
+// I is equal to { q: number & string }
 \end{lstlisting}
 
 Intersection types have the following subtype relationships:
@@ -174,7 +175,7 @@ The following example demonstrates the intersting case of an intersection over f
 type F1 = (a: string, b: string) => void;  
 type F2 = (a: number, b: number) => void;
 
-var f: F1 & F2 = (a: string | number, b: string | number) => { };  
+var f: F1 & F2 = (a, b) => { };  
 f("hello", "world");
 f(1, 2);
 f(1, "test");

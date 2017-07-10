@@ -17,7 +17,8 @@
 \usepackage{subcaption} %% For complex figures with subfigures/subcaptions
                         %% http://ctan.org/pkg/subcaption
 \usepackage{listings}
-
+\usepackage{float}
+\usepackage{dblfloatfix}
 \lstset{
 frame = single,
 basicstyle=\small
@@ -78,12 +79,18 @@ basicstyle=\small
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-Text of abstract \ldots.
+TypeScript is a structurally typed superset of JavaScript that aims to ease the introduction of static types
+to large JavaScript code bases. In this paper, we investigate how the static semantics of TypeScript can be
+modeled using NaBL2. We find that while NaBL2 misses some features needed to support structural types, 
+these features can be implemented in terms of the existing abstractions that NaBL2 is built on.
+We show that Scope Graphs can be used to model structural types and propose a minimal set of extensions
+to NaBL2 that enable language designers to define custom subtype relations. We also show that these extensions
+are enough to implement most major features of the TypeScript language.
 \end{abstract}
 
 %% Keywords
 %% comma separated list
-\keywords{Metaborg, Spoofax, Typescript, NaBl2}  %% \keywords is optional
+\keywords{Metaborg, Spoofax, Typescript, NaBL2}  %% \keywords is optional
 
 
 %% \maketitle

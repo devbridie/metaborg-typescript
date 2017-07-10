@@ -1,4 +1,6 @@
 \section{Structural Typing}
+\label{sec:structural-typing}
+
 This section gives a high level overview of how structural type systems work.
 Structural subtyping stands opposed to nominal subtyping. 
 A majority of the most used programming languages employ a nominal type system.
@@ -20,6 +22,7 @@ Generally this means that a type A is a subtype of B when the structure of A has
 This means that a value of type A can be assigned to B by simply removing all information present in A that is not required by B.
 For most languages that implement structural subtyping, the information that types carry consists of names paired with another type.
 For example, in TypeScript we may write:
+
 
 \begin{lstlisting}
 type A = { first: string, second: string }
@@ -52,4 +55,4 @@ we need to check if their unfoldings are equal.
 Since unfolding a recursive type yields an infinite tree, 
 the type checker has to make sure that this process terminates regardless of the possibly infinite type.
 This approach to type checking is called \textit{equi-recursive} because a recursive type should
-be a subtype of its one step unfolding.
+be a subtype of its one step unfolding.\citep{pierce2002types}
