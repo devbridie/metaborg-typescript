@@ -1,1 +1,18 @@
 \section{Conclusion}
+
+We have seen how structural types in TypeScript work as opposed to more common nominal type systems.
+
+The definition of TypeScript and ECMAScript 2015 syntax with SDF3 is relatively straightforward
+and even offers some improvements compared to the official ECMAScript 2015 specification.
+
+Our attempt to model structural types with NaBL2 was met with more challenges.
+Our efforts resulted in the insight that one pass of constraint generation and constraint solving
+is not powerful enought to support structural and recursive types.
+
+We have proposed the addition of custom relation definitions to allow language designers to define their own
+subtype relations.
+With this extension and two new constraints, \texttt{forall} and \texttt{exists}, language designers will 
+be able to model more complex and diverse type systems.
+As an example we have demonstrated that the proposed constructs can be used with Scope Graphs to model 
+TypeScripts structural types, including unions and intersections.
+\FloatBarrier
