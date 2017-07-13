@@ -1,8 +1,9 @@
 \section{Syntax definition}
-The syntax definition of Typescript is defined in the TypeScript Language Specification\footnote{https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md}.
-Eventhough this specification is not up-to-date for TypeScript 2, the syntax has not significantly changed between TypeScript 1 and 2.
-The specification builds upon the ECMAScript® 2015 Language Specification\footnote{http://www.ecma-international.org/ecma-262/6.0/}, as TypeScript is primarily a superset of ECMAScript.
-While it is defined as a superset with additions to the syntax definitions, several productions in the TypeScript grammar modify/replace the productions with the same name in the ECMAScript definition.
+\label{sec:syntax}
+The syntax definition of Typescript is defined in the TypeScript Language Specification.
+Even though this specification is not up-to-date for TypeScript 2, the syntax has not significantly changed between TypeScript 1 and 2.
+The specification builds upon the ECMAScript 2015 Language Specification.
+While it is defined as a superset with additions to the syntax definitions, several productions in the TypeScript grammar modify or replace the productions with the same name in the ECMAScript definition.
 
 The translation of the syntax definition into the SDF3\citep{Vollebregt:2012:DST:2427048.2427056} productions starts with the ECMAScript productions and is then updated with the TypeScript productions.
 All SDF3 production symbol names are taken from the language specification(s), while the constructor labels are either a copy of the symbol name or a self-invented name.
@@ -30,29 +31,52 @@ IfStatement.If = <if (<PrimaryExpression>) <Statement>>
 
 Some productions in the ECMAScript only directly inject other productions.
 For these productions, the SDF3 notation does not define a constructor label, unless the label is required in the type-checking phase to prevent ambiguation on the constructor labels in the constraint generation phase.
-An example of a production with only directly injected other productions is shown in Figure \ref{fig:direct-production}.
+An example of a production with only directly injected other productions is shown in Figure \ref{fig:direct-production-spec} and \ref{fig:direct-production-sdf}.
 In the example, the extra constructor label \textit{ModuleStatement} is defined, to prevent disambiguation in programs and modules.
 
-\begin{figure*}
-  \begin{minipage}[t]{.8\columnwidth}
-    \begin{lstlisting}[caption=Definition of \textit{ModuleItem} in the ECMAScript language specification]
+\begin{figure}[H]
+\begin{lstlisting}
 ModuleItem : See 15.2
   ImportDeclaration
   ExportDeclaration
   StatementListItem
-    \end{lstlisting}
-  \end{minipage}
-  \hfill
-  \begin{minipage}[t]{1.1\columnwidth}
-    \begin{lstlisting}[caption=Definition of \textit{ModuleItem} in SDF3 production notation]
+\end{lstlisting}
+\caption{Definition of \textit{ModuleItem} in the ECMAScript language specification}
+\label{fig:direct-production-spec}
+\end{figure}
+
+\begin{figure}[H]
+\begin{lstlisting}
 ModuleItem = ImportDeclaration
 ModuleItem = ExportDeclaration
-ModuleItem.ModuleStatement = StatementListItem
-    \end{lstlisting}
-  \end{minipage}
-  \caption{The translation of \textit{ModuleItem} from the ECMAScript language specification to SDF3 production notation.}
-  \label{fig:direct-production}
-\end{figure*}
+ModuleItem.ModuleStatement = 
+  StatementListItem
+\end{lstlisting}
+\caption{Definition of \textit{ModuleItem} in SDF3}
+\label{fig:direct-production-sdf}
+\end{figure}
+
+
+% \begin{figure*}
+%   \begin{minipage}[t]{.8\columnwidth}
+%     \begin{lstlisting}[caption=Definition of \textit{ModuleItem} in the ECMAScript language specification]
+% ModuleItem : See 15.2
+%   ImportDeclaration
+%   ExportDeclaration
+%   StatementListItem
+%     \end{lstlisting}
+%   \end{minipage}
+%   \hfill
+%   \begin{minipage}[t]{1.1\columnwidth}
+%     \begin{lstlisting}[caption=Definition of \textit{ModuleItem} in SDF3 production notation]
+% ModuleItem = ImportDeclaration
+% ModuleItem = ExportDeclaration
+% ModuleItem.ModuleStatement = StatementListItem
+%     \end{lstlisting}
+%   \end{minipage}
+%   \caption{The translation of \textit{ModuleItem} from the ECMAScript language specification to SDF3 production notation.}
+%   \label{fig:direct-production}
+% \end{figure*}
 
 Lastly, Figure \ref{fig:override-syntax} shows a production that is modified by TypeScript and thus overrides the original definition from the ECMAScript language specification.
 Note that the second production as defined in the TypeScript language definition has not been implemented in SDF3 production notation at the time of writing.

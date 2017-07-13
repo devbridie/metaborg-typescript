@@ -1,7 +1,9 @@
 \section{Structural Typing}
+\label{sec:structural-typing}
+
 This section gives a high level overview of how structural type systems work.
-Structural subtyping stands oposed to nominal subtyping. 
-Many of the top languages in use in industry today emply a nominal type system.
+Structural subtyping stands opposed to nominal subtyping. 
+A majority of the most used programming languages employ a nominal type system.
 In such languages, subtype relationships are explicitly declared.
 The programmer has to relate two types to each other by their name,
 after which the compiler will check whether the structures refered to by these names are compatible.
@@ -9,11 +11,10 @@ This process has to be done only once for each declared subtype relation.
 As soon as the compiler has established that a type A is a subtype of B,
 the next time that a check for this relationship has to be performed, 
 a simple table lookup for the two names is sufficient.
-\\
-\\
+\bigskip
 With structural subtyping on the other hand, the relationships between types are implicit.
 The programmer does not have to specify any relationship by hand,
-every time the compiler has to check compatibility between two types, a structural comparisson of the types is done.
+every time the compiler has to check compatibility between two types, a structural comparison of the types is done.
 One major consequence of this approach is that names for types become purely cosmetic.
 The programmer can still assign names to types, and refer to those types by their names,
 but checking whether one type is a subtype of another is completely dependent on their structure.
@@ -21,6 +22,7 @@ Generally this means that a type A is a subtype of B when the structure of A has
 This means that a value of type A can be assigned to B by simply removing all information present in A that is not required by B.
 For most languages that implement structural subtyping, the information that types carry consists of names paired with another type.
 For example, in TypeScript we may write:
+
 
 \begin{lstlisting}
 type A = { first: string, second: string }
@@ -31,7 +33,7 @@ Values of type A can be passed to anywhere a subset of \texttt{\{ first: string,
 So all the following statements are valid because the types of $x$, $y$ and $z$ are structurally subsets of $A$:
 
 \begin{lstlisting}
-const a: A = // ... some value with type A
+const a: A =  { first: 'x', second: 'y' }
 
 const x: { first: string } = a
 const y: { second: string } = a
@@ -46,11 +48,11 @@ type Cons = { head: number, tail: NumList }
 type NumList = Cons | Nil
 \end{lstlisting}
 
-The \texttt{|} operator describes that $NumList$ is the discriminated union of $Cons$ and $Nil$.
+The \texttt{|} operator describes that $NumList$ can either be $Cons$ nil $Nil$.
 Note that $Cons$ and $NumList$ are mutually recursive.
 To check whether we can assign a $NumList$ value to another value, 
 we need to check if their unfoldings are equal.
 Since unfolding a recursive type yields an infinite tree, 
 the type checker has to make sure that this process terminates regardless of the possibly infinite type.
 This approach to type checking is called \textit{equi-recursive} because a recursive type should
-be a subtype of its one step unfolding.
+be a subtype of its one step unfolding\citep{pierce2002types}.

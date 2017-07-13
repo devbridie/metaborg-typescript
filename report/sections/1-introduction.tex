@@ -1,0 +1,31 @@
+\section{Introduction}
+
+TypeScript\footnote{https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md} is a statically typed programming language that is a superset JavaScript (ECMAScript 2015\footnote{http://www.ecma-international.org/ecma-262/6.0/}).
+The aim of TypeScript is to provide large JavaScript projects with a way to integrate a static 
+type system into their code in a non-intrusive way, 
+while keeping the dynamic semantics equivalent to JavaScipt.
+To achieve this, TypeScript compiles to human-readable JavaScript with as little transformations as possible.
+Any value that has type annotations is checked by the type checker.
+In addition, some type inference is done to provide static checks even for existing JavaScript without annotations.
+Only when no type information can be inferred will the compiler fall back to default JavaScipt semantics.
+The system of structural types enables TypeScript to be non-intrusive when used with existing JavaScript projects.
+It allows programmers to gain some of benefits of static analysis while still 
+being able to use existing JavaScript APIs, libraries and coding conventions.
+
+In this report we explore how structural type systems could be implemented in terms of Scope 
+Graphs with NaBL2\citep{Antwerpen:2016:CLS:2847538.2847543}.
+We find that while NaBL2 already works very well for nominally typed languages with classes and inheritance,
+structural types are not yet fully supported. 
+
+Our main contribution is the proposal of a minimal set of extensions to NaBL2 that 
+give language designers the possibility to define their own subtype relations. 
+We show that the fundamental model of Scope Graphs is viable even for structural types, 
+and that making constraint generation and resolution interleaved
+allows language designers to model more complex and diverse type systems with NaBL2.
+
+An introduction to structural type systems is given in Section \ref{sec:structural-typing}.
+Then, the most significant features of the TypeScript language are discussed in Section \ref{sec:structural-typing-typescript}.
+After the introduction of some of TypeScripts features, we move on to discuss, in Section \ref{sec:syntax}, how SDF3 could be used to 
+easilly mirror the ECMAScript 2015 specification with the additional syntactical constructs of TypeScript.
+Finally, Section \ref{sec:type-checking} discusses how structural typing can be supported in NaBL2 
+as well as possible implementations of some TypeScript features in NaBL2.

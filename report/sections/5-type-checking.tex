@@ -1,0 +1,230 @@
+\newpage
+\section{Type Checking}
+\label{sec:type-checking}
+
+In this section we will dicuss our attempt at using NaBL2 \citep{Antwerpen:2016:CLS:2847538.2847543} to implement the type system as explained in section \ref{sec:structural-typing-typescript}.
+NaBL2 is a constraint generation language specifically tailored towards the problem of name binding.
+The language allows language designers to specify constraints over AST constructs, which are then solved in one pass by the runtime.
+A general solution to the name binding problem is provided by a framework of scope graphs.
+A scope graph consists of scopes, declarations and references to names in a program.
+Constraints can be generated to construct such graphs, as well as to resolve paths from declarations to references in the graph.
+Since the problem of type checking is very similar to that of name binding, NaBL2 can also be used to implement a type checker.
+
+\subsection{Structural type checking}
+
+In general, NaBL2 is well-suited for statements and expressions that are common in programming languages, 
+such as the shown \textit{IfStatement}.
+During this project, our research focussed on exploring to what extent NaBL2 supports structural type checking and, 
+in the case that it does not, what would be required to support it.
+Our syntax definition for TypeScript includes several language constructs that must participate in type checking.
+These constructs included: object declarations, variable assignments, interfaces, functions, function calls and primitives.
+Several test cases and examples were developed that tested various aspects of structural type checking with these constructs.
+
+To demonstrate our attempt at implementing structural types, we will use object assignment as example.
+The code below shows a TypeScript program that should be rejected by the type checker 
+because \texttt{Person} is a structural subtype of \texttt{Developer}. 
+The assignment of \texttt{john} to a \texttt{Developer} on the last line is therefore illegal.
+\begin{lstlisting}
+type Person = {
+  name: string
+}
+type Developer = {
+  name: string
+  language: string
+}
+var john: Person = { name: 'John' }
+var devJohn: Developer = john
+\end{lstlisting}
+
+\subsection{Naive solution}
+Object types can be modeled cleanly using scope graphs. 
+The general approach is to define a type, \texttt{RECORD}, that wraps a \texttt{scope}.
+The wrapped scope should contain the declarations of each field in the object type.
+Checking whether two types are in a subtype relation then becomes the problem of checking whether
+the the scope of the left-hand side \texttt{RECORD} type is a subset of the one on the right-hand side.
+NaBL2 already supports scope subset checking.
+This solution is shown in Figure \ref{fig:wrong-solution}.
+The top constraint generation rule traverses over the \texttt{ObjectType} AST node.
+This node corresponds to a type annotation on any variable or function argument in TypeScript.
+The second generation rule traverses over variable declarations.
+The second component of a \texttt{VariableDeclaration} is the declared type, 
+while the third component denotes the value assigned to the variable.
+Notice that \texttt{subseteq} is used to check that the left-hand side is a subset of the right-hand side.
+Running this code on the example above produces the desired result.
+NaBL2 will reject the last line based on the subset check.
+\begin{figure*}[h]
+\begin{lstlisting}
+[[ ObjectType(fields) ^ (s): ty ]] :=
+    new record_scope,
+    ty == RECORD(record_scope),
+    record_scope -P-> s,
+    distinct/name D(record_scope)/Field,
+    Map1 [[ fields ^ (record_scope) ]].
+
+[[ VariableDeclaration(name, type@Id(_), value) ^ (s) ]] :=
+    [[ type ^ (s) : ty ]],
+    ty == RECORD(type_scope),
+    [[ value ^ (s) : RECORD(value_scope) ]],
+    D(type_scope)/Field subseteq/name D(value_scope)/Field,
+    Value{name} <- s,
+    Value{name} : ty !.
+\end{lstlisting}
+\caption{Naive solution to object type checking.}
+\label{fig:wrong-solution}
+\end{figure*}
+
+While this solution is straightforward, there are two problems that prevent it from being useful.
+First, a pattern match on \texttt{ type@Id(\_) } is needed to dertermine that the left-hand side is indeed an object type. 
+This means that separate constraint generation rules are needed for checking non-object types and aliases to non-object types, leading to code duplication.
+Second, the \texttt{subseteq} operator only checks whether names of fields in both scopes are in a subset relation.
+Types that are assigned to these fields are completely ignored.
+This means that we could assign any object to a \texttt{Person} that has a \texttt{name} field, 
+regardless of the type of that field.
+The \texttt{subseteq} operator is insufficient to solve structural type checking.
+
+\subsection{Extensible subtype relations}
+The two problems illustrated above can be solved by making the NaBL2 subtype check user extensible.
+Normally, checking compatibility of two types in NaBL2 is done by generating constraints for equality or subtype checks using \texttt{==} or \texttt{<?}.
+In an ideal scenario, we would be able to use the \texttt{<?} operator to generate constraints for structural subtyping.
+However, this would require the operator to perform different checks based on the types of its arguments.
+For non-object types like strings and numbers, a simple non-recursive check is sufficient.
+Structural types require a recursive check. 
+As explained in section \ref{sec:structural-typing}, checking whether two object types in an equi-recursive system 
+(like with TypeScript) are subtypes requires recursively unfolding both types and checking their equality in the fixed point.
+Allowing users of NaBL2 to overload the \texttt{<?} operator requires constraint generation and solving to be interleaved.
+At solve-time, when a \texttt{<?} check is encountered, the solver must pause and evaluate the user-defined subtype relation, 
+which in turn generates more constraints to be solved.
+These constraints may include more, recursive, subtype checks in the case of recursive structural types like lists, trees, etc.
+When custom subtype relations are allowed, 
+the incorrect solution in Figure \ref{fig:wrong-solution} could be fixed by modifying it as shown in Figure \ref{fig:cool-solution}.
+Notice that the pattern match is gone and the rule is completely polymorphic in the types of the left- and right-hand side.
+\begin{figure*}
+\begin{lstlisting}
+[[ ObjectType(fields) ^ (s): ty ]] :=
+    new record_scope,
+    ty == RECORD(record_scope),
+    record_scope -P-> s,
+    distinct/name D(record_scope)/Field,
+    Map1 [[ fields ^ (record_scope) ]].
+
+[[ VariableDeclaration(name, type, value) ^ (s) ]] :=
+    [[ type ^ (s) : ty ]],
+    [[ value ^ (s) : valueTy ]],
+    ty <? valueTy
+    Value{name} <- s,
+    Value{name} : ty!.
+\end{lstlisting}
+\caption{General solution when given the possibility of user-defined subtype checks.}
+\label{fig:cool-solution}
+\end{figure*}
+In the next section, the syntactical details of defining custom subtype relations are discussed.
+
+\subsection{NaBL2 syntax proposal}
+To syntactically support the definition of custom subtype relations, 
+we propose an extension to the syntax definition of NaBL2 as shown in Figure \ref{fig:nabl-syntax-proposal-relation}.
+Each NaBL2 module can contain a \texttt{relations} section.
+We propose adding a new relation pattern with two elements: 
+\begin{itemize}
+\item the left- and right-hand side of the subtype relation, denoted with common tuple-syntax
+\item the constraint generated for these two patterns.
+\end{itemize}
+Note that this relation pattern supports one constraint, 
+since multiple constraint can easilly be composed into one.
+We also propose two new constraint constructs: \texttt{forall} and \texttt{exists} as shown in Figure \ref{fig:nabl-syntax-proposal-constraint}.
+These constructs can be used to check that a constraint holds over all declarations in a scope, 
+or that there exists a declaration in a scope that satisfies a constraint.
+These three new syntactical constructs can be used to define a subtype relation for the \texttt{RECORD} type,
+illustrated in Figure \ref{fig:nabl-syntax-proposal-usage}.
+The \texttt{forall} will generate the constraint after the \texttt{=>} symbol for each declaration in the \texttt{one} scope.
+The \texttt{exists} construct ensures that \texttt{ty1 <? ty2} holds for at least one declaration in the \texttt{two} scope.
+The \texttt{sub : Type * Type} annotation on the second line determines that the name of the relation is \texttt{sub},
+which can be referenced in constraint generation rules as either \texttt{<sub?} or \texttt{<?}.
+Different relations could be made for different purposes, and each relation can be overloaded for multiple types of arguments.
+For example, as shown in the last lines of \ref{fig:nabl-syntax-proposal-usage}, one could define another subtype relation over \texttt{List} types.
+Therefore, this syntax is not restricted to structural types and can also be useful when designing other kinds of type systems.
+The additional \texttt{forall} and \texttt{exists} constraints are not restricted to the scope of relation definitions.
+Since both are normal constraints, they can also be used in normal constraint generation rules.
+
+\begin{figure*}
+\begin{lstlisting}
+RelationPattern.RelationPattern = <
+	(<RelationDefVariant>, <RelationDefVariant>) := <Constraint>.>
+VarIds = {VarId ","}*
+\end{lstlisting}
+\caption{The syntax proposal for NaBL2 relation definitions.}
+\label{fig:nabl-syntax-proposal-relation}
+\end{figure*}
+
+\begin{figure*}
+\begin{lstlisting}
+Constraint.Exists  = <
+  exists <VarId>@<Occurrence> in <Names> =\> <Constraint>>
+Constraint.ForAll  = <
+  forall <VarId>@<Occurrence> in <Names> =\> <Constraint>>
+\end{lstlisting}
+\caption{New constraint syntax constructs for NaBL2.}
+\label{fig:nabl-syntax-proposal-constraint}
+\end{figure*}
+
+\begin{figure*}
+\begin{lstlisting}
+relations
+  sub: Type * Type {
+    (RECORD(one), RECORD(other)) :=
+      forall d1@Field{x} in D(one)/Field => (
+        d1 : ty1,
+        exists d2@Field{x} in D(other)/Field => (
+          d2 : ty2,
+          ty1 <? ty2
+        )
+      ).
+    , (List(one), List(other)) := one <? two.
+  }
+}
+\end{lstlisting}
+\caption{Example usage of the new syntax constructs for structural types.}
+\label{fig:nabl-syntax-proposal-usage}
+\end{figure*}
+
+\subsection{Union and Intersection types}
+We will now demonstrate that with two additional, overloaded, versions of \texttt{forall} and \texttt{exists},
+NaBL2 will be powerful enough to implement union and Intersection types as described in Section \ref{sec:structural-typing-typescript}.
+Figure \ref{fig:union-impl} shows how this could be implemented.
+Notice that we use \texttt{forall} and \texttt{exists} in a manner similar to object types, 
+but rather than operating on scopes, we now operate on lists of types.
+
+\begin{figure*}
+\begin{lstlisting}
+relations
+  sub: Type * Type {
+    (UNION(List(types1)), UNION(List(types2))) :=
+      forall t2 in types2 => (
+        exists t1 in types1 => (ty1 <? ty2)
+      ),
+    (UNION(List(types)), ty) :=
+      exists ty1 in types => (ty1 <? ty)
+  }
+}
+\end{lstlisting}
+\caption{Implementation of union types by using a custom subtype relation and overloaded \texttt{forall} and \texttt{exists} constraints.}
+\label{fig:union-impl}
+\end{figure*}
+
+Intersection types are implemented with the same approach, but with the \texttt{forall} and \texttt{exists} constructs swapped to achieve behavior dual to unions.
+
+\begin{figure*}
+\begin{lstlisting}
+relations
+  sub: Type * Type {
+    (INTERSECT(List(types1)), INTERSECT(List(types2))) :=
+      forall t1 in types1 => (
+        exists t2 in types2 => (ty1 <? ty2)
+      ),
+    (INTERSECT(List(types)), ty) :=
+      forall ty1 in types => (ty1 <? ty)
+  }
+}
+\end{lstlisting}
+\caption{Intersection types, using the same constructs as union types.}
+\label{fig:intersect-impl}
+\end{figure*}

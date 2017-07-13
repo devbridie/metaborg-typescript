@@ -1,0 +1,190 @@
+\section{Structural Typing in Typescript}
+\label{sec:structural-typing-typescript}
+TypeScript was built with structural typing as its backbone, 
+nearly any feature in the language can be described in terms of structual types.
+The reason for this being that the goal of the language is to provide a type system
+on top of the dynamically typed JavaScript language while not introducing any 
+abstractions that have a conceptually high distance to the semantics of JavaScript.
+The result of this effort means that compiled TypeScript code should be suitable 
+for human consumption. Structural typing provides an excellent bridge from the 
+dynamically typed JavaScript world to the statically typed world of TypeScript.
+In this section we will introduce the most important features of TypeScript and
+how they relate to structural types.
+\bigskip
+Structural types manifest themselves in TypeScript as \textit{Record Types}.
+In the examples above, we have already encountered some record types, a set of name-type pairs.
+Built directly on top of record types are some of the most important aspects of the language:
+\begin{itemize}
+\item classes
+\item interfaces
+\item union types
+\item intersection types
+\end{itemize}
+
+Other notable features include: first class and higher order functions, parametric and ad-hoc polymorphism 
+(generics) and several types for special values like \texttt{null} and \texttt{undefined}. It is 
+worth noting that the subtype relation within TypeScript does not form a proper latice due to 
+the \texttt{any} type. Namely, a value of type \texttt{any} is a subtype of every other type, 
+while every type is simultaniously a subtype of any.
+\bigskip
+\subsection{Classes and Interfaces}
+While syntax for defining classes in TypeScript is similar to Java, the structural typing makes classes semantically different form nominally typed languages.
+The following snippet defines a simple class in TypeScript:
+
+\begin{lstlisting}
+class NonEmptyList<A> {
+  head: A;
+  tail: List<A>;
+  constructor(head: A) {
+    this.head = head;
+    this.tail = new List();
+  }
+}
+\end{lstlisting}
+
+In any nominally typed language, it would not be possible to assign a \texttt{NonEmptyList} to any variable that is not also a \texttt{NonEmptyList}.
+In TypeScript this restriction does not apply. 
+Any instance of a class can be assigned a variable with any type as long as the two are structurally in a subtype relationship.
+This means that the following snippet is perfectly legal:
+
+\begin{lstlisting}
+class SignletonList<A> {
+  head: A;
+}
+
+const s: SingletonList<number> = 
+  new NonEmptyList(42);
+\end{lstlisting}
+
+Since names are irrelevant to the type checker, the following is also valid because the type of 
+\texttt{s} is structurally equivalent to \texttt{NonEmptyList<number>}.
+\bigskip
+\begin{lstlisting}
+const s: { 
+  head: number, tail: List<number> 
+} = new NonEmptyList(42);
+\end{lstlisting}
+
+This situation remains unchanged when we add 'methods' to the \texttt{NonEmptyList} class:
+
+\begin{lstlisting}
+class NonEmptyList<A> {
+  head: A;
+  tail: List<A>;
+  ...
+  size(): number {
+    return 1 + tail.size();
+  }
+}
+
+const s: { 
+  head: number, tail: List<number>,
+  size: () => number  
+} = new NonEmptyList(42);
+\end{lstlisting}
+
+From the above snippet we can see that classes are simply sugar for named object types.
+The fields are directly translated to object members, and class methods are translated
+to object members that have a function type corresponding to the method signature.
+A consequence of this is that class methods are first class values.
+Class constructors are translated to a special type of function outside the class scope that has the exact name of the class:
+
+\begin{lstlisting}
+class NonEmptyList<A> {
+  ...
+  constructor(head: A) {
+    ...
+  }
+}
+const a: typeof NonEmptyList = NonEmptyList
+const xs: NonEmptyList<number> = new a(42)
+\end{lstlisting}
+
+From this it appears that classes live in both the value namespace as well as the type namespace,
+because an instance of \texttt{NonEmptyList} ($xs$) can be created from a runtime value ($a$) on the last line.
+In reality, $a$ represents the constructor for \texttt{NonEmptyList} rather than the class itself.
+We can therefore conclude that class constructors are first class values just like class methods.
+The type of a constructor must be different from the type of a function because the former can only be called with the \texttt{new} keyword.
+The \texttt{typeof} keyword in the definition of $a$ is used in this case to signal that $a$ is a constructor.
+Since constructors do not live inside the class scope, they have no impact on type checking when handling instances of a class.
+\bigskip
+Inheritance is also handled in a straightforward manner.
+When checking whether an instance of a class can be assigned to an object type, the compiler
+simply takes all class members and all members of any parent class into account and checks that those are a subset of the assinged value.
+The rules that apply to classes can similarly be applied to interfaces, with the exception that interfaces do not have a constructor.
+
+\subsection{Union and Intersection types}
+Union and intersection types provide for a way to compose types, similar to sum and product types in many functional languages.
+\begin{lstlisting}
+interface X { x: number }
+interface Y { y: string }
+type U = X | Y
+\end{lstlisting}
+
+The last line in the code above defines $U$ to be the union of $X$ and $Y$. 
+This means that $U$ can be either $X$ or $Y$ but not both, similar to discriminated unions in other languages.
+Union types have the following subtype relationships:
+\begin{itemize}
+\item A union type $U$ is a subtype of a type $T$ if each type in $U$ is a subtype of $T$.
+\item A type $T$ is a subtype of a union type $U$ if $T$ is a subtype of any type in $U$.
+\end{itemize}
+Similarly, union types have the following assignability relationships:
+\begin{itemize}
+\item A union type $U$ is assignable to a type $T$ if each type in $U$ is assignable to $T$.
+\item A type $T$ is assignable to a union type $U$ if $T$ is assignable to any type in $U$.
+\end{itemize}
+
+When the types that make up the union have overlapping members, those members themselves become unions:
+\begin{lstlisting}
+interface X { q: number }
+interface Y { q: string }
+type U = X | Y
+// U is equal to { q: number | string }
+\end{lstlisting}
+\bigskip
+Intersection types describe values with multiple simultanious types. 
+\begin{lstlisting}
+interface X { x: number }
+interface Y { y: string }
+type I = X & Y
+// I is equal to { x: number, y: string }
+\end{lstlisting}
+
+Just as with unions, when the types that make up an intersection have overlapping members, those members themselves become intersections:
+\begin{lstlisting}
+interface X { q: number }
+interface Y { q: string }
+type I = X & Y
+// I is equal to { q: number & string }
+\end{lstlisting}
+
+Intersection types have the following subtype relationships:
+\begin{itemize}
+\item An intersection type $I$ is a subtype of a type $T$ if any type in $I$ is a subtype of $T$.
+\item A type $T$ is a subtype of an intersection type $I$ if $T$ is a subtype of each type in $I$.
+\end{itemize}
+Similarly, intersection types have the following assignability relationships:
+\begin{itemize}
+\item An intersection type $I$ is assignable to a type $T$ if any type in $I$ is assignable to $T$.
+\item A type $T$ is assignable to an intersection type $I$ if $T$ is assignable to each type in $I$.
+\end{itemize}
+\bigskip
+Since functions are values in TypeScript, we can even define unions and intersections over functions.
+The following example demonstrates the intersting case of an intersection over functions:
+\begin{lstlisting}
+type F1 = (a: string, b: string) => void;  
+type F2 = (a: number, b: number) => void;
+
+var f: F1 & F2 = (a, b) => { };  
+f("hello", "world");
+f(1, 2);
+f(1, "test");
+\end{lstlisting}
+
+The last call to $f$ will be rejected by the compiler.
+The type signature of $f$ makes it possible for the type checker to infer
+that this function should only be called with two strings or two numbers.
+If the type signature were removed, this program would be well-typed.
+\bigskip
+In the next sections we will discuss how these features would ideally be implemented in Spoofax.
+
