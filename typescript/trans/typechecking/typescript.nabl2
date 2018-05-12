@@ -23,11 +23,11 @@ signature
     	NULL      : Type
   		ANY       : Type
     	NUMBER	  : Type
-		  STRING	  : Type
-		  BOOLEAN   : Type
-		  UNDEFINED : Type
-		  FUNCTION  : list(Type) * Type -> Type
-		  MODULE	  : occurrence -> Type
+		STRING	  : Type
+		BOOLEAN   : Type
+		UNDEFINED : Type
+		FUNCTION  : list(Type) * Type -> Type
+		MODULE	  : occurrence -> Type
 		TYPEOF    : Type -> Type
 
 	name resolution

@@ -47,10 +47,15 @@ signature
     While  : Expression * list(Statement) -> Statement
     For    : Assignment * Expression * Statement -> Statement
     Return : Expression -> Statement
+  
+  sorts Program
+  constructors
+    Program : list(Statement) -> Program
   	
   rules 
     typeOfExpr : scope * Expression -> Type
   
-    typeOfExpr(s, NumberLiteral(_), Number()).
-    typeOfExpr(s, StringLiteral(_), String()).
-    typeOfExpr(s, BooleanLiteral(_), Boolean()).
+    typeOfExpr(s, NumberLiteral(_))  = Number().
+    typeOfExpr(s, StringLiteral(_))  = String().
+    typeOfExpr(s, BooleanLiteral(_)) = Boolean().
+    typeOfExpr(s, FunctionDecl(_, parameters, ret_type)) = Function(ret_type, [ ]).
