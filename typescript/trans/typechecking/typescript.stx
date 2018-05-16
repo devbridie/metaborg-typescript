@@ -51,6 +51,13 @@ signature
   sorts Program
   constructors
     Program : list(Statement) -> Program
+  
+  namespaces
+    Var  : string
+    Type : string
+  
+  relations
+    typeOfDecl : occurrence -> Type
   	
   rules 
     typeOfExpr : scope * Expression -> Type
@@ -58,4 +65,9 @@ signature
     typeOfExpr(s, NumberLiteral(_))  = Number().
     typeOfExpr(s, StringLiteral(_))  = String().
     typeOfExpr(s, BooleanLiteral(_)) = Boolean().
+    
     typeOfExpr(s, FunctionDecl(_, parameters, ret_type)) = Function(ret_type, [ ]).
+    typeOfExpr(s, FunctionDecl(_, [Parameter(_, param_type)], ret_type)) = Function(ret_type, [ param_type ]).
+    
+    typeOfExpr(s, Identifier(value)) = T :-
+      typeOfDecl of Var{value@value} in s |-> [(_, T)].
