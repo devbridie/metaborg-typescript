@@ -21,3 +21,4 @@ node_modules/
 *.out
 *.pdf
 *.synctex.gz
+/.metadata/

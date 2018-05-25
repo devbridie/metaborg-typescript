@@ -1,0 +1,73 @@
+module typescript
+
+signature
+  sorts ID = string
+  
+  sorts Type TypeParameter
+  constructors
+  	TypeParameter : ID * Type -> TypeParameter
+    Any           : Type
+    NullType      : Type
+    UndefinedType : Type
+    Void          : Type
+    Number        : Type
+    Boolean       : Type
+    String        : Type
+    Function      : Type * list(Type) -> Type
+  
+  sorts Class ClassHeritage ClassMember Parameter 
+  constructors
+    PropertyDeclaration: ID * Type -> ClassMember
+    Parameter: ID * Type -> Parameter
+    MethodDeclaration: ID * list(Parameter) * Type -> ClassMember
+    ClassHeritage: ID -> ClassHeritage
+    Class: ID * list(TypeParameter) * ClassHeritage * list(ClassMember) -> Class
+    
+  sorts Assignment VariableType
+  constructors
+    Const : VariableType
+    Let   : VariableType
+    Var   : VariableType
+    Assignment: VariableType * ID * Type * Expression -> Assignment
+  
+  sorts Expression
+  constructors
+    Identifier      : ID -> Expression
+    NumberLiteral   : ID -> Expression
+    StringLiteral   : ID -> Expression
+    BooleanLiteral  : ID -> Expression
+    FunctionCall    : ID * list(Expression) -> Expression
+    FunctionDecl    : ID * list(Parameter) * Type -> Expression
+    ClassExpression : Class -> Expression
+  
+  sorts Statement
+  constructors
+    If     : Expression * list(Statement) -> Statement
+    IfElse : Expression * list(Statement) * list(Statement) -> Statement
+    While  : Expression * list(Statement) -> Statement
+    For    : Assignment * Expression * Statement -> Statement
+    Return : Expression -> Statement
+  
+  sorts Program
+  constructors
+    Program : list(Statement) -> Program
+  
+  namespaces
+    Var  : string
+    Type : string
+  
+  relations
+    typeOfDecl : occurrence -> Type
+  	
+  rules 
+    typeOfExpr : scope * Expression -> Type
+  
+    typeOfExpr(s, NumberLiteral(_))  = Number().
+    typeOfExpr(s, StringLiteral(_))  = String().
+    typeOfExpr(s, BooleanLiteral(_)) = Boolean().
+    
+    typeOfExpr(s, FunctionDecl(_, parameters, ret_type)) = Function(ret_type, [ ]).
+    typeOfExpr(s, FunctionDecl(_, [Parameter(_, param_type)], ret_type)) = Function(ret_type, [ param_type ]).
+    
+    typeOfExpr(s, Identifier(value)) = T :-
+      typeOfDecl of Var{value@value} in s |-> [(_, T)].
