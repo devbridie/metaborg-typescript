@@ -69,5 +69,4 @@ signature
     typeOfExpr(s, FunctionDecl(_, parameters, ret_type)) = Function(ret_type, [ ]).
     typeOfExpr(s, FunctionDecl(_, [Parameter(_, param_type)], ret_type)) = Function(ret_type, [ param_type ]).
     
-    typeOfExpr(s, Identifier(value)) = T :-
-      typeOfDecl of Var{value@value} in s |-> [(_, T)].
+    typeOfExpr(s, Identifier(value)) = T :- typeOfDecl of Var{value@value} in s |-> [(_, T)].

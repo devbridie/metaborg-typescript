@@ -1,9 +1,16 @@
-const foo = 5;
-const a = foo;
-const c: number = 3;
-function bar(a: number):number {
-  
+interface A {
+    a: string;
 }
-const b:number = bar(foo)
 
-bar(c)
+interface B {
+    b: string;
+}
+
+interface C {
+	a: string;
+	b: string;
+}
+
+const foo: C = { a: "", b: "", c: "" };
+const baz: A = foo;
+const boo: B = foo;

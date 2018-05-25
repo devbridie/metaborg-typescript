@@ -1,0 +1,125 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+
+\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{verbatimbox}
+\usepackage{url}
+\usepackage{hyperref}
+
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\lstset{language=java, showstringspaces=false, basicstyle=\small,
+  numbers=left, numberstyle=\tiny, numberfirstline=false, breaklines=true,
+  stepnumber=1, tabsize=8, 
+  commentstyle=\ttfamily, identifierstyle=\ttfamily,
+  stringstyle=\itshape}
+
+\title{Language Engineering Project - Statix Description}
+\author{Michiel van Spaendonck (4310071), Nouri Khalass (4742397)}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+In this document we will describe our findings while working on Statix in the context of structural types.
+We do this by analysing the workings of \texttt{Statix} in the context of \texttt{TypeScript}.
+Our work can be considered somewhat of a continuation of a previous analysis of \texttt{TypeScript}~\cite{MetaTypeScript}.
+The authors go into detail as to how \texttt{TypeScript} could be modelled in a constraint based type checker.
+
+\section*{Structural Types}
+In a stuctural type systems types are said to be equivalent when they are of the same structure.
+This as opposed to types in a nominal type system where only the name of a type has to be equivalent.
+In a nominal type system two objects are not of the same type even though they might have identical member values.
+Compare Listing~\ref{lst:structural_typescript} with Listing~\ref{lst:structural_java}.
+In Listing~\ref{lst:structural_typescript} both \ttt{a} and \ttt{b} are of the same type.
+Simply put, it would be valid to assign \ttt{a} to \ttt{b} since both only have one member \ttt{z} of type \ttt{number}.
+However, Listing~\ref{lst:structural_java} shows a nominal type system whereby this is not valid.
+
+\noindent
+\begin{minipage}{.45\textwidth}
+\lstinputlisting[
+    language = c++, 
+    caption = \label{lst:structural_typescript}
+    ]{structural_types.ts}
+\end{minipage}
+\hfill$\Longleftrightarrow$\hfill\hfill\hfill
+\begin{minipage}{.45\textwidth}
+\lstinputlisting[
+    language = c++, 
+    caption = \label{lst:structural_java}
+    ]{structural_types.java}
+\end{minipage}
+\\\\
+The examples in Listing~\ref{lst:structural_typescript} and Listing~\ref{lst:structural_java} are obviously very trivial and might make one wonder why a nominal type system should be used.
+What is not apparent from these examples is the fact that structural type systems can introduce quite a bit of overhead when type checking since the checker has to recurse over all members in the type.
+On the other hand, a structural type system offers lots of flexibility and is interesting when dealing with a ``loose'' type system.
+It is for this reason that \ttt{TypeScript}, which we are going to analyse, uses a structural type system, since it lies on top of the dynamic type system of \ttt{JavaScript}.
+
+Another downside to structural type systems is the fact that they are difficult to implement.
+Van der Lippe et al.~\cite{MetaTypeScript} noted that implementing the \ttt{TypeScript} type system proved to be very difficult.
+They used NaBL2~\cite{nabl2} to model the type system but found that it lacked features in order to do this correctly.
+They proposed some extensions to \ttt{NaBL2} and mentioned the idea of using scope graphs to model structural types~\cite{MetaTypeScript}.
+
+\section*{Statix}
+Van Antwerpen et al. have designed a programming language that makes it possible to model structural type systems~\cite{Statix}.
+They are also the creators of \ttt{NaBL2}~\cite{nabl2}.
+Their proposed system to use \textit{scopes as types}.
+
+TODO: EXPLAIN WHY A STRUCTURAL TYPE SYSTEM CAN BE MODELLED (EASY) IN STATIX
+
+\section*{Structural Types in Practice}
+While Listing~\ref{lst:structural_typescript} and Listing~\ref{lst:structural_java} show a very trivial example it is more valuable to now look at a more complex case.
+Throughout this paper we will give examples using \ttt{TypeScript}.
+The first example that we will look at is a more complex showcase of structural typing (Listing~\ref{lst:complex}).
+\noindent
+\begin{center}
+    \begin{minipage}{.60\textwidth}
+    \lstinputlisting[
+        language = c++, 
+        caption = \label{lst:complex_i}
+        ]{complex_i.ts}
+    \end{minipage}
+\end{center}
+In Listing~\ref{lst:complex_i} we show that types are not bound to names.
+We define two interfaces, \ttt{A} and \ttt{B}, with both a property named \ttt{z} of type \ttt{string}.
+Variable \ttt{a} can be initialised by creating an object with a property \ttt{z}.
+Following that, variable \ttt{b} can be initialised with \ttt{a} because even though they do not use the same type name the type that they represent is structurally equivalent.
+Variable \ttt{c} is not of any predefined types but instead declares the structure of the type inline.
+It is valid to assign \ttt{b} to \ttt{c} since they both have a value which has the same type structure.
+
+\section*{Modelling Structural Types in Statix}
+To explain how \ttt{TypeScript} can be modelled using Statix we are going to look at a few examples.
+First, modelling a type system that does not necessary rely on structural typing is easy.
+Listing~\ref{lst:statix_code_i} shows a simple program supporting expressions with \ttt{number}, \ttt{string} and \ttt{boolean} type.
+Next to that, Listing~\ref{lst:statix_impl_i} shows what the corresponding constraint rules might look like.
+
+\noindent
+\begin{minipage}{.45\textwidth}
+\lstinputlisting[
+    language = c++, 
+    caption = \label{lst:statix_code_i}
+    ]{statix_code_i.ts}
+\end{minipage}
+\hfill$\Longleftrightarrow$\hfill\hfill\hfill
+\begin{minipage}{.45\textwidth}
+\lstinputlisting[
+    language = c++, 
+    caption = \label{lst:statix_impl_i}
+    ]{statix_impl_i.stx}
+\end{minipage}
+
+TODO: FURTHER EXPLAIN THE RULES FOR STATIX
+
+
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
+
+\end{document}
