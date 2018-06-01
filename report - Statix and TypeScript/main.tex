@@ -15,6 +15,16 @@
 
 \newcommand{\ttt}[1]{\texttt{#1}}
 
+\lstdefinelanguage{typescript} {
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with, string, number, boolean, void, yield, async, class, interface, const, let},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`,
+  sensitive=true
+}
+
 \lstset{language=java, showstringspaces=false, basicstyle=\small,
   numbers=left, numberstyle=\tiny, numberfirstline=false, breaklines=true,
   stepnumber=1, tabsize=8, 
@@ -83,7 +93,7 @@ The first example that we will look at is a more complex showcase of structural 
 \begin{center}
     \begin{minipage}{.60\textwidth}
     \lstinputlisting[
-        language = c++, 
+        language = typescript, 
         caption = \label{lst:complex_i}
         ]{complex_i.ts}
     \end{minipage}
@@ -94,6 +104,17 @@ Variable \ttt{a} can be initialised by creating an object with a property \ttt{z
 Following that, variable \ttt{b} can be initialised with \ttt{a} because even though they do not use the same type name the type that they represent is structurally equivalent.
 Variable \ttt{c} is not of any predefined types but instead declares the structure of the type inline.
 It is valid to assign \ttt{b} to \ttt{c} since they both have a value which has the same type structure.
+\\\\
+The type system in \ttt{TypeScript} also support subtypes and supertypes.
+Listing~\ref{lst:subtypes} shows how a subtype 
+\begin{center}
+    \begin{minipage}{.60\textwidth}
+    \lstinputlisting[
+        language = typescript, 
+        caption = \label{lst:complex_i}
+        ]{complex_i.ts}
+    \end{minipage}
+\end{center}
 
 \section*{Modelling Structural Types in Statix}
 To explain how \ttt{TypeScript} can be modelled using Statix we are going to look at a few examples.
@@ -115,9 +136,18 @@ Next to that, Listing~\ref{lst:statix_impl_i} shows what the corresponding const
     caption = \label{lst:statix_impl_i}
     ]{statix_impl_i.stx}
 \end{minipage}
+First, in Listing~\ref{lst:statix_impl_i} we define a rule \ttt{typeOfExpr} which consists of two arguments and returns a result.
+The first argument is the scope in which we evaluate the expression.
+The second argument specifies the \ttt{Expression} which will be evaluated.
+Finally, given a scope and an \ttt{Expression} we say that we return something that is a \ttt{Type}.
 
-TODO: FURTHER EXPLAIN THE RULES FOR STATIX
-
+Now, line 4, 5 and 6 specify the \ttt{typeOfExpr} rule for different types of \ttt{Expression}s.
+A programming language might have multiple ways to denote an expression.
+In this case numeric, string and boolean literals are available.
+We specify that each variant of an \ttt{Expression} resolves to is appropriate type.
+For example, a \ttt{NumberLiteral} is of \ttt{Type} \ttt{Number}.
+Notice that none of the specification use the scope \ttt{s}.
+This makes sense for literals but when we must resolve the type of an \ttt{Identifier} \ttt{Expression} then we would probably need to use the scope to access the corresponding declaration.
 
 \bibliographystyle{ieeetr}
 \bibliography{bibliography}
