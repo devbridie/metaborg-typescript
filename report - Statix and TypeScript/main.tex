@@ -105,16 +105,26 @@ Following that, variable \ttt{b} can be initialised with \ttt{a} because even th
 Variable \ttt{c} is not of any predefined types but instead declares the structure of the type inline.
 It is valid to assign \ttt{b} to \ttt{c} since they both have a value which has the same type structure.
 \\\\
-The type system in \ttt{TypeScript} also support subtypes and supertypes.
-Listing~\ref{lst:subtypes} shows how a subtype 
+The type system in \ttt{TypeScript} has the notion of \textit{subtyping} whereby it is required that all properties of the \textit{supertype} are present in the \textit{subtype}.
+As such, a subtype can be seen as a more general version of its supertype.
+Listing~\ref{lst:records} shows this behaviour.
 \begin{center}
-    \begin{minipage}{.60\textwidth}
+    \begin{minipage}{.75\textwidth}
     \lstinputlisting[
         language = typescript, 
-        caption = \label{lst:complex_i}
-        ]{complex_i.ts}
+        caption = \label{lst:records}
+        ]{subtyping.ts}
     \end{minipage}
 \end{center}
+We define a function \ttt{doSomething} which has one parameter named \ttt{param}.
+\ttt{param} itself must have a property \ttt{x} of type \ttt{string}, so we \textit{must} call \ttt{doSomething} with a value which has a property \ttt{x} of type \ttt{string}.
+Next, we define a variable \ttt{z} which has two properties.
+The first property is \ttt{x} of type \ttt{string} and the second is \ttt{y} of type \ttt{number}.
+Finally, we can safely call \ttt{doSomething} with \ttt{z} even though \ttt{z} has a property \ttt{y} in which we are not interested.
+We have satisfied the constraint of property \ttt{x} with type \ttt{string} and the resulting code is valid.
+
+Note that \ttt{z} itself is initialised with an object that has a property \ttt{x} of value \ttt{""} (empty string) and property \ttt{y} of value \ttt{42}.
+If \ttt{x} would also be given the value \ttt{42} then the assignment would be invalid since both properies \ttt{x} and \ttt{y} of the object would be of type \ttt{number} and \ttt{z} expects \ttt{x} to be of type \ttt{string}.
 
 \section*{Modelling Structural Types in Statix}
 To explain how \ttt{TypeScript} can be modelled using Statix we are going to look at a few examples.
