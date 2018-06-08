@@ -124,7 +124,43 @@ Finally, we can safely call \ttt{doSomething} with \ttt{z} even though \ttt{z} h
 We have satisfied the constraint of property \ttt{x} with type \ttt{string} and the resulting code is valid.
 
 Note that \ttt{z} itself is initialised with an object that has a property \ttt{x} of value \ttt{""} (empty string) and property \ttt{y} of value \ttt{42}.
-If \ttt{x} would also be given the value \ttt{42} then the assignment would be invalid since both properies \ttt{x} and \ttt{y} of the object would be of type \ttt{number} and \ttt{z} expects \ttt{x} to be of type \ttt{string}.
+If \ttt{x} would also be given the value \ttt{42} then the assignment would be invalid since both properties \ttt{x} and \ttt{y} of the object would be of type \ttt{number} and \ttt{z} expects \ttt{x} to be of type \ttt{string}.
+
+\begin{center}
+    \begin{minipage}{.75\textwidth}
+    \lstinputlisting[
+        language = typescript, 
+        caption = \label{lst:nominal_i}
+        ]{nominal_i.ts}
+    \end{minipage}
+\end{center}
+To prove that \ttt{TypeScript} does not have a notion of nominal typing we present Listing~\ref{lst:nominal_i}.
+We define two interfaces, \ttt{Foo} and \ttt{Bar} which both have the same properties \ttt{x} of type \ttt{string} and \ttt{y} of type \ttt{number}.
+Next we declare a variable \ttt{v} of type \ttt{Bar} and initialise it with an object literal.
+Following that we declare a variable \ttt{w} which is of type \ttt{Foo} and assign \ttt{v} to it.
+Even though \ttt{w} is of type \ttt{Foo} we can still assign something of type \ttt{Bar} since it has the same properties.
+This is similar to Listing~\ref{lst:complex_i}.
+
+\begin{center}
+    \begin{minipage}{.75\textwidth}
+    \lstinputlisting[
+        language = typescript, 
+        caption = \label{lst:nominal_ii}
+        ]{nominal_ii.ts}
+    \end{minipage}
+\end{center}
+
+Now, we extend Listing~\ref{lst:nominal_i} to Listing~\ref{lst:nominal_ii}.
+We also declare a function \ttt{doSomething} which has one parameter \ttt{val} of type \ttt{Bar}.
+Again, we declare a variable \ttt{v} which we initialize with an object.
+However, this time we also add a property \ttt{z} of type \ttt{boolean} to the object literal.
+One might expect this to be valid because, even though \ttt{Bar} does not have a property \ttt{z} of type \ttt{boolean}, you would expect the compiler to ignore this because all other properties of \ttt{Bar} are satisfied.
+In Listing~\ref{lst:records} we saw that we could call \ttt{doSomething} with an object which had more properties than we were interested in.
+Still, the compiler would ignore this and the code would be valid.
+Yet the code in Listing~\ref{lst:nominal_ii} is not valid.
+In \ttt{TypeScript} it is not allowed to initialise a variable with an object literal which has properties that are not defined on the type.
+It is also not valid to assign \ttt{v} to \ttt{w} since \ttt{v} is missing property \ttt{z} of type \ttt{boolean}; this happens on line 17. 
+
 
 \section*{Modelling Structural Types in Statix}
 To explain how \ttt{TypeScript} can be modelled using Statix we are going to look at a few examples.
