@@ -25,11 +25,29 @@
   sensitive=true
 }
 
-\lstset{language=java, showstringspaces=false, basicstyle=\small,
-  numbers=left, numberstyle=\tiny, numberfirstline=false, breaklines=true,
-  stepnumber=1, tabsize=8, 
-  commentstyle=\ttfamily, identifierstyle=\ttfamily,
-  stringstyle=\itshape}
+\lstdefinelanguage{statix} {
+  keywords={scope, rules, constraint, sorts, relations, namespaces, constructors, occurrence, labels, resolve, filter, min, query, new, with, decl, filter, and, in, path, pathMatch, pathLT, list},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`,
+  sensitive=true
+}
+
+\lstset{
+  showstringspaces=false, 
+  basicstyle=\small,
+  numbers=left, 
+  numberstyle=\tiny, 
+  numberfirstline=false, 
+  breaklines=true,
+  stepnumber=1, 
+  tabsize=4, 
+  commentstyle=\ttfamily, 
+  identifierstyle=\ttfamily,
+  stringstyle=\itshape
+}
 
 \title{Language Engineering Project - Statix Description}
 \author{Michiel van Spaendonck (4310071), Nouri Khalass (4742397)}
@@ -45,7 +63,7 @@ Our work can be considered somewhat of a continuation of a previous analysis of 
 The authors go into detail as to how \texttt{TypeScript} could be modelled in a constraint based type checker.
 
 \section*{Structural Types}
-In a stuctural type systems types are said to be equivalent when they are of the same structure.
+In a structural type systems types are said to be equivalent when they are of the same structure.
 This as opposed to types in a nominal type system where only the name of a type has to be equivalent.
 In a nominal type system two objects are not of the same type even though they might have identical member values.
 Compare Listing~\ref{lst:structural_typescript} with Listing~\ref{lst:structural_java}.
@@ -152,7 +170,7 @@ This is similar to Listing~\ref{lst:complex_i}.
 
 Now, we extend Listing~\ref{lst:nominal_i} to Listing~\ref{lst:nominal_ii}.
 We also declare a function \ttt{doSomething} which has one parameter \ttt{val} of type \ttt{Bar}.
-Again, we declare a variable \ttt{v} which we initialize with an object.
+Again, we declare a variable \ttt{v} which we initialise with an object.
 However, this time we also add a property \ttt{z} of type \ttt{boolean} to the object literal.
 One might expect this to be valid because, even though \ttt{Bar} does not have a property \ttt{z} of type \ttt{boolean}, you would expect the compiler to ignore this because all other properties of \ttt{Bar} are satisfied.
 In Listing~\ref{lst:records} we saw that we could call \ttt{doSomething} with an object which had more properties than we were interested in.
@@ -161,7 +179,6 @@ Yet the code in Listing~\ref{lst:nominal_ii} is not valid.
 In \ttt{TypeScript} it is not allowed to initialise a variable with an object literal which has properties that are not defined on the type.
 It is also not valid to assign \ttt{v} to \ttt{w} since \ttt{v} is missing property \ttt{z} of type \ttt{boolean}; this happens on line 17. 
 
-
 \section*{Modelling Structural Types in Statix}
 To explain how \ttt{TypeScript} can be modelled using Statix we are going to look at a few examples.
 First, modelling a type system that does not necessary rely on structural typing is easy.
@@ -169,14 +186,14 @@ Listing~\ref{lst:statix_code_i} shows a simple program supporting expressions wi
 Next to that, Listing~\ref{lst:statix_impl_i} shows what the corresponding constraint rules might look like.
 
 \noindent
-\begin{minipage}{.45\textwidth}
+\begin{minipage}{.32\textwidth}
 \lstinputlisting[
     language = c++, 
     caption = \label{lst:statix_code_i}
     ]{statix_code_i.ts}
 \end{minipage}
 \hfill$\Longleftrightarrow$\hfill\hfill\hfill
-\begin{minipage}{.45\textwidth}
+\begin{minipage}{.58\textwidth}
 \lstinputlisting[
     language = c++, 
     caption = \label{lst:statix_impl_i}
@@ -194,6 +211,24 @@ We specify that each variant of an \ttt{Expression} resolves to is appropriate t
 For example, a \ttt{NumberLiteral} is of \ttt{Type} \ttt{Number}.
 Notice that none of the specification use the scope \ttt{s}.
 This makes sense for literals but when we must resolve the type of an \ttt{Identifier} \ttt{Expression} then we would probably need to use the scope to access the corresponding declaration.
+\\\\
+The \ttt{Type}s that are used in Listing~\ref{lst:statix_impl_i} need to be declared.
+We have a \ttt{Number}, \ttt{String} and \ttt{Boolean} type, and one might imagine having an \ttt{Object} type which relates to an object with properties.
+In \ttt{Statix} it is required to declare ``constructors'' for each of these types.
+Listing~\ref{lst:statix_type_decls} shows the constructors for each of the before mentioned types.
+
+\begin{center}
+    \begin{minipage}{.35\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:statix_type_decls}
+        ]{statix_type_decls.stx}
+    \end{minipage}
+\end{center}
+
+We specify that a \ttt{Number} is a \ttt{Type} and that a \ttt{String} is a \ttt{Type} etc.
+Notice that an \ttt{Object} has a scope and also resolves to \ttt{Type}, similar to \ttt{Number}.
+The scope holds the properties that are present in the object.
 
 \bibliographystyle{ieeetr}
 \bibliography{bibliography}
