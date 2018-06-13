@@ -1,0 +1,6 @@
+constraints
+  type_equal : Type * Type
+
+  type_equal(Number(), Number()).
+  type_equal(String(), String()).
+  type_equal(Boolean(), Boolean()).
