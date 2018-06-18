@@ -230,50 +230,50 @@ The scope holds the properties that are present in the object.
 
 As was shown in Listing~\ref{lst:nominal_i}, \ttt{TypeScript} relies purely on structural typing.
 It is not the name of the type that is important but the structure of the type that decides whether two types are equal.
+
 For this reason we need rules to check if types are equal.
 These rules are simple for the basic types like \ttt{String} and \ttt{Number}.
 However, checking whether two \ttt{Object} types are equal requires a structural check.
 First we will give the \ttt{Statix} rules which check if the simple types are equal.
-In Listing~\ref{lst:type_equal_i} we declare a \textit{constraint} called \ttt{type\_equal}.
-This constraint will specify which two types are allowed to be equal, and under which condition.
-\ttt{Number}, \ttt{String} and \ttt{Boolean} are only equal to themselves.
+In Listing~\ref{lst:is_subtype_i} we declare a \textit{constraint} called \ttt{is\_subtype}.
+This constraint will hold when a type \ttt{A} is a subtype of \ttt{B}.
+A subtype must have all properties which are present in the supertype, but can also have additional properties not present in the supertype.
+\ttt{Number}, \ttt{String} and \ttt{Boolean} are always the subtype to themselves because they are equal to themselves.
 
 \begin{center}
     \begin{minipage}{.55\textwidth}
     \lstinputlisting[
         language = statix, 
-        caption = \label{lst:type_equal_i}
-        ]{type_equal_i.stx}
+        caption = \label{lst:is_subtype_i}
+        ]{is_subtype_i.stx}
     \end{minipage}
 \end{center}
-Now, checking whether two \ttt{Object} types are equal requires recursively going over their properties.
-This is because a property of an \ttt{Object} might also be of type \ttt{Object}.
+Now, checking whether an \ttt{Object} type is a subtype of another \ttt{Object} type requires recursively going over all the properties in the supertype and checking whether they are present in the subtype.
 
 \begin{center}
     \begin{minipage}{.75\textwidth}
     \lstinputlisting[
         language = statix, 
-        caption = \label{lst:type_equal_ii}
-        ]{type_equal_ii.stx}
+        caption = \label{lst:is_subtype_ii}
+        ]{is_subtype_ii.stx}
     \end{minipage}
 \end{center}
-\\
 \noindent
-In Listing~\ref{lst:type_equal_ii} we introduce a new \ttt{type\_equal} constraint for \ttt{Object}s.
-In order to validate that the properties of the two objects are structurally the same we need to visit them recursively.
-However, first we need to extract all properties defined.
+In Listing~\ref{lst:is_subtype_ii} we introduce a new \ttt{is\_subtype} rule for \ttt{Object}s.
+In order to validate that the properties of the supertype are present in the subtype we need to gather all available properties in the supertype.
 We do this by performing a query.
 Line 2 and 5 say that we are interested in all declarations in the scope of \ttt{p1}.
 Because we are only interested in declarations that are of type \ttt{Property} we use \ttt{filter} on line 3 to filter out all other types of declarations.
-Next we have to take into account shadowing caused by 
+Next we have to take into account shadowing caused by looking how the path must resolve.
+\ttt{properties} will be an array of tuples and these tuples will be pairs of \ttt{path}s and \ttt{occurrence}s.
 Finally, on line 6 we start the process of recursively going over the properties of \ttt{p2}.
 \\
 \noindent
 We define \ttt{compare\_properties} to compare the structure of two \ttt{Objects}.
 Given a scope \ttt{properties} we check if a property \ttt{d2} can be resolved.
-If that is the case then we have a scope \ttt{p1} and an occurrence \ttt{d1}.
+If that is the case then we have a scope \ttt{p1} and an \ttt{occurrence} \ttt{d1}.
 Next we receive the type of the occurrences \ttt{d1} and \ttt{d2} respectively in \ttt{T1} and \ttt{T2}.
-Finally, to check whether these two types are equal we call \ttt{type\_equal} again which checks if the new types are also equal.
+Finally, to check whether these two types are equal we call \ttt{is\_subtype} again which checks if the new types are also equal.
 
 \bibliographystyle{ieeetr}
 \bibliography{bibliography}
