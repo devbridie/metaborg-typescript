@@ -94,7 +94,7 @@ constraint
   interface_type(scope, [ ], pscope).
   interface_type(scope, [(name, type') | rest], pscope):- {PropType}
     type of Type{type'@type'} in scope |-> [(_, (_, PropType))],
-    pscope -> Var{name@name} with type PropType, // error
+    pscope -> Var{name@name} with type PropType, // Error
     interface_type(scope, rest, pscope).
     
 rules
