@@ -1,4 +1,4 @@
-  type_equal(Object(p1), Object(p2)) :- {properties}
+  is_subtype(Object(p1), Object(p2)) :- {properties}
     query decl
       filter pathMatch[e] and { Property{_@_} }
       min pathLt[] and { Property{x@_} , Property{x@_} }
@@ -15,4 +15,4 @@ constraint
     d2 in properties |-> [(p1, d1)]
 	?type[d1, T1] in p1.dst,
 	?type[d2, T2] in p2.dst,
-	type_equal(T1, T2).
+	is_subtype(T1, T2).
