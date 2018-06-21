@@ -2,71 +2,104 @@ module typescript
 
 signature
   sorts ID = string
-  
-  sorts Type TypeParameter
+
+  sorts VariableType Let Const Var
   constructors
-  	TypeParameter : ID * Type -> TypeParameter
-    Any           : Type
-    NullType      : Type
-    UndefinedType : Type
-    Void          : Type
-    Number        : Type
-    Boolean       : Type
-    String        : Type
-    Function      : Type * list(Type) -> Type
-  
-  sorts Class ClassHeritage ClassMember Parameter 
-  constructors
-    PropertyDeclaration: ID * Type -> ClassMember
-    Parameter: ID * Type -> Parameter
-    MethodDeclaration: ID * list(Parameter) * Type -> ClassMember
-    ClassHeritage: ID -> ClassHeritage
-    Class: ID * list(TypeParameter) * ClassHeritage * list(ClassMember) -> Class
-    
-  sorts Assignment VariableType
-  constructors
-    Const : VariableType
-    Let   : VariableType
-    Var   : VariableType
-    Assignment: VariableType * ID * Type * Expression -> Assignment
-  
-  sorts Expression
-  constructors
-    Identifier      : ID -> Expression
-    NumberLiteral   : ID -> Expression
-    StringLiteral   : ID -> Expression
-    BooleanLiteral  : ID -> Expression
-    FunctionCall    : ID * list(Expression) -> Expression
-    FunctionDecl    : ID * list(Parameter) * Type -> Expression
-    ClassExpression : Class -> Expression
-  
-  sorts Statement
-  constructors
-    If     : Expression * list(Statement) -> Statement
-    IfElse : Expression * list(Statement) * list(Statement) -> Statement
-    While  : Expression * list(Statement) -> Statement
-    For    : Assignment * Expression * Statement -> Statement
-    Return : Expression -> Statement
+    Const: Const -> VariableType
+    Let  : Let   -> VariableType
+    Var  : Var   -> VariableType
   
   sorts Program
   constructors
-    Program : list(Statement) -> Program
+    Program: list(Statement) -> Program
+
+  sorts Statement
+  constructors
+    Declaration : ID * ID * Expression -> Statement
+    Assignment  : ID * Expression -> Statement
+    Interface   : ID * list((ID * ID)) -> Statement
+
+  sorts Expression
+  constructors
+    Identifier    : ID -> Expression
+    NumberLiteral : ID -> Expression
+    StringLiteral : ID -> Expression
+    ObjectLiteral : list((ID * Expression)) -> Expression
+
+  sorts Type
+  constructors
+    Number : Type
+    String : Type
+    Object : scope -> Type
+
+namespaces  
+  Var  : string
+  Type : string
+
+relations
+  type : occurrence -> Type
+
+rules
+  main: Program
   
-  namespaces
-    Var  : string
-    Type : string
+  main(program) :- {scope}
+    new scope,
+    scope -> Type{"number"@_} with type Number(),
+    scope -> Type{"string"@_} with type String(),
+    eval_program(scope, program).
+
+rules  
+  eval_program: scope * Program
   
-  relations
-    typeOfDecl : occurrence -> Type
-  	
-  rules 
-    typeOfExpr : scope * Expression -> Type
+  eval_program(scope, Program([ ])) :- true.
   
-    typeOfExpr(s, NumberLiteral(_))  = Number().
-    typeOfExpr(s, StringLiteral(_))  = String().
-    typeOfExpr(s, BooleanLiteral(_)) = Boolean().
+  eval_program(scope, Program([statement | rest])) :- 
+    eval_statement(scope, statement),
+    eval_program(scope, Program(rest)).
+
+rules    
+  eval_statement: scope * Statement
+  
+  eval_statement( scope, Declaration(name, type', value) ) :- {ExprType DeclType}
+    eval_expression(scope, value) == ExprType,
+    type of Type{type'@type'} in scope |-> [(_, (_, DeclType))],
+    scope -> Var{name@name} with type DeclType,
+    is_subtype(ExprType, DeclType).
+  
+  eval_statement( scope, Assignment(name, value) ) :- {ExprType DeclType}
+    eval_expression(scope, value) == ExprType,
+    type of Var{name@name} in scope |-> [(_, (_, DeclType))],
+    ExprType == DeclType.
+  
+  eval_statement( scope, Interface(name, properties) ) :- {pscope}
+    new pscope,
+    interface_type(scope, properties, pscope),
+    scope -> Type{name@name} with type Object(pscope).
+
+rules
+  eval_expression: scope * Expression -> Type
+  
+  eval_expression( scope, NumberLiteral(value) ) = Number().
+  eval_expression( scope, StringLiteral(value) ) = String().
     
-    typeOfExpr(s, FunctionDecl(_, parameters, ret_type)) = Function(ret_type, [ ]).
-    typeOfExpr(s, FunctionDecl(_, [Parameter(_, param_type)], ret_type)) = Function(ret_type, [ param_type ]).
+  eval_expression( scope, Identifier(name) ) = T :- 
+    type of Var{name@name} in scope |-> [(_, (_, T))].
+  
+  eval_expression( scope, ObjectLiteral([ ]) ) = Object(new).
+  eval_expression( scope, ObjectLiteral([property | rest]) ) = Object(new).
+
+constraint
+  interface_type: scope * list((ID * ID)) * scope
+  
+  interface_type(scope, [ ], pscope).
+  interface_type(scope, [(name, type') | rest], pscope):- {PropType}
+    type of Type{type'@type'} in scope |-> [(_, (_, PropType))],
+    pscope -> Var{name@name} with type PropType, // error
+    interface_type(scope, rest, pscope).
     
-    typeOfExpr(s, Identifier(value)) = T :- typeOfDecl of Var{value@value} in s |-> [(_, T)].
+rules
+  is_subtype: Type * Type
+  
+  is_subtype(Number(), Number()).
+  is_subtype(String(), String()).
+  is_subtype(Object(_), Object(_)).

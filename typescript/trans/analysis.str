@@ -2,23 +2,20 @@ module analysis
 
 imports
   
-  nabl2shared
-  nabl2runtime 
   nabl2/api
-
+  nabl2/runtime
+  
   statixruntime
-
-  typechecking/-
-  desugaring/desugar
+  
   pp
 
 rules // Analysis
 
- // editor-analyze = nabl2-analyze(desugar-all)
+  // editor-analyze = nabl2-analyze(id)
+  
+  editor-analyze: (ast, path, project-path) -> result
+	with result := <stx-analyze(|"typescript", "main")> ast
 
-	editor-analyze: (ast, path, project-path) -> result
-    	with result := <stx-analyze(|"typescript", "main")> ast
-    	
 rules // Debugging
   
   // Prints the abstract syntax ATerm of a selection.
@@ -30,12 +27,3 @@ rules // Debugging
   debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)
     with filename := <guarantee-extension(|"analyzed.aterm")> path
        ; result   := selected
-
-signature
-	sorts
-		Origin
-
-	constructors
-		Field: Origin
-		Param: Origin
-		Local: Origin

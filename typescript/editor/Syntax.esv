@@ -9,7 +9,7 @@ imports
 language
 
   table         : target/metaborg/sdf.tbl
-  start symbols : Program
+  start symbols : Start
 
   line comment  : "//"
   block comment : "/*" * "*/"
