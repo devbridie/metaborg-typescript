@@ -6,18 +6,19 @@ imports
   nabl2runtime 
   nabl2/api
 
+  statixruntime
+
   typechecking/-
   desugaring/desugar
   pp
 
 rules // Analysis
 
-  editor-analyze = nabl2-analyze(desugar-all)
+ // editor-analyze = nabl2-analyze(desugar-all)
 
- nabl2-debug-analysis-hook = id
-
-  nabl2-debug-constraint-generation-hook = id
-
+	editor-analyze: (ast, path, project-path) -> result
+    	with result := <stx-analyze(|"typescript", "main")> ast
+    	
 rules // Debugging
   
   // Prints the abstract syntax ATerm of a selection.
