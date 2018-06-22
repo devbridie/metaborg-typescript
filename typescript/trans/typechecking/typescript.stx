@@ -85,19 +85,29 @@ rules
   eval_expression( scope, Identifier(name) ) = T :- 
     type of Var{name@name} in scope |-> [(_, (_, T))].
   
-  eval_expression( scope, ObjectLiteral([ ]) ) = Object(new).
-  eval_expression( scope, ObjectLiteral([property | rest]) ) = Object(new).
+  eval_expression( scope, ObjectLiteral(properties) ) = Object(pscope) :-
+    new pscope,
+    object_type(scope, properties, pscope).
 
-constraint
+rules
   interface_type: scope * list((ID * ID)) * scope
   
   interface_type(scope, [ ], pscope).
   interface_type(scope, [(name, type') | rest], pscope):- {PropType}
     type of Type{type'@type'} in scope |-> [(_, (_, PropType))],
-    pscope -> Var{name@name} with type PropType, // Error
+    pscope -> Var{name@name} with type PropType,
     interface_type(scope, rest, pscope).
-    
+
 rules
+  object_type: scope * list((ID * Expression)) * scope 
+  
+  object_type(scope, [ ], pscope).
+  object_type(scope, [(name, value) | rest], pscope) :- {ExprType}
+    eval_expression(scope, value) == ExprType,
+    pscope -> Var{name@name} with type ExprType,
+    object_type(scope, rest, pscope).
+    
+constraint
   is_subtype: Type * Type
   
   is_subtype(Number(), Number()).
