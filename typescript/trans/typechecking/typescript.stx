@@ -44,8 +44,8 @@ rules
   
   main(program) :- {scope}
     new scope,
-    scope -> Type{"number"@_} with type Number(),
-    scope -> Type{"string"@_} with type String(),
+//    scope -> Type{"number"@program} with type Number(),
+//    scope -> Type{"string"@program} with type String(),
     eval_program(scope, program).
 
 rules  
@@ -62,8 +62,11 @@ rules
   
   eval_statement( scope, Declaration(name, type', value) ) :- {ExprType DeclType}
     eval_expression(scope, value) == ExprType,
-    type of Type{type'@type'} in scope |-> [(_, (_, DeclType))],
-    scope -> Var{name@name} with type DeclType,
+    
+//    type of Type{"number"@type'} in scope |-> [(_, (_, DeclType))],
+    eval_type(scope, type') == DeclType,
+    
+    scope -> Var{name@name} with type ExprType,
     is_subtype(ExprType, DeclType).
   
   eval_statement( scope, Assignment(name, value) ) :- {ExprType DeclType}
@@ -82,19 +85,35 @@ rules
   eval_expression( scope, NumberLiteral(value) ) = Number().
   eval_expression( scope, StringLiteral(value) ) = String().
     
-  eval_expression( scope, Identifier(name) ) = T :- 
-    type of Var{name@name} in scope |-> [(_, (_, T))].
+  eval_expression( scope, Identifier(name) ) = Number() :- {ps}
+    query decl 
+       filter pathMatch[e] and { d :- {p} d == Var{name@p} }
+       min false and true 
+    in scope |-> [(_, _)].
   
   eval_expression( scope, ObjectLiteral(properties) ) = Object(pscope) :-
     new pscope,
     object_type(scope, properties, pscope).
 
 rules
+  eval_type: scope * ID -> Type
+  
+  eval_type(scope, "number") = Number().
+  eval_type(scope, "string") = String().
+  eval_type(scope, name) = Number()  :-
+    query decl 
+       filter pathMatch[e] and { d :- {p} d == Type{name@p} }
+       min false and true 
+    in scope |-> [(_, _)].
+
+rules
   interface_type: scope * list((ID * ID)) * scope
   
   interface_type(scope, [ ], pscope).
   interface_type(scope, [(name, type') | rest], pscope):- {PropType}
-    type of Type{type'@type'} in scope |-> [(_, (_, PropType))],
+    eval_type(scope, type') == PropType,
+//    type of Type{type'@type'} in scope |-> [(_, (_, PropType))],
+    
     pscope -> Var{name@name} with type PropType,
     interface_type(scope, rest, pscope).
 
