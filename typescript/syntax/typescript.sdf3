@@ -17,77 +17,24 @@ context-free start-symbols
   NameTypePair
   NameExprPair
 
-//  Statement
-//  Block
-//  
-//  VariableType
-//  
-//  ClassMember
-//  
-//  Type
-//  Expression
-//  
-//  NameTypePair
-//  NameExprPair
-
 context-free syntax
   
   Start.Program = Statement*
   
-  Statement.Declaration = <let <ID> : <ID> = <Expression>;>
-  Statement.Assignment  = <<ID> = <Expression>;>
-  Statement.Interface   = <interface <ID> { <{NameTypePair ","}*> }>
+  Statement.Declaration = <let <ID> : <Type> = <Expression>;>
+  Statement.TypeDecl = <type <ID> = <Type>;>
   
-  Expression.NumberLiteral = INT
-  Expression.Identifier    = ID
-  Expression.StringLiteral = <"<ID>">
-  Expression.ObjectLiteral = <{ <{NameExprPair ","}*> }>
+  Expression.NumberLiteral  = INT
+  Expression.Identifier     = ID
+  Expression.StringLiteral  = <"<ID>">
+  Expression.BooleanLiteral = "false" {prefer}
+  Expression.BooleanLiteral = "true" {prefer}
+  Expression.ObjectLiteral  = <{ <{NameExprPair ","}*> }>
   
-  Type = ID
-  // Type = "{" {NameTypePair ","}* "}"
+  Type.Named = ID  
+  Type.Union = <<Type> | <Type>> {left}
+  Type.Intersection = <<Type> & <Type>> {left}
+  Type.Structure = "{" {NameTypePair ","}* "}"
   
   NameTypePair = ID ":" Type
   NameExprPair = ID ":" Expression
-  
-//  Start.Empty = <>
-//  Start.Program = Statement*
-//  
-//  Block = "{" Statement* "}"
-//  
-//  Statement.Assignment  = ID "=" Expression ";"
-//  
-//  Statement.Block = Block
-//    
-//  Statement.VarDecl = VariableType ID ";"
-//  Statement.VarDecl = VariableType NameTypePair ";"
-//  Statement.VarDecl = VariableType ID "=" Expression ";"
-//  Statement.VarDecl = VariableType NameTypePair "=" Expression ";"  
-//  
-//  VariableType.Var = "var"
-//  VariableType.Const = "const"
-//  VariableType.Let = "let"
-//  
-//  Statement.ClassDecl = "class" ID "{" ClassMember* "}" 
-//  
-//  ClassMember.Property = NameTypePair ";"
-//  ClassMember.Method   = ID "(" {NameTypePair ","}* ")" ":" Type Block
-//  
-//  Statement.FuncDecl = "function" ID "(" {NameTypePair ","}* ")" Block
-//  Statement.FuncDecl = "function" ID "(" {NameTypePair ","}* ")" ":" Type Block
-//
-//  Statement.Return = "return" Expression ";"
-//  
-//  Statement.If = "if" "(" Expression ")" Statement
-//  Statement.If = "if" "(" Expression ")" Statement "else" Statement
-//  
-//  Type.Number = "number"
-//  Type.String = "string"
-//  Type.Object = "{" {NameTypePair ","}* "}"
-//  
-//  Expression.Number = INT
-//  Expression.String = STRING
-//  Expression.Object = "{" {NameExprPair ","}* "}"
-//  Expression.Call   = {Expression "."}+ "(" {Expression ","}* ")"
-//  
-//  NameTypePair = ID ":" Type
-//  NameExprPair = ID ":" Expression
