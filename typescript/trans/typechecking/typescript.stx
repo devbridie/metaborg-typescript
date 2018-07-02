@@ -2,12 +2,6 @@ module typescript
 
 signature
   sorts ID = string
-
-  sorts VariableType Let Const Var
-  constructors
-    Const: Const -> VariableType
-    Let  : Let   -> VariableType
-    Var  : Var   -> VariableType
   
   sorts Program
   constructors
@@ -15,22 +9,25 @@ signature
 
   sorts Statement
   constructors
-    Declaration : ID * ID * Expression -> Statement
-    Assignment  : ID * Expression -> Statement
-    Interface   : ID * list((ID * ID)) -> Statement
+    Declaration : ID * TypeExpr * Expression -> Statement
+    TypeDecl    : ID * TypeExpr -> Statement
 
   sorts Expression
   constructors
-    Identifier    : ID -> Expression
-    NumberLiteral : ID -> Expression
-    StringLiteral : ID -> Expression
-    ObjectLiteral : list((ID * Expression)) -> Expression
+    Identifier     : ID -> Expression
+    NumberLiteral  : ID -> Expression
+    StringLiteral  : ID -> Expression
+    BooleanLiteral : Expression
+    ObjectLiteral  : list((ID * Expression)) -> Expression
 
-  sorts Type
+  sorts Type = scope
+  
+  sorts TypeExpr
   constructors
-    Number : Type
-    String : Type
-    Object : scope -> Type
+    Named : ID -> TypeExpr
+    Union : TypeExpr * TypeExpr -> TypeExpr
+    Intersection : TypeExpr * TypeExpr -> TypeExpr
+    Structure : list((ID * TypeExpr)) -> TypeExpr
 
 namespaces  
   Var  : string
@@ -42,11 +39,41 @@ relations
 rules
   main: Program
   
-  main(program) :- {scope}
-    new scope,
-//    scope -> Type{"number"@program} with type Number(),
-//    scope -> Type{"string"@program} with type String(),
-    eval_program(scope, program).
+  main(program) :- {scope xyz number_scope string_scope boolean_scope}
+	// Create base scope
+	new scope,
+	
+	// Create property scopes for base types
+	new number_scope,
+	new string_scope,
+	new boolean_scope,
+	
+	// Fill scope with unique property
+	number_scope -> Var{"#number"@-} with type new,
+	string_scope -> Var{"#string"@-} with type new,
+	boolean_scope -> Var{"#boolean"@-} with type new,
+	
+	// Add types to scope
+	scope -> Type{"number"@-} with type number_scope,
+	scope -> Type{"string"@-} with type string_scope,
+	scope -> Type{"boolean"@-} with type boolean_scope,
+		
+	// Test using queries if number is declared
+	query decl
+	  filter pathMatch[e] and { Type{"number"@-} }
+	  min false and true
+	in scope |-> [(_, _)],
+	
+	// Test if "string" is declared using a variable
+	xyz == "string",
+	Type{xyz@-} in scope |-> [(_, _)],
+	
+	// Test if "number" is associated with the number scope
+	type of Type{"number"@-} in scope |-> [(_, (_, number_scope))],
+		
+    // Evaluate program
+	eval_program(scope, program),
+    true.
 
 rules  
   eval_program: scope * Program
@@ -60,75 +87,236 @@ rules
 rules    
   eval_statement: scope * Statement
   
-  eval_statement( scope, Declaration(name, type', value) ) :- {ExprType DeclType}
+  eval_statement( scope, Declaration(name, type', value) ) | 
+   value != ObjectLiteral(_) :- {ExprType DeclType}
     eval_expression(scope, value) == ExprType,
-    
-//    type of Type{"number"@type'} in scope |-> [(_, (_, DeclType))],
     eval_type(scope, type') == DeclType,
-    
-    scope -> Var{name@name} with type ExprType,
-    is_subtype(ExprType, DeclType).
+    scope -> Var{name@scope} with type DeclType,   
+    is_subtype(DeclType, ExprType).
   
-  eval_statement( scope, Assignment(name, value) ) :- {ExprType DeclType}
+  eval_statement( scope, Declaration(name, type', value) ) |
+   value == ObjectLiteral(_) :- {ExprType DeclType}
     eval_expression(scope, value) == ExprType,
-    type of Var{name@name} in scope |-> [(_, (_, DeclType))],
-    ExprType == DeclType.
+    eval_type(scope, type') == DeclType,
+    scope -> Var{name@scope} with type DeclType,
+    has_properties(ExprType, DeclType),
+    is_subtype(DeclType, ExprType).
   
-  eval_statement( scope, Interface(name, properties) ) :- {pscope}
-    new pscope,
-    interface_type(scope, properties, pscope),
-    scope -> Type{name@name} with type Object(pscope).
+  eval_statement( scope, TypeDecl(name, type') ) :- {DeclType}
+    eval_type(scope, type') == DeclType,
+    scope -> Type{name@-} with type DeclType.
 
 rules
   eval_expression: scope * Expression -> Type
   
-  eval_expression( scope, NumberLiteral(value) ) = Number().
-  eval_expression( scope, StringLiteral(value) ) = String().
+  eval_expression(scope, NumberLiteral(value)) = 
+    eval_type(scope, Named("number")).
     
-  eval_expression( scope, Identifier(name) ) = Number() :- {ps}
-    query decl 
-       filter pathMatch[e] and { d :- {p} d == Var{name@p} }
-       min false and true 
-    in scope |-> [(_, _)].
+  eval_expression(scope, StringLiteral(value)) = 
+    eval_type(scope, Named("string")).
   
-  eval_expression( scope, ObjectLiteral(properties) ) = Object(pscope) :-
-    new pscope,
-    object_type(scope, properties, pscope).
-
-rules
-  eval_type: scope * ID -> Type
-  
-  eval_type(scope, "number") = Number().
-  eval_type(scope, "string") = String().
-  eval_type(scope, name) = Number()  :-
-    query decl 
-       filter pathMatch[e] and { d :- {p} d == Type{name@p} }
-       min false and true 
-    in scope |-> [(_, _)].
-
-rules
-  interface_type: scope * list((ID * ID)) * scope
-  
-  interface_type(scope, [ ], pscope).
-  interface_type(scope, [(name, type') | rest], pscope):- {PropType}
-    eval_type(scope, type') == PropType,
-//    type of Type{type'@type'} in scope |-> [(_, (_, PropType))],
+   eval_expression(scope, BooleanLiteral()) = 
+    eval_type(scope, Named("boolean")).
     
-    pscope -> Var{name@name} with type PropType,
-    interface_type(scope, rest, pscope).
+  eval_expression(scope, Identifier(name)) = T :- 
+    type of Var{name@name} in scope |-> [(_, (_, T))].
 
-rules
-  object_type: scope * list((ID * Expression)) * scope 
+  eval_expression(scope, ObjectLiteral(properties)) = T :-
+    new T,
+    parse_object(scope, properties, T).
+
+  parse_object : scope * list((ID * Expression)) * Type
   
-  object_type(scope, [ ], pscope).
-  object_type(scope, [(name, value) | rest], pscope) :- {ExprType}
+  parse_object(scope, [], pscope).
+  parse_object(scope, [(name, value) | rest], pscope) :- {ExprType}
     eval_expression(scope, value) == ExprType,
-    pscope -> Var{name@name} with type ExprType,
-    object_type(scope, rest, pscope).
+    pscope -> Var{name@-} with type ExprType,
+    parse_object(scope, rest, pscope).
+  
+rules
+  eval_type: scope * TypeExpr -> Type
+  
+// Parse a simple named type
+  eval_type(scope, Named(type')) = T :-
+    type of Type{type'@-} in scope |-> [(_, (_, T))].
+
+// Parse a structured type  
+  eval_type(scope, Structure([])) = new.
+  eval_type(scope, Structure(properties)) = pscope :-
+    new pscope,
+    parse_structure(scope, properties, pscope).
+  
+  parse_structure : scope * list((ID * TypeExpr)) * Type
+  
+  parse_structure(scope, [], pscope).
+  parse_structure(scope, [(name, type') | rest], pscope) :- {DeclType}
+    eval_type(scope, type') == DeclType,
+    pscope -> Var{name@-} with type DeclType,
+    parse_structure(scope, rest, pscope).
+
+// Parse intersection of types    
+  eval_type(scope, Intersection(a, b)) = new_type :- {type_a type_b}
+    eval_type(scope, a) == type_a,
+    eval_type(scope, b) == type_b,
     
+    intersection(type_a, type_b) == new_type.
+ 
+  intersection: Type * Type -> Type
+  intersection(a, b) = new_type :- { unequal_props }
+    new new_type,
+    
+    copy_difference(new_type, a, b),
+    copy_difference(new_type, b, a),
+    
+    // Check which properties are declared in both a and b and that ARE type equal
+    copy_equal(new_type, a, b),
+        
+    unequal_props == find_unequal(a, b),
+    
+    // We need to hoist over the properties that are declared in both a and b
+    // but that have a different type in a and in b
+    // The type of the corresponding property in new_type will be
+    // the intersection of the type of the property in a and 
+    // the type of the property in b
+    copy_intersection(new_type, a, b, unequal_props).
+  
+      
+  // Hoist the properties that are type equivalent over to the new type
+  // We use dst(path) as the scope in which we will lookup the type
+  // of the property
+  copy_property: Type * (path * occurrence)
+  copy_properties maps copy_property(*, list(*))
+  copy_property(new_type, (path, property)) :- {prop_type}
+    type of property in dst(path) |-> [(_, (_, prop_type))],
+    insert(new_type, property, prop_type).
+  
+  copy_intersect: Type * Type * Type * (path * occurrence)
+  copy_intersection maps copy_intersect(*, *, *, list(*))
+  copy_intersect(new_type, a, b, (path, property)) :- {prop_type pa pb}
+    type of property in a |-> [(_, (_, pa))],
+    type of property in b |-> [(_, (_, pb))],
+    prop_type == intersection(pa, pb),
+    insert(new_type, property, prop_type).
+  
+  copy_difference: Type * Type * Type
+  copy_difference(new_type, a, b) :- { properties }
+    query decl
+      filter pathMatch[e] and { d :- type of d in b |-> [ ] }
+    in a |-> properties,
+    copy_properties(new_type, properties).
+  
+  copy_equal: Type * Type * Type
+  copy_equal(new_type, a, b) :- { properties }
+    query decl
+      filter pathMatch[e] and {
+        d :- {ta tb}
+          type of d in a |-> [(_, (_, ta))],
+          type of d in b |-> [(_, (_, tb))],
+          
+          is_equaltype(ta, tb)
+      }
+    in a |-> properties,
+    copy_properties(new_type, properties).
+  
+  find_unequal: Type * Type -> list((path * occurrence))
+  find_unequal(a, b) = properties :-
+    query decl
+      filter pathMatch[e] and {
+        d :- {ta tb}
+          type of d in a |-> [(_, (_, ta))],
+          type of d in b |-> [(_, (_, tb))],
+          
+          // Kinda hacky but allows us to check whether two types are NOT equal
+          // When two types are equal the filter condition will be true
+          // and the output of the query will be a non empty list
+          // However when two types are not equal the result of the query
+          // will be an empty list which we can use to filter in the outer filter
+          query decl
+            filter pathMatch[e] and { d :- is_equaltype(ta, tb) }
+          in b |-> [ ]
+      }
+    in a |-> properties.
+    
+  insert: Type * occurrence * Type
+  insert(new_type, property, prop_type) :-
+    new_type -> property with type prop_type.
+       
+// Parse type union
+  eval_type(scope, Union(a, b)) = new_type :- {type_a type_b}
+    eval_type(scope, a) == type_a,
+    eval_type(scope, b) == type_b,
+    new_type == union(type_a, type_b).
+  
+  union: Type * Type -> Type
+  union(a, b) = new_type :-
+    new new_type,
+    
+    copy_equal(new_type, a, b),
+    
+    true.
+
+constraint
+  has_properties: Type * Type
+  has_properties(a, b) :- {props}
+    query decl
+      filter pathMatch[e] and { Var{_@-} }
+    in a |-> props,
+    assert_properties(b, props).
+
+  assert_property: Type * (path * occurrence)
+  assert_properties maps assert_property(*, list(*))
+  assert_property(scope, (path, property)) :-
+    property in scope |-> [_].
+
 constraint
   is_subtype: Type * Type
+    
+  is_subtype(super_scope, sub_scope) :- {props}
+    // Extract all declarations from the super type
+    query decl
+      filter pathMatch[e] and { Var{_@-} }
+      min pathLt[] and { Var{x@_}, Var{x@_} }
+    in super_scope |-> props,
+    
+    recurse_properties(sub_scope, props).
   
-  is_subtype(Number(), Number()).
-  is_subtype(String(), String()).
-  is_subtype(Object(_), Object(_)).
+  recurse_property : Type * (path * occurrence)
+  recurse_properties maps recurse_property(*, list(*))
+  
+  recurse_property(sub_scope, (super_path, super_decl)) :- 
+    {sub_path sub_decl sub_type super_type}
+    
+    type of super_decl in sub_scope       |-> [(_, (_, sub_type))],
+    type of super_decl in dst(super_path) |-> [(_, (_, super_type))],
+    
+    is_subtype(super_type, sub_type).  
+  
+  is_equaltype: Type * Type
+  is_equaltype(a, b) :-
+    is_subtype(a, b),
+    is_subtype(b, a).
+
+constraint
+  type_equivalence: Type * Type -> int
+  
+  type_equivalence(a, b) = 0 :-
+    
+    query decl
+      filter pathMatch[e] and {
+        d :- {ta tb}
+          ?decl[d] in b,
+          
+          type of d in a |-> [(_, (_, ta))],
+          type of d in b |-> [(_, (_, tb))],
+          
+          is_equaltype(ta, tb)
+      }
+    in a |-> [_].
+  
+constraint 
+  is_declared : Type * Type -> list((path * occurrence))
+  
+  is_declared(a, b) = T :-
+    query decl
+      filter pathMatch[e] and { d :- ?decl[d] in b } 
+    in a |-> T.
