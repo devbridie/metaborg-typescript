@@ -9,8 +9,8 @@ signature
 
   sorts Statement
   constructors
-    Declaration : ID * TypeExpr * Expression -> Statement
-    TypeDecl    : ID * TypeExpr -> Statement
+    VarDecl  : ID * TypeExpr * Expression -> Statement
+    TypeDecl : ID * TypeExpr -> Statement
 
   sorts Expression
   constructors
@@ -28,7 +28,7 @@ signature
     Union : TypeExpr * TypeExpr -> TypeExpr
     Intersection : TypeExpr * TypeExpr -> TypeExpr
     Structure : list((ID * TypeExpr)) -> TypeExpr
-
+    
 namespaces  
   Var  : string
   Type : string
@@ -72,153 +72,228 @@ rules
 	type of Type{"number"@-} in scope |-> [(_, (_, number_scope))],
 		
     // Evaluate program
-	eval_program(scope, program),
-    true.
+	eval_program(scope, program).
 
-rules  
-  eval_program: scope * Program
+eval_program: scope * Program
   
   eval_program(scope, Program([ ])) :- true.
   
   eval_program(scope, Program([statement | rest])) :- 
     eval_statement(scope, statement),
     eval_program(scope, Program(rest)).
-
-rules    
-  eval_statement: scope * Statement
-  
-  eval_statement( scope, Declaration(name, type', value) ) | 
-   value != ObjectLiteral(_) :- {ExprType DeclType}
-    eval_expression(scope, value) == ExprType,
-    eval_type(scope, type') == DeclType,
-    scope -> Var{name@scope} with type DeclType,   
-    is_subtype(DeclType, ExprType).
-  
-  eval_statement( scope, Declaration(name, type', value) ) |
-   value == ObjectLiteral(_) :- {ExprType DeclType}
-    eval_expression(scope, value) == ExprType,
-    eval_type(scope, type') == DeclType,
-    scope -> Var{name@scope} with type DeclType,
-    has_properties(ExprType, DeclType),
-    is_subtype(DeclType, ExprType).
-  
-  eval_statement( scope, TypeDecl(name, type') ) :- {DeclType}
-    eval_type(scope, type') == DeclType,
-    scope -> Type{name@-} with type DeclType.
-
-rules
-  eval_expression: scope * Expression -> Type
-  
-  eval_expression(scope, NumberLiteral(value)) = 
-    eval_type(scope, Named("number")).
     
-  eval_expression(scope, StringLiteral(value)) = 
-    eval_type(scope, Named("string")).
+eval_statement: scope * Statement
   
-   eval_expression(scope, BooleanLiteral()) = 
-    eval_type(scope, Named("boolean")).
+  eval_statement(scope, VarDecl(name, type', value)) :- {decl_type expr_type}
+    decl_type == eval_type(scope, type'),
+    expr_type == eval_expression(scope, value),
+    check_assignability(decl_type, expr_type, value),
+    scope -> Var{name@-} with type decl_type.
+  
+  eval_statement(scope, TypeDecl(name, type')) :- {decl_type}
+    decl_type == eval_type(scope, type'),
+    scope -> Type{name@-} with type decl_type.
+
+eval_expression: scope * Expression -> Type
+
+  eval_expression(scope, NumberLiteral(value)) = T :-
+    type of Type{"number"@-} in scope |-> [(_, (_, T))].
     
+  eval_expression(scope, StringLiteral(value)) = T :-
+    type of Type{"string"@-} in scope |-> [(_, (_, T))].
+  
+  eval_expression(scope, BooleanLiteral()) = T :-
+    type of Type{"boolean"@-} in scope |-> [(_, (_, T))].
+
   eval_expression(scope, Identifier(name)) = T :- 
-    type of Var{name@name} in scope |-> [(_, (_, T))].
+    type of Var{name@-} in scope |-> [(_, (_, T))].
 
-  eval_expression(scope, ObjectLiteral(properties)) = T :-
-    new T,
-    parse_object(scope, properties, T).
+  eval_expression(scope, ObjectLiteral(properties)) = new_type :-
+    new new_type, parse_object(scope, properties, new_type).
 
-  parse_object : scope * list((ID * Expression)) * Type
-  
-  parse_object(scope, [], pscope).
-  parse_object(scope, [(name, value) | rest], pscope) :- {ExprType}
-    eval_expression(scope, value) == ExprType,
-    pscope -> Var{name@-} with type ExprType,
-    parse_object(scope, rest, pscope).
-  
-rules
-  eval_type: scope * TypeExpr -> Type
-  
-// Parse a simple named type
-  eval_type(scope, Named(type')) = T :-
-    type of Type{type'@-} in scope |-> [(_, (_, T))].
+eval_type: scope * TypeExpr -> Type
 
-// Parse a structured type  
-  eval_type(scope, Structure([])) = new.
-  eval_type(scope, Structure(properties)) = pscope :-
-    new pscope,
-    parse_structure(scope, properties, pscope).
+  eval_type(scope, Named(name)) = T :-
+    type of Type{name@-} in scope |-> [(_, (_, T))].
   
-  parse_structure : scope * list((ID * TypeExpr)) * Type
-  
-  parse_structure(scope, [], pscope).
-  parse_structure(scope, [(name, type') | rest], pscope) :- {DeclType}
-    eval_type(scope, type') == DeclType,
-    pscope -> Var{name@-} with type DeclType,
-    parse_structure(scope, rest, pscope).
-
-// Parse intersection of types    
-  eval_type(scope, Intersection(a, b)) = new_type :- {type_a type_b}
-    eval_type(scope, a) == type_a,
-    eval_type(scope, b) == type_b,
-    
-    intersection(type_a, type_b) == new_type.
- 
-  intersection: Type * Type -> Type
-  intersection(a, b) = new_type :- { unequal_props }
+  eval_type(scope, Union(a, b)) = new_type :- {type_a type_b}
     new new_type,
     
-    copy_difference(new_type, a, b),
-    copy_difference(new_type, b, a),
+    // Find the types of a and b
+    type_a == eval_type(scope, a),
+    type_b == eval_type(scope, b),
     
-    // Check which properties are declared in both a and b and that ARE type equal
-    copy_equal(new_type, a, b),
-        
-    unequal_props == find_unequal(a, b),
+    // Place the types of a and b in the "Type" namespace
+    // This namespace is used when dealing with subtype relations
+    new_type -> Type{"A"@-} with type type_a,
+    new_type -> Type{"B"@-} with type type_b,
     
-    // We need to hoist over the properties that are declared in both a and b
-    // but that have a different type in a and in b
-    // The type of the corresponding property in new_type will be
-    // the intersection of the type of the property in a and 
-    // the type of the property in b
-    copy_intersection(new_type, a, b, unequal_props).
+    // Compute the properties that are actually present in the type
+    unionise(new_type, type_a, type_b).
   
-      
-  // Hoist the properties that are type equivalent over to the new type
-  // We use dst(path) as the scope in which we will lookup the type
-  // of the property
-  copy_property: Type * (path * occurrence)
-  copy_properties maps copy_property(*, list(*))
-  copy_property(new_type, (path, property)) :- {prop_type}
-    type of property in dst(path) |-> [(_, (_, prop_type))],
-    insert(new_type, property, prop_type).
+  eval_type(scope, Intersection(a, b)) = new_type :- {type_a type_b}
+    new new_type,
+    
+    // Find the types of a and b
+    type_a == eval_type(scope, a),
+    type_b == eval_type(scope, b),
+    
+    // Compute the intersection
+    intersection(new_type, type_a, type_b).
   
-  copy_intersect: Type * Type * Type * (path * occurrence)
-  copy_intersection maps copy_intersect(*, *, *, list(*))
-  copy_intersect(new_type, a, b, (path, property)) :- {prop_type pa pb}
-    type of property in a |-> [(_, (_, pa))],
-    type of property in b |-> [(_, (_, pb))],
-    prop_type == intersection(pa, pb),
-    insert(new_type, property, prop_type).
-  
-  copy_difference: Type * Type * Type
-  copy_difference(new_type, a, b) :- { properties }
+  eval_type(scope, Structure(properties)) = new_type :-
+    new new_type, parse_structure(scope, properties, new_type).
+
+check_assignability: Type * Type * Expression
+
+  check_assignability(decl_type, expr_type, expression) 
+    | expression != ObjectLiteral(_) :-
+    is_subtype(decl_type, expr_type).
+
+  check_assignability(decl_type, expr_type, expression)
+    | expression == ObjectLiteral(_) :- {assign_type is_union}
+    // Check whether decl_type is a union
     query decl
-      filter pathMatch[e] and { d :- type of d in b |-> [ ] }
-    in a |-> properties,
-    copy_properties(new_type, properties).
-  
-  copy_equal: Type * Type * Type
-  copy_equal(new_type, a, b) :- { properties }
+      filter pathMatch[e] and { Type{_@-} }
+    in decl_type |-> is_union,
+    
+    // Find out what the type is of what we are going to assign to
+    // Normally this is just decl_type but in the case of union it is different
+    assign_type == find_assign_type(decl_type, is_union),
+    
+    // Check if each property in the object literal resolves in the assign type
+    // If not then that means that the object literal has additional properties
+    // which is not allowed
     query decl
       filter pathMatch[e] and {
-        d :- {ta tb}
-          type of d in a |-> [(_, (_, ta))],
-          type of d in b |-> [(_, (_, tb))],
-          
-          is_equaltype(ta, tb)
+        // Since each property of the object literal must be in assign_type
+        // (or else the object literal has extra properties)
+        // this must always return a non empty array
+        // Thus this contraint should always fail and the resulting
+        // list must be empty
+        d :- d in assign_type |-> [ ]
       }
-    in a |-> properties,
-    copy_properties(new_type, properties).
+    // Again, we check if this list is empty because if it is not empty
+    // then that means that there is a property in expr_type that is not
+    // in assign_type and this is illegal for object literals
+    in expr_type |-> [ ],    
+    
+    // Still check whether the subtype relation holds
+    is_subtype(decl_type, expr_type).
+
+// Find which type is "assignable"
+// Normally it is just the type and its properties but in
+// the case of union it is different
+// With union the assignable type is the union of the properties
+// of types in the union
+find_assign_type: Type * list((path * occurrence)) -> Type
+
+  find_assign_type(type', is_union) = type' | is_union == [].
+  find_assign_type(type', is_union) = assign_type 
+    | is_union != [] :- {a b props_equal props_a props_b}
+    new assign_type,
+    
+    // Extract the types from the union
+    type of Type{"A"@-} in type' |-> [(_, (_, a))],
+    type of Type{"B"@-} in type' |-> [(_, (_, b))],
+        
+    // Copy the properties that are present in both a and b (ignoring type)
+	query decl
+	in a |-> props_equal,
+	copy_properties(assign_type, to_types(props_equal)),    
+
+    // Copy the properties present in a but not in b
+    query decl
+      filter pathMatch[e] and { d :- d in b |-> [ ] }
+    in a |-> props_a,
+    copy_properties(assign_type, to_types(props_a)),
+    
+    // Copy the properties present in b but not in a
+    query decl
+      filter pathMatch[e] and { d :- d in a |-> [ ] }
+    in b |-> props_b,
+    copy_properties(assign_type, to_types(props_b)).
+
+parse_object: scope * list((ID * Expression)) * scope
+
+  parse_object(scope, [], new_type).
+  parse_object(scope, [(name, value) | rest], new_type) :- {expr_type}
+    expr_type == eval_expression(scope, value),
+    new_type -> Var{name@-} with type expr_type,
+    parse_object(scope, rest, new_type).
+
+parse_structure: scope * list((ID * TypeExpr)) * Type
   
-  find_unequal: Type * Type -> list((path * occurrence))
+  parse_structure(scope, [], new_type).
+  parse_structure(scope, [(name, type') | rest], new_type) :- {prop_type}  
+    prop_type == eval_type(scope, type'),
+    new_type -> Var{name@-} with type prop_type,
+    parse_structure(scope, rest, new_type).
+
+// Compute which properties are present in the union of two types
+// and places them in the new type
+unionise: Type * Type * Type
+
+  unionise(new_type, a, b) :- {properties}
+    copy_equal(new_type, a, b),
+    
+    properties == find_unequal(a, b),
+    copy_properties(new_type, union(a, b, properties)).
+
+union_: Type * Type * (path * occurrence) -> (occurrence * Type)
+union maps union_(*, *, list(*)) = list(*)
+
+  union_(a, b, (path, property)) = (property, new_type) :- {type_a type_b}
+    type of property in a |-> [(_, (_, type_a))],
+    type of property in b |-> [(_, (_, type_b))],
+    
+    new new_type, unionise(new_type, type_a, type_b).
+
+// Compute which properties are present in the intersection of two types
+// and places them in the new type
+intersection: Type * Type * Type
+
+  intersection(new_type, a, b) :- {props_a props_b props_unequal}
+    // Copy the properties that are present in both a and b with the same type
+    copy_equal(new_type, a, b),
+    
+    // Copy the properties present in a but not in b
+    query decl
+      filter pathMatch[e] and { d :- type of d in b |-> [ ] }
+    in a |-> props_a,
+    copy_properties(new_type, to_types(props_a)),
+    
+    // Copy the properties present in b but not in a
+    query decl
+      filter pathMatch[e] and { d :- type of d in a |-> [ ] }
+    in b |-> props_b,
+    copy_properties(new_type, to_types(props_b)),
+    
+    // Compute the intersection of the types which are both present in
+    // a and b but that do not have the same type
+    props_unequal == find_unequal(a, b),
+    copy_properties(new_type, intersect(a, b, props_unequal)).
+
+intersect_: Type * Type * (path * occurrence) -> (occurrence * Type)
+intersect maps intersect_(*, *, list(*)) = list(*)
+
+  intersect_(a, b, (path, property)) = (property, new_type) :- {type_a type_b}
+    type of property in a |-> [(_, (_, type_a))],
+    type of property in b |-> [(_, (_, type_b))],
+    
+    new new_type, intersection(new_type, type_a, type_b).
+
+// Transforms (path * occurrence) to (occurrence * Type)
+to_type: (path * occurrence) -> (occurrence * Type)
+to_types maps to_type(list(*)) = list(*)
+
+  to_type((path, property)) = (property, type') :-
+    type of property in dst(path) |-> [(_, (_, type'))].
+
+// Finds the properties that are present in both types
+// but that are of different type in each type
+find_unequal: Type * Type -> list((path * occurrence))
+
   find_unequal(a, b) = properties :-
     query decl
       filter pathMatch[e] and {
@@ -236,87 +311,83 @@ rules
           in b |-> [ ]
       }
     in a |-> properties.
-    
-  insert: Type * occurrence * Type
-  insert(new_type, property, prop_type) :-
+ 
+// Copy a list of properties to a type
+copy_property: Type * (occurrence * Type)
+copy_properties maps copy_property(*, list(*))
+  
+  copy_property(new_type, (property, prop_type)) :-
     new_type -> property with type prop_type.
-       
-// Parse type union
-  eval_type(scope, Union(a, b)) = new_type :- {type_a type_b}
-    eval_type(scope, a) == type_a,
-    eval_type(scope, b) == type_b,
-    new_type == union(type_a, type_b).
-  
-  union: Type * Type -> Type
-  union(a, b) = new_type :-
-    new new_type,
-    
-    copy_equal(new_type, a, b),
-    
-    true.
 
-constraint
-  has_properties: Type * Type
-  has_properties(a, b) :- {props}
-    query decl
-      filter pathMatch[e] and { Var{_@-} }
-    in a |-> props,
-    assert_properties(b, props).
+// Copy the properties that are present in both types and type equal
+copy_equal: Type * Type * Type
 
-  assert_property: Type * (path * occurrence)
-  assert_properties maps assert_property(*, list(*))
-  assert_property(scope, (path, property)) :-
-    property in scope |-> [_].
-
-constraint
-  is_subtype: Type * Type
-    
-  is_subtype(super_scope, sub_scope) :- {props}
-    // Extract all declarations from the super type
-    query decl
-      filter pathMatch[e] and { Var{_@-} }
-      min pathLt[] and { Var{x@_}, Var{x@_} }
-    in super_scope |-> props,
-    
-    recurse_properties(sub_scope, props).
-  
-  recurse_property : Type * (path * occurrence)
-  recurse_properties maps recurse_property(*, list(*))
-  
-  recurse_property(sub_scope, (super_path, super_decl)) :- 
-    {sub_path sub_decl sub_type super_type}
-    
-    type of super_decl in sub_scope       |-> [(_, (_, sub_type))],
-    type of super_decl in dst(super_path) |-> [(_, (_, super_type))],
-    
-    is_subtype(super_type, sub_type).  
-  
-  is_equaltype: Type * Type
-  is_equaltype(a, b) :-
-    is_subtype(a, b),
-    is_subtype(b, a).
-
-constraint
-  type_equivalence: Type * Type -> int
-  
-  type_equivalence(a, b) = 0 :-
-    
+  copy_equal(new_type, a, b) :- { properties }
     query decl
       filter pathMatch[e] and {
         d :- {ta tb}
-          ?decl[d] in b,
-          
           type of d in a |-> [(_, (_, ta))],
           type of d in b |-> [(_, (_, tb))],
           
           is_equaltype(ta, tb)
       }
-    in a |-> [_].
+    in a |-> properties,
+    copy_properties(new_type, to_types(properties)).
+
+// Checks whether two types are equal by 
+// asserting is_subtype(a, b) and is_subtype(b, a)
+is_equaltype: Type * Type
+
+  is_equaltype(a, b) :-
+    is_subtype(a, b),
+    is_subtype(b, a).
+
+// Checks whether two types are in a subtype relation to each other
+// Also takes into consideration union types
+is_subtype: Type * Type
   
-constraint 
-  is_declared : Type * Type -> list((path * occurrence))
-  
-  is_declared(a, b) = T :-
+  is_subtype(super_type, sub_type) :- {is_union}
     query decl
-      filter pathMatch[e] and { d :- ?decl[d] in b } 
-    in a |-> T.
+      filter pathMatch[e] and { Type{_@-} }
+    in super_type |-> is_union,
+    subtype_relation(super_type, sub_type, is_union).
+
+subtype_relation: Type * Type * list((path * occurrence))
+
+  // The super type is not a union type -> proceed as normal
+  subtype_relation(super_type, sub_type, is_union) 
+    | is_union == [] :- {properties}
+    query decl
+      filter pathMatch[e] and { Var{_@-} }
+    in super_type |-> properties,
+    recurse_properties(sub_type, properties).
+  
+  // The super type is a union type -> unwrap union and check subtype relation
+  // for each type in the union
+  subtype_relation(super_type, sub_type, is_union) 
+    | is_union != [] :- {properties}
+    query decl
+      filter pathMatch[e] and { 
+        d :- {type'}
+          d == Type{_@-},
+          type of d in super_type |-> [(_, (_, type'))],
+          is_subtype(type', sub_type)
+      }
+    in super_type |-> properties,
+    non_empty(properties).
+
+recurse_property: Type * (path * occurrence)
+recurse_properties maps recurse_property(*, list(*))
+
+  recurse_property(sub_type, (path, property)) :- {type_a type_b}    
+    // Type of property in super type
+    type of property in dst(path) |-> [(_, (_, type_a))],
+    // Type of property in sub type
+    type of property in sub_type  |-> [(_, (_, type_b))],    
+    is_subtype(type_a, type_b).
+
+// Check whether a list is non empty
+non_empty: list((path * occurrence))
+ 
+  non_empty(list) | list == [] :- false.
+  non_empty(list) | list != [] :- true.
