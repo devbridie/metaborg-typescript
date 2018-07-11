@@ -1,6 +1,0 @@
-rules 
-  typeOfExpr : scope * Expression -> Type
-
-  typeOfExpr(s, NumberLiteral(_))  = Number().
-  typeOfExpr(s, StringLiteral(_))  = String().
-  typeOfExpr(s, BooleanLiteral(_)) = Boolean().

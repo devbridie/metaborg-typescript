@@ -1,0 +1,21 @@
+eval_expression: scope * Expression * Type -> Type
+
+eval_expression(scope, NumberLiteral(value), _) = T :-
+  type of Type{"number"@-} in scope |-> [(_, (_, T))].
+  
+eval_expression(scope, ObjectLiteral(props), expected_type) = T :-
+  new pscope, 
+  parse_object_literal(scope, props, pscope, expected_type),
+  T == Object(pscope).
+
+parse_object_literal: scope * list((ID * Expression)) * scope * Type
+
+parse_object_literal(scope, [], pscope, expected_type).
+parse_object_literal(scope, [(name, value) | rest], pscope, expected_type) 
+  :- {expected_property_type expr_type}
+  type of Var{name@-} in allowed_properties(expected_type) 
+    |-> [(_, (_, expected_property_type))],
+  expr_type == eval_expression(scope, value, expected_property_type),
+  is_subtype(expr_type, expected_property_type),
+  pscope -> Var{name@-} with type expr_type,
+  parse_object_literal(scope, rest, pscope, expected_type).

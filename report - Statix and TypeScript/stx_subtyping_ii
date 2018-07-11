@@ -1,0 +1,15 @@
+is_subtype(A, Object(pscope_b)) :- {pscope_a query_results}
+  pscope_a == properties_of(A),
+  query decl
+    filter pathMatch[e] and { Var{_@-} }
+  in pscope_b |-> query_results,
+  recurse_properties(pscope_a, pscope_b, query_results).
+
+recurse_property: scope * scope * (path * occurrence)
+recurse_properties maps recurse_property(*, *, list(*))
+
+recurse_property(pscope_a, pscope_b, (path, property)) 
+  :- {type_a type_b}
+  type of property in pscope_a |-> [(_, (_, type_a))],
+  type of property in pscope_b |-> [(_, (_, type_b))],    
+  is_subtype(type_a, type_b).

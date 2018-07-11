@@ -1,0 +1,11 @@
+sorts Type
+constructors
+  Number : scope -> Type
+  String : scope -> Type
+  Boolean : scope -> Type
+    
+  Object : scope -> Type
+  Function : Type * list(Type) -> Type
+    
+  Union : list(Type) -> Type
+  Intersection : list(Type) -> Type

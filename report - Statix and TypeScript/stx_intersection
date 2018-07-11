@@ -1,0 +1,13 @@
+intersect_subtype_any maps maybe_subtype(list(*), *) = list(*)
+intersect_subtype_all maps is_subtype(*, list(*))
+  
+is_subtype(A@Intersection(_), B@Intersection(_)) :- 
+  is_identical(A, B).  
+
+is_subtype(A, Intersection(types)) | A != Intersection(_) :- 
+  intersect_subtype_all(A, types).
+
+is_subtype(Intersection(types), B) | B != Intersection(_) 
+  :- {result}
+  result == intersect_subtype_any(types, B),
+  assert_any(result).

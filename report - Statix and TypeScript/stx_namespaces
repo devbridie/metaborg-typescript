@@ -1,0 +1,6 @@
+namespaces  
+  Var  : string
+  Type : string
+
+relations
+  type : occurrence -> Type

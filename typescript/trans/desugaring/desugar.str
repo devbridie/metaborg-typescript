@@ -1,0 +1,12 @@
+module desugar
+
+imports
+  signatures/-
+  pp
+
+rules
+  desugar: UnionType([property]) -> property
+  desugar: IntersectionType([property]) -> property
+	
+strategies
+  desugar-all = bottomup(try(desugar))

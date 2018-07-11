@@ -1,0 +1,5 @@
+is_subtype: Type * Type
+
+is_subtype(Number(_), Number(_)).
+is_subtype(String(_), String(_)).
+is_subtype(Boolean(_), Boolean(_)).

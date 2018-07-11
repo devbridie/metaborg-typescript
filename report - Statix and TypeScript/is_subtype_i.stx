@@ -1,6 +1,0 @@
-constraints
-  is_subtype : Type * Type
-
-  is_subtype(Number(), Number()).
-  is_subtype(String(), String()).
-  is_subtype(Boolean(), Boolean()).

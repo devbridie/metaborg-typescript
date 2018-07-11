@@ -1,5 +1,0 @@
-sorts Type constructors
-  Number : Type
-  String : Type
-  Boolean : Type
-  Object : scope -> Type

@@ -23,9 +23,10 @@ context-free syntax
   
   Statement.VarDecl  = <let <ID> : <Type> = <Expression>;>
   Statement.TypeDecl = <type <ID> = <Type>;>
+  Statement.FuncDecl = <function <ID>(<{NameTypePair ","}*>) : <Type> { <Statement*> }>
   
   Expression.NumberLiteral  = INT
-  Expression.Identifier     = ID
+  Expression.Identifier     = {ID "."}+
   Expression.StringLiteral  = <"<ID>">
   Expression.BooleanLiteral = "false" {prefer}
   Expression.BooleanLiteral = "true" {prefer}

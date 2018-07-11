@@ -2,6 +2,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
+\usepackage{color}
 
 \usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
 \usepackage{graphicx}
@@ -14,6 +15,7 @@
 \usepackage{hyperref}
 
 \newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\ts}[0]{\ttt{TypeScript}}
 
 \lstdefinelanguage{typescript} {
   keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with, string, number, boolean, void, yield, async, class, interface, const, let},
@@ -26,10 +28,9 @@
 }
 
 \lstdefinelanguage{statix} {
-  keywords={scope, rules, constraint, sorts, relations, namespaces, constructors, occurrence, labels, resolve, filter, min, query, new, with, decl, filter, and, in, path, pathMatch, pathLT, list},
+  keywords={scope, rules, constraint, sorts, relations, namespaces, constructors, occurrence, labels, resolve, filter, min, query, new, with, decl, filter, and, in, path, pathMatch, pathLT, list, maps},
   morecomment=[l]{//},
   morecomment=[s]{/*}{*/},
-  morestring=[b]',
   morestring=[b]",
   morestring=[b]`,
   sensitive=true
@@ -38,100 +39,100 @@
 \lstset{
   showstringspaces=false, 
   basicstyle=\small,
-  numbers=left, 
-  numberstyle=\tiny, 
+  numbers=left,
+  numberstyle=\ttfamily, 
   numberfirstline=false, 
   breaklines=true,
   stepnumber=1, 
-  tabsize=4, 
+  tabsize=4,
+  frame=single,
+  basicstyle=\ttfamily,
+  keywordstyle=\ttfamily\color{blue},
   commentstyle=\ttfamily, 
   identifierstyle=\ttfamily,
   stringstyle=\itshape
 }
 
-\title{Language Engineering Project - Statix Description}
+\title{Language Engineering Project \\ Modelling \ttt{TypeScript} in \ttt{Statix}}
 \author{Michiel van Spaendonck (4310071), Nouri Khalass (4742397)}
 
 \begin{document}
 
 \maketitle
 
-\section*{Introduction}
+\section{Introduction}
 In this document we will describe our findings while working on Statix in the context of structural types.
 We do this by analysing the workings of \texttt{Statix} in the context of \texttt{TypeScript}.
-Our work can be considered somewhat of a continuation of a previous analysis of \texttt{TypeScript}~\cite{MetaTypeScript}.
+Our work can be considered somewhat of a continuation of a previous analysis of \texttt{TypeScript}~\cite{MetaTypeScript} done by Tim van der Lippe and Thomas Smith.
 The authors go into detail as to how \texttt{TypeScript} could be modelled in a constraint based type checker.
 
-\section*{Structural Types}
-In a structural type systems types are said to be equivalent when they are of the same structure.
-This as opposed to types in a nominal type system where only the name of a type has to be equivalent.
-In a nominal type system two objects are not of the same type even though they might have identical member values.
-Compare Listing~\ref{lst:structural_typescript} with Listing~\ref{lst:structural_java}.
-In Listing~\ref{lst:structural_typescript} both \ttt{a} and \ttt{b} are of the same type.
-Simply put, it would be valid to assign \ttt{a} to \ttt{b} since both only have one member \ttt{z} of type \ttt{number}.
-However, Listing~\ref{lst:structural_java} shows a nominal type system whereby this is not valid.
+\section{TypeScript}
+% What is typescript
+\ttt{TypeScript} is a statically typed programming language designed to be a superset of \ttt{EcmaScript}~\cite{TypeScript}.
+It is created and maintained by Microsoft.
+The goal of \ttt{TypeScript} is to be a superset of \ttt{EcmaScript}, which is also called \ttt{JavaScript}, whereby most of the constructs valid in \ttt{JavaScript} also hold in \ttt{TypeScript}.
+\ttt{TypeScript} is compiled down into \ttt{JavaScript}~\cite{TypeScript}.
+During compilation the program is type checked according to its structural type system.
+\ttt{JavaScript} itself is ''untyped''~\cite{JavaScript}, meaning that it does not have type declarations.
+% Where is it used
+% Why is it used
+This often leads to issues during development~\cite{JavaProblems}.
+Programs written in \ttt{TypeScript} are more robust than programs written in plain \ttt{JavaScript} since they are more thoroughly checked and validated.
 
-\noindent
-\begin{minipage}{.45\textwidth}
-\lstinputlisting[
-    language = c++, 
-    caption = \label{lst:structural_typescript}
-    ]{structural_types.ts}
-\end{minipage}
-\hfill$\Longleftrightarrow$\hfill\hfill\hfill
-\begin{minipage}{.45\textwidth}
-\lstinputlisting[
-    language = c++, 
-    caption = \label{lst:structural_java}
-    ]{structural_types.java}
-\end{minipage}
-\\\\
-The examples in Listing~\ref{lst:structural_typescript} and Listing~\ref{lst:structural_java} are obviously very trivial and might make one wonder why a nominal type system should be used.
-What is not apparent from these examples is the fact that structural type systems can introduce quite a bit of overhead when type checking since the checker has to recurse over all members in the type.
-On the other hand, a structural type system offers lots of flexibility and is interesting when dealing with a ``loose'' type system.
-It is for this reason that \ttt{TypeScript}, which we are going to analyse, uses a structural type system, since it lies on top of the dynamic type system of \ttt{JavaScript}.
+% What makes it special
 
-Another downside to structural type systems is the fact that they are difficult to implement.
-Van der Lippe et al.~\cite{MetaTypeScript} noted that implementing the \ttt{TypeScript} type system proved to be very difficult.
-They used NaBL2~\cite{nabl2} to model the type system but found that it lacked features in order to do this correctly.
-They proposed some extensions to \ttt{NaBL2} and mentioned the idea of using scope graphs to model structural types~\cite{MetaTypeScript}.
-
-\section*{Statix}
-Van Antwerpen et al. have designed a programming language that makes it possible to model structural type systems~\cite{Statix}.
-They are also the creators of \ttt{NaBL2}~\cite{nabl2}.
-Their proposed system to use \textit{scopes as types}.
-
-TODO: EXPLAIN WHY A STRUCTURAL TYPE SYSTEM CAN BE MODELLED (EASY) IN STATIX
-
-\section*{Structural Types in Practice}
-While Listing~\ref{lst:structural_typescript} and Listing~\ref{lst:structural_java} show a very trivial example it is more valuable to now look at a more complex case.
-Throughout this paper we will give examples using \ttt{TypeScript}.
-The first example that we will look at is a more complex showcase of structural typing (Listing~\ref{lst:complex_i}).
+\subsection{Structural Type System}
+% What is a structural type system
+The type system used by \ttt{TypeScript} is called a \emph{structural type system}.
+In a structural type system two values are said to be of the same type when they are structurally equivalent.
+This in contrast to a nominal type system, which is used in \ttt{Java} and \ttt{C++}, where two values are of the same type if their type name matches.
+Defining a type in \ttt{TypeScript} can be done in a variety of ways.
+For example, in Listing~\ref{lst:ts_interface} we declare an interface called \ttt{A} with some properties.
 \noindent
 \begin{center}
-    \begin{minipage}{.60\textwidth}
+    \begin{minipage}{.40\textwidth}
     \lstinputlisting[
         language = typescript, 
-        caption = \label{lst:complex_i}
-        ]{complex_i.ts}
+        caption = \label{lst:ts_interface}
+        ]{ts_interface}
     \end{minipage}
 \end{center}
-In Listing~\ref{lst:complex_i} we show that types are not bound to names.
-We define two interfaces, \ttt{A} and \ttt{B}, with both a property named \ttt{z} of type \ttt{string}.
-Variable \ttt{a} can be initialised by creating an object with a property \ttt{z}.
-Following that, variable \ttt{b} can be initialised with \ttt{a} because even though they do not use the same type name the type that they represent is structurally equivalent.
-Variable \ttt{c} is not of any predefined types but instead declares the structure of the type inline.
-It is valid to assign \ttt{b} to \ttt{c} since they both have a value which has the same type structure.
-\\\\
-The type system in \ttt{TypeScript} has the notion of \textit{subtyping} whereby it is required that all properties of the \textit{supertype} are present in the \textit{subtype}.
+
+Listing~\ref{lst:ts_interface} defines a type \ttt{A} which has three properties.
+The first property is \ttt{x} which is of type \ttt{number}, the second property is \ttt{y} of type \ttt{string} and the third property is \ttt{z} of type \ttt{boolean}.
+When we declare something to be of type \ttt{A} it means that that value will have those properties.
+In this case the name \ttt{A} is only a convenience for the programmer to refer to the same type multiple times, instead of typing the structure of the value out by hand each time, like is done on line 11 of \ref{lst:ts_structure}.
+Again, the name is not taken into account during type checking.
+
+To prove this we present Listing~\ref{lst:ts_structure} where we declare two types \ttt{A} and \ttt{B} which have the exact same structure.
+We declare two variables \ttt{a} and \ttt{b} which are of type \ttt{A} and \ttt{B} respectively.
+It is safe to assign \ttt{a} to \ttt{b} since they are structurally equivalent.
+Both have the same property \ttt{z} of type \ttt{string}!
+Also note that it is perfectly valid to assign \ttt{b} to \ttt{c}, even though \ttt{c} is of a type which is declared inline.
+\noindent
+\begin{center}
+    \begin{minipage}{.40\textwidth}
+    \lstinputlisting[
+        language = typescript, 
+        caption = \label{lst:ts_structure}
+        ]{ts_structure}
+    \end{minipage}
+\end{center}
+
+% How is it used in typescript
+It is easy to see grasp that assigning values which have the same structure is valid.
+However, \ttt{TypeScript} does not always require that the two values have the exact same type structure.
+In some cases it is OK for a value to have additional properties not present in the other value.
+As long as the properties of type \ttt{Foo} are present in type \ttt{Bar} we can safely use something of type \ttt{Foo} where we expect something of type \ttt{Bar}.
+This relation is called \textit{subtyping} whereby it is required that all properties of the \textit{supertype} are present in the \textit{subtype}.
 As such, a subtype can be seen as a more general version of its supertype.
-Listing~\ref{lst:records} shows this behaviour.
+Listing~\ref{lst:ts_subtyping} shows this behaviour.
 \begin{center}
     \begin{minipage}{.75\textwidth}
     \lstinputlisting[
         language = typescript, 
-        caption = \label{lst:records}
-        ]{subtyping.ts}
+        caption = \label{lst:ts_subtyping}
+        ]{ts_subtyping}
     \end{minipage}
 \end{center}
 We define a function \ttt{doSomething} which has one parameter named \ttt{param}.
@@ -141,139 +142,317 @@ The first property is \ttt{x} of type \ttt{string} and the second is \ttt{y} of 
 Finally, we can safely call \ttt{doSomething} with \ttt{z} even though \ttt{z} has a property \ttt{y} in which we are not interested.
 We have satisfied the constraint of property \ttt{x} with type \ttt{string} and the resulting code is valid.
 
-Note that \ttt{z} itself is initialised with an object that has a property \ttt{x} of value \ttt{""} (empty string) and property \ttt{y} of value \ttt{42}.
-If \ttt{x} would also be given the value \ttt{42} then the assignment would be invalid since both properties \ttt{x} and \ttt{y} of the object would be of type \ttt{number} and \ttt{z} expects \ttt{x} to be of type \ttt{string}.
-
+Subtyping is used in almost all instances where values are being used.
+There are however exceptions to this, for example when instantiating a variable using object literals.
+This is shown in Listing~\ref{lst:ts_object_literal}.
 \begin{center}
     \begin{minipage}{.75\textwidth}
     \lstinputlisting[
         language = typescript, 
-        caption = \label{lst:nominal_i}
-        ]{nominal_i.ts}
+        caption = \label{lst:ts_object_literal}
+        ]{ts_object_literal}
     \end{minipage}
 \end{center}
-To prove that \ttt{TypeScript} does not have a notion of nominal typing we present Listing~\ref{lst:nominal_i}.
-We define two interfaces, \ttt{Foo} and \ttt{Bar} which both have the same properties \ttt{x} of type \ttt{string} and \ttt{y} of type \ttt{number}.
-Next we declare a variable \ttt{v} of type \ttt{Bar} and initialise it with an object literal.
-Following that we declare a variable \ttt{w} which is of type \ttt{Foo} and assign \ttt{v} to it.
-Even though \ttt{w} is of type \ttt{Foo} we can still assign something of type \ttt{Bar} since it has the same properties.
-This is similar to Listing~\ref{lst:complex_i}.
-
-\begin{center}
-    \begin{minipage}{.75\textwidth}
-    \lstinputlisting[
-        language = typescript, 
-        caption = \label{lst:nominal_ii}
-        ]{nominal_ii.ts}
-    \end{minipage}
-\end{center}
-Now, we extend Listing~\ref{lst:nominal_i} to Listing~\ref{lst:nominal_ii}.
-We also declare a function \ttt{doSomething} which has one parameter \ttt{val} of type \ttt{Bar}.
-Again, we declare a variable \ttt{v} which we initialise with an object.
-However, this time we also add a property \ttt{z} of type \ttt{boolean} to the object literal.
+We declare a function \ttt{doSomething} which has one parameter \ttt{val} of type \ttt{Bar}.
+We declare a variable \ttt{v} which we initialise with an object that has all required properties and in addition to that also the property \ttt{z} of type \ttt{boolean}.
 One might expect this to be valid because, even though \ttt{Bar} does not have a property \ttt{z} of type \ttt{boolean}, you would expect the compiler to ignore this because all other properties of \ttt{Bar} are satisfied.
-In Listing~\ref{lst:records} we saw that we could call \ttt{doSomething} with an object which had more properties than we were interested in.
+In Listing~\ref{lst:ts_subtyping} we saw that we could call \ttt{doSomething} with an object which had more properties than we were interested in.
 Still, the compiler would ignore this and the code would be valid.
-Yet the code in Listing~\ref{lst:nominal_ii} is not valid.
+Yet the code in Listing~\ref{lst:ts_object_literal} is not valid.
 In \ttt{TypeScript} it is not allowed to initialise a variable with an object literal which has properties that are not defined on the type.
 It is also not valid to assign \ttt{v} to \ttt{w} since \ttt{v} is missing property \ttt{z} of type \ttt{boolean}; this happens on line 17. 
 
-\section*{Modelling Structural Types in Statix}
-To explain how \ttt{TypeScript} can be modelled using Statix we are going to look at a few examples.
-First, modelling a type system that does not necessary rely on structural typing is easy.
-Listing~\ref{lst:statix_code_i} shows a simple program supporting expressions with \ttt{number}, \ttt{string} and \ttt{boolean} type.
-Next to that, Listing~\ref{lst:statix_impl_i} shows what the corresponding constraint rules might look like.
+\subsection{Union and Intersection Types}
+% What are union types
+The concept of types as structures should be well defined by now.
+In essence, types can be seen as sets that contain properties.
+With subtyping we say that a set \ttt{Foo} must contain all properties of the set \ttt{Bar} in order for \ttt{Bar} to be the supertype of \ttt{Foo}.
+\ttt{TypeScript} uses more constructs from set theory in its type system.
+Like with regular sets, it is possible to take the union or the intersection of two types.
+This allows the programmer to synthesise new types.
+
+Let us first look at what it means to take the union of two types.
+Normally the union of two sets \ttt{Foo} and \ttt{Bar} is a set containing all elements present in \ttt{Foo} and all elements present in \ttt{Bar}.
+This is not so straightforward in \ttt{TypeScript}.
+In \ttt{TypeScript} unions can be seen more as the result of taking an intersection between two types.
+This means that the result of unionising two types will be a new type which will only have the properties which are present in both types.
+Listing~\ref{lst:ts_union} shows this operation.
+\begin{center}
+    \begin{minipage}{.60\textwidth}
+    \lstinputlisting[
+        language = typescript, 
+        caption = \label{lst:ts_union}
+        ]{ts_union}
+    \end{minipage}
+\end{center}
+
+We define two types \ttt{A} and \ttt{B} which share a property \ttt{z} of type \ttt{boolean} and also have both have a property not shared by the other.
+Function \ttt{doSomething} has one parameter which type is the union of \ttt{A} and \ttt{B}.
+That type will thus only have one property \ttt{z} since that property is the only property that is shared between \ttt{A} and \ttt{B}.
+Calls to other properties (line 12) are invalid.
+Since the type that is represented by \ttt{A | B} only has one property (\ttt{z} of type \ttt{boolean}) and both \ttt{a} and \ttt{b} have this property it is safe to call \ttt{doSomething} with both values. 
+
+% What are intersection types
+% What do they look like in typescript
+Like with union types, the intersection of two types is not necessarily the equivalent of an intersection between two sets.
+The intersection between two sets \ttt{Foo} and \ttt{Bar} is a set containing all elements which are both present in \ttt{Foo} as well as in \ttt{Bar}.
+In \ttt{TypeScript} however the result of an intersection of two types is a new type which only contains the properties which are present in both types, similar to a normal union operation on sets.
+Listing~\ref{lst:ts_intersection} is similar to Listing~\ref{lst:ts_union} but for the intersection of two types.
+
+\begin{center}
+    \begin{minipage}{.60\textwidth}
+    \lstinputlisting[
+        language = typescript, 
+        caption = \label{lst:ts_intersection}
+        ]{ts_intersection}
+    \end{minipage}
+\end{center}
+Like with the union of two types, the intersection of two types defines a new type.
+In this type all properties of \ttt{A} and \ttt{B} are present.
+It is safe to use any of the properties defined in either \ttt{A} or \ttt{B} (line 12).
+However, when calling \ttt{doSomething} we must supply an argument which has properties \ttt{x}, \ttt{y} and \ttt{z}.
+
+\section{TypeScript and NaBL2}
+% What is NaBL2
+Language designers use a variety of tools to implements (parts) of a programming language.
+To aid with language design Van Antwerpen et al. developed \ttt{NaBL2}~\cite{nabl2}.
+\ttt{NaBL2} is a constraint generation language which allows for the specification and solving of constraints.
+Based on the language semantics it allows constraints to be applied to the AST in order to perform for example name binding and type checking.
+
+Tim van der Lippe and Thomas Smith found that \ttt{NaBL2} was mostly suited for programming languages that have a nominal type system~\cite{MetaTypeScript}.
+Since \ttt{TypeScript} uses a structural type system, they found that it was difficult to model \ttt{TypeScript} using \ttt{NaBL2}.
+Specifically, they found that they lacked the recursive power needed to implement structural types and also union and intersection types.
+\ttt{NaBL2} only performs one pass of constraint generation and one pass of constraint solving which turned out to be not enough to model the type system.
+They proposed some extensions to \ttt{NaBL2} which should make the language more powerful and allow for structural type systems to be modelled.
+
+\section{TypeScript and Statix}
+% What is statix
+In order to model more complex type systems using a constraint generation language Van Antwerpen et al. created \ttt{Statix}~\cite{Statix}.
+\ttt{Statix} solves the same problems as \ttt{NaBL2} aims to be more powerful and flexible.
+For example, in \ttt{Statix} it is possible to model types using scopes.
+This allows for structural type systems to be modelled.
+To show what is possible in \ttt{Statix}, we are going to show snippets of \ttt{Statix} code which will gradually become more complex, until we have modelled the \ttt{TypeScript} type system!
+We are going to assume some prior knowledge about scope graphs and constraint generation.
+More information about those concepts can be found in \cite{nabl2} and \cite{Statix}.
+
+% Why is it better in statix
+
+\subsection{Structural Type System}
+% How can the typesystem of TypeScript be modelled in Statix
+Each type in \ttt{TypeScript} can be seen as a set containing properties.
+This is also the case for all primitive types (\ttt{number}, \ttt{string} and \ttt{boolean}).
+For example, the \ttt{string} type has a property called \ttt{length} which corresponds to the length of the string.
+A \ttt{number} does not have such a property.
+A common practice when modelling a type system is to define a set of possible types.
+Usually there are some types which correspond to a primitive type and some types that can be (further) defined by the user.
+There are benefits and drawbacks to this way of working and in Section~\ref{sec:discussion} we go deeper into this.
+We chose to represent the primitive types of \ttt{TypeScript} with a corresponding type in \ttt{Statix} but each type is still associated with a scope.
+This means that each primitive type has a scope associated with it which contains the properties belonging to that type.
+Listing~\ref{lst:stx_types} shows all of the types that are used to model the type system of \ttt{TypeScript}.
 
 \noindent
-\begin{minipage}{.29\textwidth}
-\lstinputlisting[
-    language = c++, 
-    caption = \label{lst:statix_code_i}
-    ]{statix_code_i.ts}
-\end{minipage}
-\hfill$\Longleftrightarrow$\hfill\hfill\hfill
-\begin{minipage}{.61\textwidth}
-\lstinputlisting[
-    language = c++, 
-    caption = \label{lst:statix_impl_i}
-    ]{statix_impl_i.stx}
-\end{minipage}
-First, in Listing~\ref{lst:statix_impl_i} we define a rule \ttt{typeOfExpr} which consists of two arguments and returns a result.
-The first argument is the scope in which we evaluate the expression.
-The second argument specifies the \ttt{Expression} which will be evaluated.
-Finally, given a scope and an \ttt{Expression} we say that we return something that is a \ttt{Type}.
+\begin{center}
+    \begin{minipage}{.60\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_types}
+        ]{stx_types}
+    \end{minipage}
+\end{center}
 
-Now, line 4, 5 and 6 specify the \ttt{typeOfExpr} rule for different types of \ttt{Expression}s.
-A programming language might have multiple ways to denote an expression.
-In this case numeric, string and boolean literals are available.
-We specify that each variant of an \ttt{Expression} resolves to is appropriate type.
-For example, a \ttt{NumberLiteral} is of \ttt{Type} \ttt{Number}.
-Notice that none of the specification use the scope \ttt{s}.
-This makes sense for literals but when we must resolve the type of an \ttt{Identifier} \ttt{Expression} then we would probably need to use the scope to access the corresponding declaration.
+As we said, the \ttt{number}, \ttt{string} and \ttt{boolean} types have a corresponding \ttt{Type} in \ttt{Statix} and all have a scope.
+There are also \ttt{Union} and \ttt{Intersection} types, a \ttt{Function} type and an \ttt{Object} type.
+The \ttt{Object} type is used for user defined types and carries a scope to hold the properties.
+The \ttt{Function} type is used for function declarations and holds the return type and a list of parameter types.
+Finally, the \ttt{Union} and \ttt{Intersection} types hold a list of types over which the union and intersection is computed.
+
+In order to make the \ttt{number} (and all other primitive types) available for usage we must first declare it in the global scope of the program.
+Since a primitive type has an associated scope with it we need to create this scope and fill it with properties.
+Listing~\ref{lst:stx_primitive_types} shows this process.
+\noindent
+\begin{center}
+    \begin{minipage}{.95\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_primitive_types}
+        ]{stx_primitive_types}
+    \end{minipage}
+\end{center}
+On line 9 of Listing~\ref{lst:stx_primitive_types} we declare the \ttt{number} type and associate it with the \ttt{Number()} \ttt{Type}.
+All type declarations are placed in the \ttt{Type} namespace.
+Since we not only want to declare the \ttt{number} type but also associate it with \ttt{Number(number\_scope)} we make use of \textit{relations}.
+This is a concept in \ttt{Statix} which in this case allows us to associate an occurrence (\ttt{Type\{"number"@-\}}) with a \ttt{Type} (\ttt{Number(number\_scope)}).
+In Listing~\ref{lst:stx_namespaces} we show what it looks like to define namespaces and relations.
+In this case we define two namespaces: \ttt{Var} for variable declarations and property declarations and \ttt{Type} for type declarations.
+Both make use of the \ttt{type} relation which associates each declaration in a scope with a type.
+\noindent
+\begin{center}
+    \begin{minipage}{.40\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_namespaces}
+        ]{stx_namespaces}
+    \end{minipage}
+\end{center}
+Now, every time we have a reference to a variable / property or to a type we simply check if that reference can resolve, meaning that we check whether there is a corresponding declaration for that reference.
+We have already seen how we can declare something in a scope (line 9 in Listing~\ref{lst:stx_primitive_types}) but now we want to show how to you can resolve a reference.
+In \ttt{Statix} this can be done in multiple ways.
+One option is using queries.
+Queries allow you to find all possible declarations in a scope and apply filters on the result.
+Another option is using simple reference resolving.
+Both are shown in Listing~\ref{lst:stx_queries}.
+\noindent
+\begin{center}
+    \begin{minipage}{.90\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_queries}
+        ]{stx_queries}
+    \end{minipage}
+\end{center}
+Using both techniques we get a list containing declarations to which our reference resolves.
+If this list is empty then we know that the reference is not declared.
+However, if it is not empty then the list will contain tuples consisting of a \ttt{path} and something else.
+The \ttt{path} is the path that is followed in the scope graph that goes from the reference to the declaration.
+Something to note is that the query on lines 2-4 does not exactly query for the same information as the simple reference resolving on line 8.
+The query only checks if \ttt{number} is declared in the \ttt{Type} namespace of \ttt{scope}.
+However, using simple reference resolving we ask for the \ttt{type} of a reference.
+The \ttt{type of} construct to refer back to the relation that we just created between the \ttt{number} type and \ttt{Number(number\_scope))}. 
 \\\\
-The \ttt{Type}s that are used in Listing~\ref{lst:statix_impl_i} need to be declared.
-We have a \ttt{Number}, \ttt{String} and \ttt{Boolean} type, and one might imagine having an \ttt{Object} type which relates to an object with properties.
-In \ttt{Statix} it is required to declare ``constructors'' for each of these types.
-Listing~\ref{lst:statix_type_decls} shows the constructors for each of the before mentioned types.
+The query on lines 2-4 also performs an operation on a relation but not on a relation that is defined by us.
+By default there exists the \ttt{decl} relation in \ttt{Statix} and that relation hold for all values that are declared in a scope, no matter what namespace they are declared in.
+Using the \ttt{filter} operation on line 3 we can precisely retrieve only the declarations that we are interested in.
+In this case we want \ttt{Type\{"number"@-\}} which is short hand for \ttt{d :- d == Type\{"number"@-\}} where \ttt{d} is a declaration in \ttt{global\_scope}.
 
-\begin{center}
-    \begin{minipage}{.35\textwidth}
-    \lstinputlisting[
-        language = statix, 
-        caption = \label{lst:statix_type_decls}
-        ]{statix_type_decls.stx}
-    \end{minipage}
-\end{center}
-We specify that a \ttt{Number} is a \ttt{Type} and that a \ttt{String} is a \ttt{Type} etc.
-Notice that an \ttt{Object} has a scope and also resolves to \ttt{Type}, similar to \ttt{Number}.
-The scope holds the properties that are present in the object.
-
-As was shown in Listing~\ref{lst:nominal_i}, \ttt{TypeScript} relies purely on structural typing.
-It is not the name of the type that is important but the structure of the type that decides whether two types are equal.
-
-For this reason we need rules to check if types are equal.
-These rules are simple for the basic types like \ttt{String} and \ttt{Number}.
-However, checking whether two \ttt{Object} types are equal requires a structural check.
-First we will give the \ttt{Statix} rules which check if the simple types are equal.
-In Listing~\ref{lst:is_subtype_i} we declare a \textit{constraint} called \ttt{is\_subtype}.
-This constraint will hold when a type \ttt{A} is a subtype of \ttt{B}.
-A subtype must have all properties which are present in the supertype, but can also have additional properties not present in the supertype.
-\ttt{Number}, \ttt{String} and \ttt{Boolean} are always the subtype to themselves because they are equal to themselves.
-
-\begin{center}
-    \begin{minipage}{.55\textwidth}
-    \lstinputlisting[
-        language = statix, 
-        caption = \label{lst:is_subtype_i}
-        ]{is_subtype_i.stx}
-    \end{minipage}
-\end{center}
-Now, checking whether an \ttt{Object} type is a subtype of another \ttt{Object} type requires recursively going over all the properties in the supertype and checking whether they are present in the subtype.
-
-\begin{center}
-    \begin{minipage}{.75\textwidth}
-    \lstinputlisting[
-        language = statix, 
-        caption = \label{lst:is_subtype_ii}
-        ]{is_subtype_ii.stx}
-    \end{minipage}
-\end{center}
+\pagebreak
+Now, what makes \ttt{Statix} more powerful then \ttt{NaBL2} is its ability to more easily perform recursion.
+We need to recurse types in order to see if the subtyping relation holds.
+The precise rules for subtyping in \ttt{TypeScript} have been documented by Microsoft and made public~\cite{TypeScriptSpec}.
+\ttt{TypeScript} also defines rules for assignability which are very similar to subtyping rules~\cite{TypeScriptAssignment}.
+In this case we will only focus on subtyping but do know that these terms might be used interchangeably.
+\\\\
+First we will define subtyping rules for the primitive types.
+These cases are simple since each primitive type is a subtype of itself and nothing else.
+These rules are shown in Listing~\ref{lst:stx_subtyping_i}.
 \noindent
-In Listing~\ref{lst:is_subtype_ii} we introduce a new \ttt{is\_subtype} rule for \ttt{Object}s.
-In order to validate that the properties of the supertype are present in the subtype we need to gather all available properties in the supertype.
-We do this by performing a query.
-Line 2 and 5 say that we are interested in all declarations in the scope of \ttt{p1}.
-Because we are only interested in declarations that are of type \ttt{Property} we use \ttt{filter} on line 3 to filter out all other types of declarations.
-Next we have to take into account shadowing caused by looking how the path must resolve.
-\ttt{properties} will be an array of tuples and these tuples will be pairs of \ttt{path}s and \ttt{occurrence}s.
-Finally, on line 6 we start the process of recursively going over the properties of \ttt{p2}.
-\\
+\begin{center}
+    \begin{minipage}{.60\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_subtyping_i}
+        ]{stx_subtyping_i}
+    \end{minipage}
+\end{center}
+Next we need to define rules which check the subtyping relation between any particular type and an object type.
+A type is a sub type of another type when that type contains at least the same properties as the other type and maybe some additional properties.
+Thus a super type never has more properties than its corresponding sub type.
+To check whether a type \ttt{A} is a sub type of a type \ttt{B} we need to retrieve all properties of \ttt{B}, check whether all those properties are also present in \ttt{A} and also check that the type of the property in \ttt{B} and the type of the corresponding property in \ttt{A} are in a subtyping relation.
+What this looks like in \ttt{Statix} is shown in Listing~\ref{lst:stx_subtyping_ii}.
 \noindent
-We define \ttt{compare\_properties} to compare the structure of two \ttt{Objects}.
-Given a scope \ttt{properties} we check if a property \ttt{d2} can be resolved.
-If that is the case then we have a scope \ttt{p1} and an \ttt{occurrence} \ttt{d1}.
-Next we receive the type of the occurrences \ttt{d1} and \ttt{d2} respectively in \ttt{T1} and \ttt{T2}.
-Finally, to check whether these two types are equal we call \ttt{is\_subtype} again which checks if the new types are also equal.
+\begin{center}
+    \begin{minipage}{.88\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_subtyping_ii}
+        ]{stx_subtyping_ii}
+    \end{minipage}
+\end{center}
+Listing~\ref{lst:stx_subtyping_ii} exists out of multiple parts.
+We need to have a scope which holds the properties of \ttt{A} we use \ttt{properties\_of} to compute this scope.
+Since an \ttt{Object} type has an associated scope which holds its properties we can use that scope for the type \ttt{B}.
+We use a query to extract all declarations in the \ttt{Var} namespace, which can be seen as retrieving all properties declared in \ttt{B}.
+\ttt{recurse\_properties} maps every element in the list of properties to a call of \ttt{recurse\_property}.
+In \ttt{recurse\_property} we first check the type of the property in \ttt{A}.
+By doing this we check whether \ttt{A} has all properties that \ttt{B} has.
+Then we check what the type of the property is in \ttt{B}.
+Finally we call \ttt{is\_subtype} again with the type of the property in \ttt{A} and in \ttt{B}.
+
+\subsection{Union and Intersection Types}
+% How can they be modelled in Statix
+Implementing subtyping rules for union and intersection is relatively simple if we follow the \ttt{TypeScript} specification.
+A union type is always associated with a set of types.
+When both type \ttt{A} and type \ttt{B} are of type union then the two types are in a subtyping relation if they are composed of the same constituent types.
+This means that both \ttt{A} and \ttt{B} are associated with the same set of types.
+A type \ttt{A} and a union type \ttt{B} are in a subtyping relation when type \ttt{A} is a sub type of at least one constituent type of \ttt{B}.
+Conversely, a union type \ttt{A} and a type \ttt{B} are in a subtyping relation when each constituent type of \ttt{A} is in a subtype relation with \ttt{B}.
+These rules are implemented in Listing~\ref{lst:stx_union}.
+\noindent
+\begin{center}
+    \begin{minipage}{.85\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_union}
+        ]{stx_union}
+    \end{minipage}
+\end{center}
+The rules for subtyping and intersection are defined very similarly.
+When two types \ttt{A} and \ttt{B} are intersection types then they are in a subtyping relation when they are composed of the same set of constituent types.
+A type \ttt{A} and an intersection type \ttt{B} are in a subtyping relation when \ttt{A} is in a subtyping relation with all constituent types of \ttt{B}.
+Conversely, an intersection type \ttt{A} and a type \ttt{B} are in a subtyping relation when at least one of the constituent types of \ttt{A} is in a subtyping relation with \ttt{B}.
+This mirrors the behaviour of the union operation.
+The rules for subtying and intersection are shown in Listing~\ref{lst:stx_intersection}
+\noindent
+\begin{center}
+    \begin{minipage}{\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_intersection}
+        ]{stx_intersection}
+    \end{minipage}
+\end{center}
+
+\subsection{Other Properties of TypeScript}
+% What are other properties of typescript that need to be taken into account when modelling typescript
+\ttt{TypeScript} has more properties which make it an interesting exercise to implement in \ttt{Statix}.
+For example, as has been shown in Listing~\ref{lst:ts_object_literal}, \ttt{TypeScript} is strict when it comes to initialising a value with an object literal.
+In that case the value has to be initialised with exactly the values expected; no extra properties are allowed.
+This behaviour can only be asserted when parsing an object literal expression.
+Listing~\ref{lst:stx_object_literal} shows how expressions are evaluated.
+The example shows how a \ttt{NumberLiteral} and an \ttt{ObjectLiteral} is checked.
+\\\\
+\noindent\hrulefill\par
+\noindent\makebox[\textwidth][c]{%
+   \begin{minipage}{1.1\textwidth}
+    \lstinputlisting[
+        language = statix, 
+        caption = \label{lst:stx_object_literal}
+        ]{stx_object_literal}
+    \end{minipage}}
+When parsing an expression we need three things.
+First we require the scope in which the expression is currently being evaluated.
+This can be the global scope or a function scope.
+We need this scope in order to look up identifiers.
+Second we need the AST nodes corresponding to an expression.
+We can use this to match on the appropriate expression.
+For example, we can match on \ttt{NumberLiteral(value)} and perform a look up of the \ttt{number} type since that type corresponds to a \ttt{NumberLiteral}.
+Finally we need the expected type.
+We only need this when evaluating object literals and it will be used to assert that there are no properties in the object literal that we do not expect.
+The constraint on line 14 takes as its arguments the scope in which the object literal is evaluated, a list of tuples consisting of the name of the property and its value, a scope in which all properties of the object literal will be declared and the expected type.
+If the object literal contains no properties that are \textit{not} present in the expected type then the reference resolving will not fail and we will get the \ttt{expected\_property\_type} which we can use to recursively check the value of the property.
+
+\section{Discussion} \label{sec:discussion}
+% Have our lives really improved?
+The aim of this paper was to display the possibilities of \ttt{Statix} with respect to its ability to model a programming language with a structural type system.
+As an example we took the programming language \ttt{TypeScript} and its structural type system to see what is possible in \ttt{Statix}.
+We believe that \ttt{Statix} is suitable to model complex type systems like the one found in \ttt{TypeScript}.
+This is especially true because of how scopes can be used to represent types.
+It allows for both a mix of high level constructs, like defining a \ttt{Union} and \ttt{Intersection} type which themselves exist out of types, and low level implementations, as it allows you to express rules which ensures that \ttt{ObjectLiteral}s cannot contain excess properties.
+\\\\\\\\
+During the development of our language implementation we tried a few different methods of modelling the type system.
+Since types in \ttt{TypeScript} are so similar to sets with properties it is very intuitive to just model every type as a scope.
+In that scenario you do not make types for the primary types (so no \ttt{Number(\_)}).
+Instead, you make scopes for all of the primary types and give each scope a unique property.
+This ensures that the type represented by a primary type cannot be reproduced in any other way.
+In this way the types truly are scopes and property look up is solved by reference resolving.
+\\\\
+However, this method can be a bit difficult to reason about and makes implementing union and intersection types somewhat difficult.
+This is because both have different properties depending on the context in which they are used.
+When initialising something of union type using an object literal it is allowed to have all properties present in all the types of the union.
+However, when using something of union type it will only have the properties that are present in all of the types.
+Thus the set of allowed properties is not the same as the set of available properties.
+This is difficult to express using just a scope.
+For this reason we decided to combine the system of having primitive types but also associating them with a scope and having dedicated union and intersection types.
+This allows us to both have properties on primitive types and define the behaviour of union and intersection types on a case by case basis.
 
 \bibliographystyle{ieeetr}
 \bibliography{bibliography}

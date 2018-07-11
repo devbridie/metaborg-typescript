@@ -1,0 +1,11 @@
+union_subtype_any maps maybe_subtype(*, list(*)) = list(*)
+union_subtype_all maps is_subtype(list(*), *)
+  
+is_subtype(A@Union(_), B@Union(_)) :- is_identical(A, B).
+
+is_subtype(A, Union(types)) | A != Union(_) :- {result}
+  result == union_subtype_any(A, types),
+  assert_any(result).
+
+is_subtype(Union(types), B) | B != Union(_) :- 
+  union_subtype_all(types, B).

@@ -4,24 +4,28 @@ imports
   
   nabl2/api
   nabl2/runtime
+
+  static-semantics
   
   statixruntime
   
   pp
+  
+  desugaring/desugar
 
 rules // Analysis
 
   // editor-analyze = nabl2-analyze(id)
   
   editor-analyze: (ast, path, project-path) -> result
-	with result := <stx-analyze(|"typescript", "main")> ast
+	with result := <desugar-all; stx-analyze(|"typescript", "main")> ast
 
 rules // Debugging
   
   // Prints the abstract syntax ATerm of a selection.
   debug-show-aterm: (selected, _, _, path, project-path) -> (filename, result)
     with filename := <guarantee-extension(|"aterm")> path
-       ; result   := selected
+       ; result   := <desugar-all> selected
 
   // Prints the analyzed annotated abstract syntax ATerm of a selection.
   debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)

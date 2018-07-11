@@ -1,0 +1,20 @@
+interface A {
+    x: string,
+    z: boolean
+}
+
+interface B {
+    y: number,
+    z: boolean
+}
+
+function doSomething(param: A | B) {
+    param.x; param.y; // Error
+    param.z; // OK
+}
+
+let a: A = { x: "", z: false};
+let b: B = { y: 42, z: false };
+
+doSomething(a); // OK
+doSomething(b); // OK

@@ -1,0 +1,8 @@
+// Test using queries if number is declared
+query decl
+  filter pathMatch[e] and { Type{"number"@-} }
+in global_scope |-> [(_, _)],
+
+// Test if "number" is associated with the Number type
+type of Type{"number"@-} in global_scope 
+  |-> [(_, (_, Number(number_scope)))],

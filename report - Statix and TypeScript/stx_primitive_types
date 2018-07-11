@@ -1,0 +1,9 @@
+// Create global scope
+new global_scope,
+	
+// Create scope to hold properties for the number type
+new number_scope,
+// ... add properties to the number scope
+	
+// Add number type to the global scope
+global_scope -> Type{"number"@-} with type Number(number_scope),
