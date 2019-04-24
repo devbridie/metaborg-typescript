@@ -1,8 +1,0 @@
-module interfaces
-
-language typescript
-start symbol Declaration
-
-test simple interface [[
-interface foo {}
-]] parse succeeds
