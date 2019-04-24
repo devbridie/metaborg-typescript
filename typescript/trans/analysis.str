@@ -14,11 +14,8 @@ imports
   desugaring/desugar
 
 rules // Analysis
-
-  // editor-analyze = nabl2-analyze(id)
-  
   editor-analyze: (ast, path, project-path) -> result
-	with result := <desugar-all; stx-analyze(|"typescript", "main")> ast
+	with result := <desugar-all; stx-editor-analyze(|"typescript", "main")> ast
 
 rules // Debugging
   

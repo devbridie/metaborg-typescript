@@ -28,8 +28,8 @@ context-free syntax
   Expression.NumberLiteral  = INT
   Expression.Identifier     = {ID "."}+
   Expression.StringLiteral  = <"<ID>">
-  Expression.BooleanLiteral = "false" {prefer}
-  Expression.BooleanLiteral = "true" {prefer}
+  Expression.FalseLiteral = "false" {prefer}
+  Expression.TrueLiteral = "true" {prefer}
   Expression.ObjectLiteral  = <{ <{NameExprPair ","}*> }>
   
   Type.Named = ID

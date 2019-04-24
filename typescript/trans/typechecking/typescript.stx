@@ -208,7 +208,7 @@ parse_dot_call: scope * list(ID) -> Type
   parse_dot_call(scope, [name]) = T :-
     type of Var{name@-} in scope |-> [(_, (_, T))].
 
-  parse_dot_call(scope, [name | properties]) = T | properties != [] 
+  parse_dot_call(scope, [name | properties@[_ | _]]) = T
     :- {variable_type variable_pscope}
     type of Var{name@-} in scope |-> [(_, (_, variable_type))],
     variable_pscope == properties_of(variable_type),
@@ -223,7 +223,7 @@ check_arguments maps check_argument(*, list(*), list(*))
 
 allowed_properties: Type -> scope
 
-  allowed_properties(type') = properties_of(type') | type' != Union(_).
+  allowed_properties(type') = properties_of(type').
   allowed_properties(Union(types)) = compute_union_scope(types).
 
 compute_union_scope: list(Type) -> scope
@@ -235,7 +235,7 @@ compute_union_scope: list(Type) -> scope
     compute_unique_properties(union_scope, A, B),
     copy_properties(union_scope, union(A, B, find_unequal(A, B))).
   
-  compute_union_scope([A, B | rest]) = union_scope | rest != [] :-
+  compute_union_scope([A, B | rest@[ _ | _]]) = union_scope :-
    union_scope == compute_union_scope([Object(compute_union_scope([A, B])) | rest]).
 
 get_properties: scope -> list((path * occurrence))
@@ -303,16 +303,16 @@ intersect_assignable_all maps is_assignable(*, list(*))
   is_assignable(Boolean(_), Boolean(_)).
   
   is_assignable(A@Union(_), B@Union(_)) :- is_identical(A, B).
-  is_assignable(A, Union(types)) | A != Union(_) :- {result}
+  is_assignable(A, Union(types)) :- {result}
     result == union_assignable_any(A, types),
     assert_any(result).
-  is_assignable(Union(types), B) | B != Union(_) :- 
+  is_assignable(Union(types), B) :- 
     union_assignable_all(types, B).
   
   is_assignable(A@Intersection(_), B@Intersection(_)) :- is_identical(A, B).  
-  is_assignable(A, Intersection(types)) | A != Intersection(_) :- 
+  is_assignable(A, Intersection(types)) :- 
     intersect_assignable_all(A, types).
-  is_assignable(Intersection(types), B) | B != Intersection(_) :- {result}
+  is_assignable(Intersection(types), B) :- {result}
     result == intersect_assignable_any(types, B),
     assert_any(result).
   
@@ -383,7 +383,7 @@ compute_intersect_scope: list(Type) -> scope
     compute_unique_properties(intersect_scope, A, B),
     copy_properties(intersect_scope, intersect(A, B, find_unequal(A, B))).
   
-  compute_intersect_scope([A, B | rest]) = intersect_scope | rest != [] :- {T}
+  compute_intersect_scope([A, B | rest@[_ | _]]) = intersect_scope :- {T}
     T == compute_intersect_scope([A, B]),
     intersect_scope == compute_intersect_scope([Object(T) | rest]).
 
