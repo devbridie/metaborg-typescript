@@ -1,0 +1,85 @@
+resolve
+//  main(
+//    Program([Return(BooleanLiteral())])
+//  )
+  hois(["a", "a"], "bla") == "a",
+  true
+  
+  //hoi("a", ["c", "d"])
+
+signature
+  sorts ID = string
+  
+  sorts Program
+  constructors
+    Program: list(Statement) -> Program
+
+  sorts Statement
+  constructors
+    Return : Expression -> Statement
+    Var : ID -> Statement
+
+  sorts Expression
+  constructors
+    Identifier     : list(ID) -> Expression
+    FunctionCall   : ID * list(Expression) -> Expression
+    NumberLiteral  : ID -> Expression
+    StringLiteral  : ID -> Expression
+    BooleanLiteral : Expression
+    ObjectLiteral  : list((ID * Expression)) -> Expression
+
+sorts Type constructors
+	VoidType : Type
+	NumberType: Type
+	StringType: Type
+	BooleanType: Type
+	ObjectType: Type
+	FunctionType: Type * list(Type) -> Type    
+    Union : list(Type) -> Type
+    Intersection : list(Type) -> Type
+namespaces  
+  Var  : string
+  Type : string
+
+name-resolution
+  labels P I
+  resolve Var filter pathMatch[P*] min pathLt[$ < P]
+
+relations
+  type : occurrence -> Type
+  length : occurrence -> int
+
+rules
+  main: Program
+  
+  main(program) :- {scope}
+	// Create base scope
+	new scope,
+
+    // Evaluate program
+	eval_program(scope, program).
+
+  eval_program : scope * Program
+  
+  vardecl : scope * ID
+  vardecl(s, name) :-
+    s -> Var{name@name} with type VoidType(). // s -> Var{name@_}, Var{name} : VoidType()
+  
+  varref : scope * ID -> Type
+  varref(s, name) = T :- {path declaration l}
+    query decl
+      filter pathMatch[P* I*] and { true } //d :- find(name, d)
+      min pathLt[$ < P, I < P]
+    in s |-> l,
+    finds("hoi", l).
+    
+  find : ID * (path * occurrence)
+//  find(name, Var{name@_}).
+//  find(name, Type{name@_}).
+  
+  finds maps find(*, list(*))
+  
+  hois maps hoi(list(*), *) = *
+  hoi : string * string -> string
+  hoi(a, b) = a.
+  

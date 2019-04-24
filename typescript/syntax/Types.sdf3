@@ -1,0 +1,45 @@
+module Types
+
+imports
+  Common
+
+context-free syntax
+
+//  PrimaryType = ObjectType
+  
+//  ObjectType.Object = <{<TypeBody>}>
+  
+  TypeBody = TypeMemberList
+  TypeBody.TypeBodySemiColon = <<TypeMemberList>;>
+  TypeBody.TypeBodyComma = <<TypeMemberList><Comma>>
+  
+  TypeMemberList.TypeMemberListSingle = TypeMember
+  TypeMemberList.TypeMemberListSemiColon = <<TypeMemberList>;<TypeMember>>
+  TypeMemberList.TypeMemberListComma = <<TypeMemberList><Comma><TypeMember>>
+  
+  TypeMember = NameWithOptionalType
+  
+  OptionalTypeAnnotation.TypeAnnotation = <: <TypeExpr>>
+  OptionalTypeAnnotation.NoTypeAnnotation = 
+  
+  TypeParameters.TypeParameters = <\<<{TypeParameter ","}+>\>>
+  TypeParameter.TypeParameterWithConstraint = <<ID> extends <TypeExpr>>
+  TypeParameter.TypeParameterWithoutConstraint = <<ID>>
+
+  TypeExpr.AnyType = <any>
+  TypeExpr.NullType = <null>
+  TypeExpr.UndefinedType = <undefined>
+  TypeExpr.VoidType = <void>
+  TypeExpr.NumberType = <number>
+  TypeExpr.BooleanType = <boolean>
+  TypeExpr.StringType = <string>
+  TypeExpr.IdType = TypeID
+  TypeExpr.UnionType = <<TypeExpr> | <TypeExpr>> {left}
+  TypeExpr.IntersectionType = <<TypeExpr> & <TypeExpr>> {left}
+  TypeExpr.FunctionType = [([{TypeExpr ","}*]) => [TypeExpr]] 
+  StructureType.StructureType = "{" {NameWithType ","}* "}" 
+  TypeExpr = StructureType
+  
+  NameWithType.NameWithType = ID ":" TypeExpr
+  NameWithOptionalType = NameWithType
+  NameWithOptionalType.NameWithNoType = <<ID>>  

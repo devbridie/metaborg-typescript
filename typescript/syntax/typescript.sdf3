@@ -2,46 +2,17 @@ module typescript
 
 imports
   
+  Classes
   Common
-
+  Expressions
+  Statements
+  Types
+ 
 context-free start-symbols
   
-  Start
-  
-  Statement  
-  
-  Expression
-  
-  Type
-  
-  NameTypePair
-  NameExprPair
+  Expression Statement Program
 
 context-free syntax
-  
-  Start.Program = Statement*
-  
-  Statement.VarDecl  = <let <ID> : <Type> = <Expression>;>
-  Statement.TypeDecl = <type <ID> = <Type>;>
-  Statement.FuncDecl = <function <ID>(<{NameTypePair ","}*>) : <Type> { <Statement*> }>
-  
-  Expression.NumberLiteral  = INT
-  Expression.Identifier     = {ID "."}+
-  Expression.StringLiteral  = <"<ID>">
-  Expression.FalseLiteral = "false" {prefer}
-  Expression.TrueLiteral = "true" {prefer}
-  Expression.ObjectLiteral  = <{ <{NameExprPair ","}*> }>
-  
-  Type.Named = ID
-  Type.Union = <<Type> | <Type>> {left}
-  Type.Intersection = <<Type> & <Type>> {left}
-  Type.Structure = "{" {NameTypePair ","}* "}"
-  
-  NameTypePair = ID ":" Type
-  NameExprPair = ID ":" Expression
-  
-context-free priorities
-  {Type.Named} >
-  {Type.Structure} >
-  {Type.Intersection} >
-  {Type.Union}
+ 
+//  Program.Module  = Module
+  Program.Program = Statement*

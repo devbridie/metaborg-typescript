@@ -1,0 +1,36 @@
+module Expressions
+
+imports
+  Common
+  Functions
+  Statements
+  Classes
+  Types
+
+context-free syntax
+
+  Expression.ThisExpr = <this>
+  Expression.IdExpr = ID
+  Expression = Literal
+  Expression.ObjectLiteral = <{<{NameWithValue ","}*>}>
+  NameWithValue.NameWithValue = <<ID>: <Expression>>
+  Expression.CallExpr = <<Expression>(<{Expression ","}*>)>
+  Expression.NamedFunction = <function <ID><CallSignature> {
+    <StatementList>
+  }>
+  
+  Expression.AnonymousFunction = <function <CallSignature> {
+    <StatementList>
+  }>
+  Expression.ArrowExprExpr = [[CallSignature] => [Expression]]
+  Expression.ArrowExprBlock = [[CallSignature] => { [StatementList] }]
+  Expression.MemberExpr = <<Expression>.<ID>>
+  Expression.ArrayAccessExpr = <<Expression>[<Expression>]>
+  Expression.NewExpr = <new <Expression>(<{Expression ","}*>)>
+  Expression.ClassExpr = <class <ID> <ClassParent> <ImplementsClause> {
+    <{ClassElement "\n"}*>
+  }>
+  Expression.AssignExpr = <<ID> = <Expression>>
+ 
+//  TODO: Introduces ambiguity with Call()
+//  Expression = <(<Expression>)> {bracket}

@@ -1,0 +1,33 @@
+module Classes
+
+imports
+  Common
+  Expressions
+  Functions
+  Statements
+  Types
+
+context-free syntax
+
+  ClassExpression.ClassExpression = <class <ID> <ClassParent> <ImplementsClause> {
+    <{ClassElement "\n"}*>
+  }>
+  ClassExpression.ClassExpressionWithTypeParameters = <class <ID> <TypeParameters> <ClassParent> <ImplementsClause> {
+    <{ClassElement "\n"}*>
+  }>
+  
+  ClassParent.NoParent =
+  ClassParent.ClassParent = <extends <ID>>
+  
+  ImplementsClause.NoImplements =  
+  ImplementsClause.Implements = <implements <{ID " "}*>>
+  
+  // TODO empty bodies allowed in abstract classes
+  ClassElement.FunctionMember = <function <ID><CallSignature> {
+    <StatementList>
+  }>
+  ClassElement.StaticMethodDeclaration = <static <ID><CallSignature> {
+    <StatementList>
+  }>
+  ClassElement.PropertyMemberWithInitializer = <<NameWithOptionalType> = <Expression>>
+  ClassElement.PropertyMemberWithoutInitializer = <<NameWithOptionalType>> 

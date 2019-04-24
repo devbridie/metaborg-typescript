@@ -1,0 +1,20 @@
+module test
+language typescript
+
+//test easy [[
+//const x : number = 5 
+//]] 0 errors
+//
+//test fail [[
+//const x : number = true 
+//]] >=1 errors
+//
+//test class [[
+//class X { }
+//const x : X = true 
+//]] >=1 errors
+//
+//test class [[
+//class X { }
+//const x : X = new X() 
+//]] 0 errors

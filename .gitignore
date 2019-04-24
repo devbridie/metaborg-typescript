@@ -22,3 +22,5 @@ node_modules/
 *.pdf
 *.synctex.gz
 /.metadata/
+
+*.stxresult

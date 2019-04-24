@@ -18,6 +18,11 @@ pardonedLanguages:
 - SDF
 debug:
   typesmart: false
+runtime:
+  nabl2:
+    debug: analysis files custom
+  statix:
+    debug: analysis files custom
 language:
   sdf:
     pretty-print: typescript

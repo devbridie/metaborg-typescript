@@ -14,8 +14,7 @@ imports
   desugaring/desugar
 
 rules // Analysis
-  editor-analyze: (ast, path, project-path) -> result
-	with result := <desugar-all; stx-editor-analyze(|"typescript", "main")> ast
+  editor-analyze = stx-editor-analyze(id|"typechecking/typescript", "main")
 
 rules // Debugging
   

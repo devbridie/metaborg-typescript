@@ -1,9 +1,29 @@
 module desugar
 
 imports
-  signatures/-
-  pp
+	signatures/-
+	pp
+
+signature
+	constructors
+	InferredType: TypeExpr
 
 rules
+  desugar: VariableDeclaration(b) -> VariableDeclarationWithInitializer(b, UndefinedLiteral())
+  desugar: NameWithNoType(n) -> NameWithType(n, InferredType())
+  desugar: ArrowExprExpr(sig, expr) -> ArrowExprBlock(sig, [ValueReturn(expr)])
+  desugar: ArrowExprBlock(sig, statements) -> AnonymousFunction(sig, statements)
+  desugar: NoTypeAnnotation() -> TypeAnnotation(InferredType())
+  desugar: MemberExpr(par, IdExpr(n)) -> ArrayAccessExpr(par, StringLiteral(n))
+  desugar: ExpressionStatement(NamedFunction(name, sig, body)) -> AssignStatement(Const(), [name, AnonymousFunction(sig, body)])
+  desugar: PropertyMemberWithoutInitializer(n) -> PropertyMemberWithInitializer(n, UndefinedLiteral())
+  desugar: [ExpressionStatement(c@ClassExpr(n, p, i, e)) | rest ] -> <concat> [[
+    InterfaceDeclaration(n, <map(member2type)> e),
+    AssignStatement(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
+      StructureType([NameWithType("new", FunctionType([], IdType(n)))])
+    ), c)])
+  ], rest ]
+
+  member2type: PropertyMemberWithInitializer(NameWithType(n, t), e) -> NameWithType(n, t)
 strategies
-  desugar-all = id
+  	desugar-all = bottomup(try(desugar))

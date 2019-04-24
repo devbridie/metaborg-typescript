@@ -1,0 +1,41 @@
+module Statements
+
+imports
+  Common
+  Expressions
+  Functions
+  Types
+
+template options
+
+  tokenize: "({;"
+ 
+context-free priorities
+  Statement.ValueReturn > Statement.EmptyReturn
+
+context-free syntax
+  Statement.EmptyReturn = <return;>
+  Statement.ValueReturn = <return <Expression>>
+  Statement.IfStatement = <if (<Expression>) <Statement>>
+  Statement.IfElseStatement = <
+    if (<Expression>) <Statement>
+    else <Statement>
+  >
+  Statement.BlockStatement = <{
+    <StatementList>
+  }>
+  Statement.ExpressionStatement = Expression
+  
+  Statement.AssignStatement = <<VariableDeclarationType> <{VariableDeclaration ","}+>>
+  VariableDeclarationType.Let = <let>
+  VariableDeclarationType.Const = <const>
+  VariableDeclarationType.Var = <var>
+  VariableDeclaration.VariableDeclaration = <<NameWithOptionalType>>
+  VariableDeclaration.VariableDeclarationWithInitializer = <<NameWithOptionalType> = <Expression>>
+  
+//  Statement.EmptyInterfaceDeclaration = <interface <ID>>
+  Statement.InterfaceDeclaration = <interface <ID> { <{NameWithType ","}*> }> 
+  Statement.InterfaceDeclarationWithTypeParameters = <interface <ID><TypeParameters><StructureType>>
+
+  StatementList.StatementList = <<{Statement "\n"}*>>
+  

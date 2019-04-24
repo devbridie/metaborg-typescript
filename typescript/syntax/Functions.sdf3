@@ -1,0 +1,10 @@
+module Functions
+
+imports
+  Common
+  Types
+  Statements
+
+context-free syntax
+  CallSignature.CallSignatureWithTypeParameters = <<TypeParameters>(<{NameWithOptionalType ","}*>)<OptionalTypeAnnotation>>
+  CallSignature.CallSignature = <(<{NameWithOptionalType ","}*>)<OptionalTypeAnnotation>>

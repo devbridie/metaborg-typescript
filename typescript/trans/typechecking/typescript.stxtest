@@ -1,0 +1,597 @@
+resolve
+main(
+Program(
+  [ InterfaceDeclaration("Test", [NameWithType("num", NumberType())])
+  , AssignStatement(
+      Const()
+    , [ VariableDeclarationWithInitializer(
+          NameWithType(
+            "Test"
+          , StructureType([NameWithType("new", FunctionType([], IdType("Test")))])
+          )
+        , ClassExpr(
+            "Test"
+          , NoParent()
+          , NoImplements()
+          , [PropertyMemberWithInitializer(NameWithType("num", NumberType()), UndefinedLiteral())]
+          )
+        )
+      ]
+    )
+  , AssignStatement(
+      Const()
+    , [VariableDeclarationWithInitializer(
+         NameWithType("instance", IdType("Test"))
+       , NewExpr(IdExpr("Test"), [])
+       )]
+    )
+  ]
+)
+)
+signature
+  sorts ID = string
+  
+  sorts Program
+  constructors
+    Program: list(Statement) -> Program
+
+  sorts TypeExpr TypeBody TypeParameter TypeAnnotation TypeParameters NameWithType constructors
+    TypeAnnotation                   : TypeExpr -> TypeAnnotation
+    TypeParameters                   : list(TypeParameter) -> TypeParameters
+    TypeParameterWithConstraint      : ID * TypeExpr -> TypeParameter
+    TypeParameterWithoutConstraint   : ID -> TypeParameter
+    AnyType                          : TypeExpr
+    NullType                         : TypeExpr
+    UndefinedType                    : TypeExpr
+    VoidType                         : TypeExpr
+    NumberType                       : TypeExpr
+    BooleanType                      : TypeExpr
+    StringType                       : TypeExpr
+    IdType                           : ID -> TypeExpr
+    UnionType                        : TypeExpr * TypeExpr -> TypeExpr
+    IntersectionType                 : TypeExpr * TypeExpr -> TypeExpr
+    FunctionType                     : list(TypeExpr) * TypeExpr -> TypeExpr
+    StructureType                    : list(NameWithType) -> TypeExpr
+    NameWithType                     : ID * TypeExpr -> NameWithType
+    
+    InferredType: TypeExpr
+    
+  sorts Expression NameWithValue constructors
+    ThisExpr                       : Expression
+    IdExpr                         : ID -> Expression
+    ObjectLiteral                  : list(NameWithValue) -> Expression
+    NameWithValue                  : ID * Expression -> NameWithValue
+    CallExpr                       : Expression * list(Expression) -> Expression
+    NamedFunction                  : ID * CallSignature * StatementList -> Expression
+    AnonymousFunction              : CallSignature * StatementList -> Expression
+    MemberExpr                     : Expression * ID -> Expression
+    ArrayAccessExpr                : Expression * Expression -> Expression
+    NewExpr                        : Expression * list(Expression) -> Expression
+    ClassExpr               : ID * ClassParent * ImplementsClause * list(ClassElement) -> Expression
+    AssignExpr                     : ID * Expression -> Expression
+    
+    NullLiteral            : Expression
+    UndefinedLiteral       : Expression
+    TrueLiteral            : Expression
+    FalseLiteral           : Expression
+    NumericLiteral         : int -> Expression
+    StringLiteral          : string -> Expression
+    BooleanLiteral         : Expression
+    
+  sorts CallSignature constructors
+    CallSignatureWithTypeParameters    : TypeParameters * list(NameWithType) * TypeAnnotation -> CallSignature
+    CallSignature                  : list(NameWithType) * TypeAnnotation -> CallSignature
+    
+  sorts ClassExpression ClassParent ImplementsClause ClassElement constructors
+    ClassExpression                   : ID * ClassParent * ImplementsClause * list(ClassElement) -> ClassExpression
+    ClassExpressionWithTypeParameters : ID * TypeParameters * ClassParent * ImplementsClause * list(ClassElement) -> ClassExpression
+    NoParent                          : ClassParent
+    ClassParent                       : ID -> ClassParent
+    NoImplements                      : ImplementsClause
+    Implements                        : list(ID) -> ImplementsClause
+    FunctionMember                    : ID * CallSignature * StatementList -> ClassElement
+    StaticMethodDeclaration           : ID * CallSignature * StatementList -> ClassElement
+    PropertyMemberWithInitializer     : NameWithType * Expression -> ClassElement
+    PropertyMemberWithoutInitializer  : NameWithType -> ClassElement
+
+  sorts Statement ReturnStatement IfStatement BlockStatement StatementList VariableDeclaration VariableDeclarationType InterfaceDeclaration constructors
+    EmptyReturn                            : Statement
+    ValueReturn                            : Expression -> Statement
+    IfStatement                            : Expression * Statement -> Statement
+    IfElseStatement                        : Expression * Statement * Statement -> Statement
+    BlockStatement                         : StatementList -> Statement
+    ExpressionStatement                    : Expression -> Statement
+    AssignStatement                        : VariableDeclarationType * list(VariableDeclaration) -> Statement
+    Let                                    : VariableDeclarationType
+    Const                                  : VariableDeclarationType
+    Var                                    : VariableDeclarationType
+    VariableDeclarationWithInitializer     : NameWithType * Expression -> VariableDeclaration
+    InterfaceDeclaration                   : ID * list(NameWithType) -> Statement
+    StatementList                          : list(Statement) -> StatementList
+
+ sorts Type constructors
+    Void : Type
+    Number : scope -> Type
+    String : scope -> Type
+    Boolean : scope -> Type
+    Any : Type
+    
+    Object : scope -> Type
+    Function : Type * list(Type) -> Type
+    
+    Union : Type * Type -> Type
+    Intersection : Type * Type -> Type
+    
+namespaces  
+  Var  : string
+  Type : string
+
+name-resolution
+  labels P
+  resolve Var filter pathMatch[P*] min pathLt[$ < P]
+
+relations
+  type : occurrence -> Type
+
+rules
+  main: Program
+  main(program) :- {scope xyz number_scope string_scope boolean_scope}
+	// Create base scope
+	new scope,
+    // Create property scopes for base types
+	new number_scope,
+	new string_scope,
+	new boolean_scope,
+	
+	// Add types to scope
+	scope -> Type{"number"@-} with type Number(number_scope),
+	scope -> Type{"string"@-} with type String(string_scope),
+	scope -> Type{"boolean"@-} with type Boolean(boolean_scope),
+
+    // Evaluate program
+	eval_program(scope, program).
+
+  eval_program: scope * Program
+  eval_program(scope, Program(statements)) :- 
+    eval_statements(scope, statements).
+
+  eval_statements maps eval_statement(*, list(*))    
+  eval_statement: scope * Statement
+  eval_statement(scope, AssignStatement(_, decls)) :-
+    eval_decls(scope, decls).
+  eval_statement(scope, InterfaceDeclaration(name, types)) :- {type_scope}
+    new type_scope, type_scope -P-> scope,
+    scope -> Type{name@name} with type Object(type_scope),
+    add_props_to_type(type_scope, types). 
+  add_props_to_type maps add_prop_to_type(*, list(*))
+  add_prop_to_type: scope * NameWithType
+  add_prop_to_type(s, NameWithType(n, t)) :- {ttype}
+    ttype == eval_type(s, t),
+    s -> Var{n@n} with type ttype.
+  
+  eval_statement(s, ExpressionStatement(e)) :- {a}
+    a == eval_expression(s, e). 
+//  eval_statement(s, IfStatement(e, t)) :-
+
+  eval_decls maps eval_decl(*, list(*))  
+  eval_decl: scope * VariableDeclaration
+  eval_decl(s, VariableDeclarationWithInitializer(NameWithType(name, type), value)) :- {decl_type expr_type}
+    decl_type == eval_type(s, type),
+    expr_type == eval_expression(s, value),
+    is_assignable(expr_type, decl_type),
+    s -> Var{name@name} with type decl_type.
+   
+  unwrap_annotation: TypeAnnotation -> TypeExpr
+  unwrap_annotation(TypeAnnotation(t)) = T :- T == t.
+  
+  eval_type: scope * TypeExpr -> Type
+  eval_type(scope, NumberType()) = T :-
+    type of Type{"number"@-} in scope |-> [(_, (_, T))].
+    
+  eval_type(scope, BooleanType()) = T :-
+    type of Type{"boolean"@-} in scope |-> [(_, (_, T))].
+    
+  eval_type(scope, StringType()) = T :-
+    type of Type{"string"@-} in scope |-> [(_, (_, T))].
+
+  eval_type(scope, IdType(name)) = T :-
+    type of Type{name@-} in scope |-> [(_, (_, T))].
+    
+  eval_type(scope, FunctionType(params, ret)) = Function(out_ret, out_params) :-
+  out_ret == eval_type(scope, ret),
+  out_params == eval_types(scope, params).
+  
+  eval_type(scope, UnionType(a, b)) = Union(out_a, out_b) :-
+    out_a == eval_type(scope, a),
+    out_b == eval_type(scope, b).
+  
+  eval_type(scope, IntersectionType(a, b)) = Intersection(out_a, out_b) :-
+    out_a == eval_type(scope, a),
+    out_b == eval_type(scope, b).
+    
+  eval_type(scope, StructureType(properties)) = Object(pscope) :-
+    new pscope, pscope -P-> scope,
+    parse_object_type(scope, properties, pscope).
+  parse_object_type: scope * list(NameWithType) * scope
+  parse_object_type(scope, [], pscope).
+  parse_object_type(scope, [NameWithType(name, type_expr) | rest], pscope) :-
+    pscope -> Var{name@-} with type eval_type(scope, type_expr),
+    parse_object_type(scope, rest, pscope).
+  eval_types maps eval_type(*, list(*)) = list(*)
+
+  eval_expression: scope * Expression -> Type
+  eval_expression(scope, NumericLiteral(_)) = T :-
+    type of Type{"number"@-} in scope |-> [(_, (_, T))].
+    
+  eval_expression(scope, StringLiteral(_)) = T :-
+    type of Type{"string"@-} in scope |-> [(_, (_, T))].
+  
+  eval_expression(scope, BooleanLiteral()) = T :-
+    type of Type{"boolean"@-} in scope |-> [(_, (_, T))].
+    
+  eval_expression(scope, IdExpr(id)) = T :-
+    T == lookup_type(scope, id).
+ 
+  eval_expression(scope, AssignExpr(id, expr)) = expr_type :- {existing_type}
+    existing_type == lookup_type(scope, id),
+    expr_type == eval_expression(scope, expr),
+    existing_type == expr_type.
+
+  eval_expression(scope, AnonymousFunction(CallSignature(params, ret), StatementList(body))) = expr_type :- {return_type parameter_types function_scope}
+    new function_scope, function_scope -P-> scope,
+    return_type == eval_type(scope, unwrap_annotation(ret)),
+    parameter_types == parse_parameters(scope, params, function_scope),
+    eval_statements(function_scope, body),
+    expr_type == Function(return_type, parameter_types).
+    
+  parse_parameter: scope * NameWithType * scope -> Type
+  parse_parameters maps parse_parameter(*, list(*), *) = list(*)
+  parse_parameter(scope, NameWithType(name, type'), function_scope) = parameter_type :-
+    parameter_type == eval_type(scope, type'),
+    function_scope -> Var{name@-} with type parameter_type.
+    
+  eval_expression(scope, NewExpr(classExpr, arguments)) = out :- {cscope}
+    Object(cscope) == eval_expression(scope, classExpr),
+    Function(out, _) == lookup_type(cscope, "new").
+    
+  eval_expression(scope, ClassExpr(n, p, i, members)) = Object(cscope) :- // TODO inheritance
+    new cscope, cscope -P-> scope,
+    cscope -> Var{"new"@-} with type Function(Object(cscope),[]).
+    
+  eval_expression(scope, ObjectLiteral(fields)) = Object(pscope) :-
+  new pscope, parse_object_literal(scope, pscope, fields).
+  parse_object_literal: scope * scope * list(NameWithValue)
+  parse_object_literal(scope, pscope, []).
+  parse_object_literal(scope, pscope, [NameWithValue(name, value) | rest]) :- {expr_type}
+    // Checks whether an object literal does not contain a property which is not present in the expected type
+	// Thus this prevents users from declaring properties in an object literal that are not present in the expected type
+	// (even though this is allowed by sub typing rules)
+//    type of Var{name@-} in allowed_properties(expected_type) |-> [(_, (_, expected_property_type))],
+    expr_type == eval_expression(scope, value),
+//    is_assignable(expr_type, expected_property_type),
+	// Declares the property in the object scope
+    pscope -> Var{name@-} with type expr_type,
+	// Parse rest of object literal
+    parse_object_literal(scope, pscope, rest).
+    
+  eval_expression(scope, CallExpr(fn, args)) = result_type :-
+    Function(result_type, _) == eval_expression(scope, fn). // TODO match arg types
+  
+  eval_expression(scope, ArrayAccessExpr(obj, StringLiteral(prop))) = result_type :- {obj_scope}
+    Object(obj_scope) == eval_expression(scope, obj),
+    result_type == lookup_type(obj_scope, prop).
+
+  eval_expression(scope, ArrayAccessExpr(obj, other)) = Any :-
+   Object(_) == eval_expression(scope, obj).
+  
+  eval_expression(scope, ThisExpr()) = result_type :- 
+    result_type == lookup_type(scope, "this").
+
+  lookup_type: scope * ID -> Type
+  lookup_type(scope, name) = T :-
+    type of Var{name@-} in scope |-> [(_, (_, T))].
+    
+
+check_argument: scope * Expression * Type
+check_arguments maps check_argument(*, list(*), list(*))
+
+  check_argument(scope, expression, parameter_type) :- {expr_type}
+    expr_type == eval_expression(scope, expression),
+    is_assignable(expr_type, parameter_type).
+
+allowed_properties: Type -> scope
+  allowed_properties(Union(a, b)) = compute_union_scope([a,b]).
+  allowed_properties(type') = properties_of(type').
+
+compute_union_scope: list(Type) -> scope
+
+  compute_union_scope([A]) = properties_of(A).
+  
+  compute_union_scope([A, B]) = union_scope :-
+    new union_scope,
+    compute_unique_properties(union_scope, A, B),
+    copy_properties(union_scope, union(A, B, find_unequal(A, B))).
+  
+  compute_union_scope([A, B | rest@[_|_]]) = union_scope :-
+   union_scope == compute_union_scope([Object(compute_union_scope([A, B])) | rest]).
+
+get_properties: scope -> list((path * occurrence))
+
+  get_properties(scope) = query_result :-
+    query decl
+      filter pathMatch[e] and { Var{_@-} }
+    in scope |-> query_result.
+
+// Checks whether two types are identical
+// https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#3112-type-and-member-identity
+is_identical: Type * Type
+  
+  is_identical(Number(_), Number(_)).
+  is_identical(String(_), String(_)).
+  is_identical(Boolean(_), Boolean(_)).
+  
+  is_identical(Union(a1,b1), Union(a2,b2)) :- 
+    maps_to([a1, b1], [a2, b2]), maps_to([a2, b2], [a1, b1]).
+    
+  is_identical(Intersection(a1, b1), Intersection(a2, b2)) :- 
+    maps_to([a1, b1], [a2, b2]), maps_to([a2, b2], [a1, b1]).
+  
+  is_identical(A@Object(a), B@Object(b)) :- 
+    is_assignable(A, B), is_assignable(B, A).
+
+// maps_to checks whether a set A is contained in a set B
+maps: Type * list(Type)
+maps_to maps maps(list(*), *)
+contains maps maybe_identical(*, list(*)) = list(*)
+
+  maps(A, types) :- {result}
+    result == contains(A, types),
+    assert_any(result).
+
+maybe_identical: Type * Type -> list((path * occurrence))
+
+  maybe_identical(A, B) = query_result :- {scope}
+    // Create new scope and insert dummy declaration
+    new scope,
+    scope -> Var{"dummy"@-},
+    
+    // Perform query which will return an NON empty list if condition holds
+    query decl
+      filter pathMatch[e] and { d :- is_identical(A, B) }
+    in scope |-> query_result.
+
+// Check if A is assignable to B (A CAN BE ASSIGNED TO B)
+// This is similar to subtyping
+// https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#3.11.4
+is_assignable: Type * Type
+
+// Checks whether a type can be assigned to atleast one type from a list of types
+// or whether one type from a list of types is assignable to a type
+union_assignable_any     maps maybe_assignable(*, list(*)) = list(*)
+intersect_assignable_any maps maybe_assignable(list(*), *) = list(*)
+
+// Checks whether a type can be assigned to all types in a list of types 
+// or whether all types in a list of types can be assigned to a type
+union_assignable_all     maps is_assignable(list(*), *)
+intersect_assignable_all maps is_assignable(*, list(*))
+
+  is_assignable(Number(_), Number(_)).
+  is_assignable(String(_), String(_)).
+  is_assignable(Boolean(_), Boolean(_)).
+  
+  is_assignable(A@Union(_,_), B@Union(_,_)) :- is_identical(A, B).
+  is_assignable(A, Union(a, b)) :- {result}
+    result == union_assignable_any(A, [a,b]),
+    assert_any(result).
+  is_assignable(Union(a,b), B) :- 
+    union_assignable_all([a,b], B).
+  
+  is_assignable(A@Intersection(_,_), B@Intersection(_,_)) :- is_identical(A, B).  
+  is_assignable(A, Intersection(a, b)) :- 
+    intersect_assignable_all(A, [a,b]).
+  is_assignable(Intersection(a, b), B) :- {result}
+    result == intersect_assignable_any([a,b], B),
+    assert_any(result).
+  
+  is_assignable(A, Object(pscope_b)) :- {pscope_a query_results}
+    pscope_a == properties_of(A),
+    query decl
+      filter pathMatch[e] and { Var{_@-} }
+    in pscope_b |-> query_results,
+    recurse_properties(pscope_a, pscope_b, query_results).
+    
+  is_assignable(Function(r1, a1), Function(r2, a2)).
+
+// Checks whether the properties from a type A can be assigned to the properties of B
+// Pretty much the same reasoning can be applied as if we were checking sub type relations
+recurse_property: scope * scope * (path * occurrence)
+recurse_properties maps recurse_property(*, *, list(*))
+
+  recurse_property(pscope_a, pscope_b, (path, property)) :- {type_a type_b}
+    // Type of property in A
+    type of property in pscope_a |-> [(_, (_, type_a))],
+    // Type of property in B
+    type of property in pscope_b |-> [(_, (_, type_b))],    
+    is_assignable(type_a, type_b).
+
+// Checks whether type A can be assigned to type B and will return 
+// a NON empty list when this is the case
+maybe_assignable: Type * Type -> list((path * occurrence))
+
+  maybe_assignable(A, B) = query_result :- {scope}
+    // Create new scope and insert dummy declaration
+    new scope,
+    scope -> Var{"dummy"@-},
+    
+    // Perform query which will return an NON empty list if condition holds
+    query decl
+      filter pathMatch[e] and { d :- is_assignable(A, B) }
+    in scope |-> query_result.
+
+// Asserts that there is atleast one NON empty list in the list of lists
+assert_any: list(list((path * occurrence)))
+
+  assert_any([]) :- false.
+  assert_any([[_] | rest]) :- true.
+  assert_any([[ ] | rest]) :- assert_any(rest).
+
+// Computes the properties of a given type
+properties_of: Type -> scope
+
+  properties_of(Object(pscope)) = pscope.
+  
+  properties_of(Number(number_scope)) = number_scope.
+  properties_of(String(string_scope)) = string_scope.
+  properties_of(Boolean(boolean_scope)) = boolean_scope.
+  
+  properties_of(Union(a, b)) = union_scope :- {pscope properties filtered_properties}
+    new union_scope,
+    pscope == properties_of(a),
+    properties == get_properties(pscope),
+    filtered_properties == filter_properties(properties, [b]),
+    unionise(filtered_properties, union_scope).
+  
+  properties_of(Intersection(a,b)) = compute_intersect_scope([a,b]).
+
+compute_intersect_scope: list(Type) -> scope
+
+  compute_intersect_scope([A]) = properties_of(A).
+  
+  compute_intersect_scope([A, B]) = intersect_scope :-
+    new intersect_scope,
+    compute_unique_properties(intersect_scope, A, B),
+    copy_properties(intersect_scope, intersect(A, B, find_unequal(A, B))).
+  
+  compute_intersect_scope([A, B | rest@[_|_]]) = intersect_scope :- {T}
+    T == compute_intersect_scope([A, B]),
+    intersect_scope == compute_intersect_scope([Object(T) | rest]).
+
+// Computes the properties present in either A or in B or in A and B and of the same type
+compute_unique_properties: scope * Type * Type
+
+  compute_unique_properties(new_type, A, B) :- {a b props_a props_b}
+    // Compute scope assocciated with types
+    a == properties_of(A),
+    b == properties_of(B),
+    
+    // Copy the properties that are present in both a and b of the same type
+    copy_equal(new_type, a, b),
+    
+    // Copy the properties present in a but not in b
+    query decl
+      filter pathMatch[e] and { d :- type of d in b |-> [ ] }
+    in a |-> props_a,
+    copy_properties(new_type, to_types(props_a)),
+    
+    // Copy the properties present in b but not in a
+    query decl
+      filter pathMatch[e] and { d :- type of d in a |-> [ ] }
+    in b |-> props_b,
+    copy_properties(new_type, to_types(props_b)).
+
+// Given two types and a property present in both types computes the intersection of 
+// the type of the property in both types
+intersect_: Type * Type * (path * occurrence) -> (occurrence * Type)
+intersect maps intersect_(*, *, list(*)) = list(*)
+
+  intersect_(A, B, (path, property)) = (property, Intersection(type_a, type_b)) :-
+    type of property in properties_of(A) |-> [(_, (_, type_a))],
+    type of property in properties_of(B) |-> [(_, (_, type_b))].
+
+union_: Type * Type * (path * occurrence) -> (occurrence * Type)
+union maps union_(*, *, list(*)) = list(*)
+
+  union_(A, B, (path, property)) = (property, Union(type_a, type_b)) :-
+    type of property in properties_of(A) |-> [(_, (_, type_a))],
+    type of property in properties_of(B) |-> [(_, (_, type_b))].
+
+// Transforms (path * occurrence) to (occurrence * Type)
+to_type: (path * occurrence) -> (occurrence * Type)
+to_types maps to_type(list(*)) = list(*)
+
+  to_type((path, property)) = (property, type') :-
+    type of property in dst(path) |-> [(_, (_, type'))].
+
+// Finds the properties that are present in both types
+// but that are of different type in each type
+find_unequal: Type * Type -> list((path * occurrence))
+
+  find_unequal(A, B) = properties :- {a b}
+    a == properties_of(A),
+    b == properties_of(B),
+    query decl
+      filter pathMatch[e] and {
+        d :- {ta tb}
+          d == Var{_@-},
+          
+          type of d in a |-> [(_, (_, ta))],
+          type of d in b |-> [(_, (_, tb))],
+          
+          // Kinda hacky but allows us to check whether two types are NOT equal
+          // When two types are equal the filter condition will be true
+          // and the output of the query will be a non empty list
+          // However when two types are not equal the result of the query
+          // will be an empty list which we can use to filter in the outer filter
+          query decl
+            filter pathMatch[e] and { d :- is_identical(ta, tb) }
+          in b |-> [ ]
+      }
+    in a |-> properties.
+ 
+// Copy a list of properties to a type
+copy_property: scope * (occurrence * Type)
+copy_properties maps copy_property(*, list(*))
+  
+  copy_property(new_type, (property, prop_type)) :-
+    new_type -> property with type prop_type.
+
+// Copy the properties that are present in both types and type equal
+copy_equal: scope * scope * scope
+
+  copy_equal(new_type, a, b) :- { properties }
+    query decl
+      filter pathMatch[e] and {
+        d :- {ta tb}
+          d == Var{_@-},
+        
+          type of d in a |-> [(_, (_, ta))],
+          type of d in b |-> [(_, (_, tb))],
+          
+          is_identical(ta, tb)
+      }
+    in a |-> properties,
+    copy_properties(new_type, to_types(properties)).
+
+filter_property: (path * occurrence) * list(Type) -> (occurrence * list(Type))
+filter_properties maps filter_property(list(*), *) = list(*)
+
+  filter_property((path, property), types) = (property, declared_types) :- {extracted_types transformed_types}
+    extracted_types == extract_types(property, types),
+    transformed_types == transform_types(extracted_types),
+    declared_types == remove_empty(transformed_types).
+
+extract_type: occurrence * Type -> list((path * (occurrence * Type)))
+extract_types maps extract_type(*, list(*)) = list(*)
+
+  extract_type(property, type') = result :- {pscope}
+    pscope == properties_of(type'),
+    type of property in pscope |-> result.
+
+transform_type: list((path * (occurrence * Type))) -> list(Type)
+transform_types maps transform_type(list(*)) = list(*)
+
+  transform_type([]) = [].
+  transform_type([(_, (_, T))]) = [T].
+
+remove_empty: list(list(Type)) -> list(Type)
+
+  remove_empty([ ]) = [].
+  remove_empty([[ ] | rest]) = remove_empty(rest).
+  remove_empty([[T] | rest]) = [T | remove_empty(rest)].
+
+insert_union: (occurrence * list(Type)) * scope
+unionise maps insert_union(list(*), *)
+
+  insert_union((property, []), union_scope).
+  insert_union((property, [a,b]), union_scope) :-
+    union_scope -> property with type Union(a,b).
