@@ -1,0 +1,40 @@
+module Modules
+
+imports
+
+  Common
+  Statements
+  Expressions
+
+template options
+
+  tokenize: "},{"
+
+context-free syntax   
+  ImportDeclaration.ImportClause = <import <ImportClause> <FromClause>>
+  
+  ImportClause = NamespaceImport
+  ImportClause = NamedImports
+  
+  NamespaceImport.NameSpaceImport = <* as <ImportedBinding>>
+  
+  ImportedBinding = ID
+  
+  NamedImports.ImportsEmpty = <{}>
+  NamedImports.ImportsList = <{<{ImportSpecifier ","}+><Comma?>}>
+  
+  FromClause.From = <from <ModuleSpecifier>>
+  
+  ModuleSpecifier = STRING
+  
+  ImportSpecifier.NamedImport = ImportedBinding
+  ImportSpecifier.AsImport = <<ID> as <ImportedBinding>>
+  
+  ExportDeclaration.ExportStar = <export * <FromClause>>
+  ExportDeclaration.ExportDeclaration = <export <Declaration>>
+  
+  Declaration = ClassExpr
+  Declaration = InterfaceDeclaration
+  Declaration = VarDeclaration
+  Declaration = FunctionDeclaration
+  

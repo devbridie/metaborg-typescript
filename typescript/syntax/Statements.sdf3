@@ -3,6 +3,8 @@ module Statements
 imports
   Common
   Expressions
+  Modules
+  Classes
   Functions
   Types
 
@@ -26,16 +28,20 @@ context-free syntax
   }>
   Statement.ExpressionStatement = Expression
   
-  Statement.AssignStatement = <<VariableDeclarationType> <{VariableDeclaration ","}+>>
+  Statement = VarDeclaration
+  Statement = InterfaceDeclaration
+  Statement = ExportDeclaration
+  Statement = ImportDeclaration
+  VarDeclaration.VariableDeclaration = <<VariableDeclarationType> <{VariableDeclaration ","}+>>
   VariableDeclarationType.Let = <let>
   VariableDeclarationType.Const = <const>
   VariableDeclarationType.Var = <var>
-  VariableDeclaration.VariableDeclaration = <<NameWithOptionalType>>
+  VariableDeclaration.VariableDeclarationNoInitializer = <<NameWithOptionalType>>
   VariableDeclaration.VariableDeclarationWithInitializer = <<NameWithOptionalType> = <Expression>>
   
 //  Statement.EmptyInterfaceDeclaration = <interface <ID>>
-  Statement.InterfaceDeclaration = <interface <ID> { <{NameWithType ","}*> }> 
   Statement.InterfaceDeclarationWithTypeParameters = <interface <ID><TypeParameters><StructureType>>
+  InterfaceDeclaration.InterfaceDeclaration = <interface <ID> { <{NameWithType ","}*> }> 
 
   StatementList.StatementList = <<{Statement ";\n"}*>>
   

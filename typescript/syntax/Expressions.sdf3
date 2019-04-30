@@ -15,9 +15,10 @@ context-free syntax
   Expression.ObjectLiteral = <{<{NameWithValue ","}*>}>
   NameWithValue.NameWithValue = <<ID>: <Expression>>
   Expression.CallExpr = <<Expression>(<{Expression ","}*>)>
-  Expression.NamedFunction = <function <ID><CallSignature> {
+  FunctionDeclaration.FunctionDeclaration = <function <ID><CallSignature> {
     <StatementList>
   }>
+  Expression = FunctionDeclaration
   
   Expression.AnonymousFunction = <function <CallSignature> {
     <StatementList>
@@ -27,10 +28,12 @@ context-free syntax
   Expression.MemberExpr = <<Expression>.<ID>>
   Expression.ArrayAccessExpr = <<Expression>[<Expression>]>
   Expression.NewExpr = <new <Expression>(<{Expression ","}*>)>
-  Expression.ClassExpr = <class <ID> <ClassParent> <ImplementsClause> {
+  Expression = ClassExpr
+  Expression.AssignExpr = <<ID> = <Expression>>
+  
+  ClassExpr.ClassExpr = <class <ID> <ClassParent> <ImplementsClause> {
     <{ClassElement "\n"}*>
   }>
-  Expression.AssignExpr = <<ID> = <Expression>>
  
   Expression.AddExpr = <<Expression> + <Expression>> {left}
   Expression.SubtractExpr = <<Expression> - <Expression>> {left}

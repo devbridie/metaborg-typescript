@@ -103,7 +103,7 @@ signature
     IfElseStatement                        : Expression * Statement * Statement -> Statement
     BlockStatement                         : StatementList -> Statement
     ExpressionStatement                    : Expression -> Statement
-    AssignStatement                        : VariableDeclarationType * list(VariableDeclaration) -> Statement
+    VariableDeclaration                    : VariableDeclarationType * list(VariableDeclaration) -> Statement
     Let                                    : VariableDeclarationType
     Const                                  : VariableDeclarationType
     Var                                    : VariableDeclarationType

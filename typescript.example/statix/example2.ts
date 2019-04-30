@@ -1,1 +1,5 @@
-const y: number = 5
+export class X {};
+export function fn() {};
+export const x;
+
+function fn() {}
