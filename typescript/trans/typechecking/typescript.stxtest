@@ -1,5 +1,7 @@
-resolve
-main(
+resolve {globalScope}
+new globalScope,
+projectOk(globalScope),
+fileOk(globalScope, "program",
 Program(
   [ InterfaceDeclaration("Test", [NameWithType("num", NumberType())])
   , AssignStatement(
@@ -134,20 +136,21 @@ relations
   type : occurrence -> Type
 
 rules
-  main: Program
-  main(program) :- {scope xyz number_scope string_scope boolean_scope}
-	// Create base scope
-	new scope,
+  projectOk: scope
+  projectOk(s) :- {number_scope string_scope boolean_scope}
     // Create property scopes for base types
-	new number_scope,
+    new number_scope,
 	new string_scope,
 	new boolean_scope,
 	
 	// Add types to scope
-	scope -> Type{"number"@-} with type Number(number_scope),
-	scope -> Type{"string"@-} with type String(string_scope),
-	scope -> Type{"boolean"@-} with type Boolean(boolean_scope),
-
+	s -> Type{"number"@-} with type Number(number_scope),
+	s -> Type{"string"@-} with type String(string_scope),
+	s -> Type{"boolean"@-} with type Boolean(boolean_scope).
+  
+  fileOk: scope * string * Program
+  fileOk(scope, filename, program) :-
+//    scope -> Module{filename@program}
     // Evaluate program
 	eval_program(scope, program).
 

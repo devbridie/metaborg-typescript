@@ -8,13 +8,14 @@ imports
   static-semantics
   
   statixruntime
+  tstatix
   
   pp
   
   desugaring/desugar
 
 rules // Analysis
-  editor-analyze = stx-editor-analyze(id|"typechecking/typescript", "main")
+  editor-analyze = tstx-editor-analyze(desugar-all|"typechecking/typescript", "projectOk", "fileOk")
 
 rules // Debugging
   

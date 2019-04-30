@@ -1,0 +1,64 @@
+module tstatix
+
+imports
+  statixruntime
+  libspoofax/resource/path
+
+rules
+  tstx-editor-analyze(desugar|spec-name, project-constraint, file-constraint):
+      AnalyzeMulti((project-resource, project-change), change*) -> AnalysisResult(result*)
+    with spec  := <stx--find-spec(|spec-name)>
+       ; level := <stx--log-level>
+    with
+      switch !project-change
+        case ?Added(_) + ?Changed(_, _):
+          //
+          // 1. create global scope
+          //
+          global-scope-var := Var("s")
+        ; (Solution(global-scope-subst, global-scope-state), _, _, _) :=
+              <stx--solve-constraint(|spec, level)> ([global-scope-var], CNew([global-scope-var]))
+        ; global-scope := <lookup> (global-scope-var, global-scope-subst)
+          //
+          // 2. partially solve project constraint
+          //
+        ; project-C := C(project-constraint, <map(stx--explode)> [global-scope])
+        ; [initial-project-state] := <stx--solve-multi-file(|global-scope-state, level)> [(project-resource, project-C)]
+        case ?Cached(ProjectAnalysis(global-scope, global-scope-state, initial-project-state, _)):
+          id
+        otherwise:
+          fatal-err(|"Unexpected change on project")
+      end
+      //
+      // 3. Partially solve file constraints
+      //
+    ; resource-ast* := <filter((id, ?Added(<id>) + ?Changed(<id>, _)))> change*
+    ; resource-ast'* := <map(\ (resource, ast) -> (resource, <desugar;stx--index-ast(|resource)> ast) \)> resource-ast*
+    ; file-C* := <map(\ (resource, ast') -> (resource, C(file-constraint, <map(stx--explode)> [global-scope, <debug> <pretty-file> resource, ast'])) \)> resource-ast'*
+    ; file-state* := <stx--solve-multi-file(|global-scope-state, level)> file-C*
+    ; file-result* := <zip({ file-state', error*, warning*, note*, file-analysis: \
+        ((resource, ast'), file-state) ->
+            (resource, Full(ast', file-analysis, error*, warning*, note*))
+          with (file-state', error*, warning*, note*) := <stx--extract-messages> file-state
+             ; file-analysis := FileAnalysis(file-state')
+      \})> (resource-ast'*, file-state*)
+      //
+      // 4. Combine and solve all partial solution
+      //
+    ; cached-state* := <filter(?(_, Cached(FileAnalysis(<id>))))> change*
+    ; final-project-state := <stx--solve-multi-project(|initial-project-state, level)> [file-state*, cached-state*]
+    ; (final-project-state', error*, warning*, note*) := <stx--delays-as-errors;stx--extract-messages> final-project-state
+    ; project-analysis := ProjectAnalysis(global-scope, global-scope-state, initial-project-state, final-project-state')
+    ; switch !project-change
+        case ?Added(project-ast) + ?Changed(project-ast, _):
+          project-result := Full(project-ast, project-analysis, error*, warning*, note*)
+        case ?Cached(_):
+          project-result := Update(project-analysis, error*, warning*, note*)
+      end
+    ; result* := [(project-resource, project-result)|file-result*]
+  
+  pretty-file: str -> str'
+    where
+    str' := <current-language-relative-source-path> str
+    
+  

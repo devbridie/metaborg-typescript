@@ -1,1 +1,1 @@
-const y: number = (a: number, b: boolean): boolean => { return true }
+const y: number = 5
