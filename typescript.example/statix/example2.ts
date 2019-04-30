@@ -1,4 +1,1 @@
-class Test {
- num:  number
-}
-const instance: Test = new Test()
+const y: number = (a: number, b: boolean): boolean => { return true }

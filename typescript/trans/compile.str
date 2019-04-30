@@ -1,0 +1,19 @@
+module compile
+
+imports
+  
+  signatures/typescript-sig
+  libspoofax/editor/outline
+  pp
+  signatures/-
+
+rules
+  remove-type-annotations: NameWithType(n, t) -> NameWithNoType(n)
+  remove-type-annotations: TypeAnnotation(_) -> NoTypeAnnotation()
+  compile-typescript:
+    (ast, _, _, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"compiled.ts")> path
+     ; notypes := <bottomup(try(remove-type-annotations))> ast
+     ; result := <pp-debug> notypes
+

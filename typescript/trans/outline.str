@@ -5,6 +5,8 @@ imports
   signatures/typescript-sig
   libspoofax/editor/outline
 
+  pp/typescript-parenthesize
+  pp/typescript-pp
 rules
   
   editor-outline:

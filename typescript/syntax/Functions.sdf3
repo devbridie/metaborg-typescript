@@ -6,5 +6,5 @@ imports
   Statements
 
 context-free syntax
-  CallSignature.CallSignatureWithTypeParameters = <<TypeParameters>(<{NameWithOptionalType ","}*>)<OptionalTypeAnnotation>>
-  CallSignature.CallSignature = <(<{NameWithOptionalType ","}*>)<OptionalTypeAnnotation>>
+  CallSignature.CallSignatureWithTypeParameters = <<TypeParameters>(<{NameWithOptionalType ", "}*>)<OptionalTypeAnnotation>>
+  CallSignature.CallSignature = <(<{NameWithOptionalType ", "}*>)<OptionalTypeAnnotation>>

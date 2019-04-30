@@ -4,3 +4,10 @@
 /.project
 /.settings
 
+
+
+*.aterm
+*.compiled.ts
+*.desugared.aterm
+*.pp.ts
+

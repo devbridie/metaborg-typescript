@@ -37,5 +37,5 @@ context-free syntax
   Statement.InterfaceDeclaration = <interface <ID> { <{NameWithType ","}*> }> 
   Statement.InterfaceDeclarationWithTypeParameters = <interface <ID><TypeParameters><StructureType>>
 
-  StatementList.StatementList = <<{Statement "\n"}*>>
+  StatementList.StatementList = <<{Statement ";\n"}*>>
   
