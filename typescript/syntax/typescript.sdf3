@@ -15,4 +15,4 @@ context-free start-symbols
 context-free syntax
  
 //  Program.Module  = Module
-  Program.Program = <<{Statement ";\n"}*>>
+  Program.Program = <<Statement*>>

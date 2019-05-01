@@ -8,7 +8,8 @@ imports
   Types
 
 context-free syntax
-
+  Expression = <(<Expression>)> {bracket}
+  
   Expression.ThisExpr = <this>
   Expression.IdExpr = ID
   Expression = Literal
@@ -68,5 +69,3 @@ context-free syntax
   Expression.NegExpr = [-[Expression]]
   Expression.BitwiseNotExpr = [~[Expression]]
   Expression.NegateExpr = [![Expression]]
-//  TODO: Introduces ambiguity with Call()
-//  Expression = <(<Expression>)> {bracket}

@@ -18,7 +18,9 @@ context-free priorities
 context-free syntax
   Statement.EmptyReturn = <return;>
   Statement.ValueReturn = <return <Expression>>
+  Statement.ValueReturn__SM = <return <Expression>;>
   Statement.IfStatement = <if (<Expression>) <Statement>>
+  Statement.IfStatement__SM = <if (<Expression>) <Statement>>
   Statement.IfElseStatement = <
     if (<Expression>) <Statement>
     else <Statement>
@@ -27,12 +29,14 @@ context-free syntax
     <StatementList>
   }>
   Statement.ExpressionStatement = Expression
+  Statement.ExpressionStatement__SM = <<Expression>;>
   
   Statement = VarDeclaration
   Statement = InterfaceDeclaration
   Statement = ExportDeclaration
   Statement = ImportDeclaration
   VarDeclaration.VariableDeclaration = <<VariableDeclarationType> <{VariableDeclaration ","}+>>
+  VarDeclaration.VariableDeclaration__SM = <<VariableDeclarationType> <{VariableDeclaration ","}+>;>
   VariableDeclarationType.Let = <let>
   VariableDeclarationType.Const = <const>
   VariableDeclarationType.Var = <var>
@@ -41,7 +45,14 @@ context-free syntax
   
 //  Statement.EmptyInterfaceDeclaration = <interface <ID>>
   Statement.InterfaceDeclarationWithTypeParameters = <interface <ID><TypeParameters><StructureType>>
-  InterfaceDeclaration.InterfaceDeclaration = <interface <ID> { <{NameWithType ","}*> }> 
+  InterfaceDeclaration.InterfaceDeclaration = <interface <ID> { <InterfaceMember*> }>
+  InterfaceMember.Member = NameWithOptionalType
+  InterfaceMember.Member__C = <<NameWithOptionalType>,>
+  InterfaceMember.Member__SM = <<NameWithOptionalType>;>
+  InterfaceMember.MemberFn = <<ID><CallSignature><OptionalTypeAnnotation>>
+  InterfaceMember.MemberFn__C = <<ID><CallSignature><OptionalTypeAnnotation>,>
+  InterfaceMember.MemberFn__SM = <<ID><CallSignature><OptionalTypeAnnotation>;>
+  InterfaceDeclaration.InterfaceDeclaration__SM = <interface <ID> { <{NameWithType ","}*> };> 
 
-  StatementList.StatementList = <<{Statement ";\n"}*>>
+  StatementList.StatementList = <<{Statement "\n"}*>>
   

@@ -3,12 +3,12 @@ module desugar
 imports
 	signatures/-
 	pp
-
 signature
 	constructors
 	InferredType: TypeExpr
 
 rules
+  desugar: Program(l) -> Program(<flatten-list> l)
   desugar: VariableDeclarationNoInitializer(b) -> VariableDeclarationWithInitializer(b, UndefinedLiteral())
   desugar: NameWithNoType(n) -> NameWithType(n, InferredType())
   desugar: ArrowExprExpr(sig, expr) -> ArrowExprBlock(sig, [ValueReturn(expr)])
@@ -17,13 +17,21 @@ rules
   desugar: MemberExpr(par, IdExpr(n)) -> ArrayAccessExpr(par, StringLiteral(n))
   desugar: ExpressionStatement(FunctionDeclaration(name, sig, body)) -> VariableDeclaration(Const(), [name, AnonymousFunction(sig, body)])
   desugar: PropertyMemberWithoutInitializer(n) -> PropertyMemberWithInitializer(n, UndefinedLiteral())
-  desugar: [ExpressionStatement(c@ClassExpr(n, p, i, e)) | rest ] -> <concat> [[
+  desugar: ExpressionStatement(c@ClassExpr(n, p, i, e)) -> [
     InterfaceDeclaration(n, <map(member2type)> e),
     VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
       StructureType([NameWithType("new", FunctionType([], IdType(n)))])
     ), c)])
-  ], rest ]
+  ]
+  
+  removesemis: a -> result where <not(is-string)> a;
+        constructor := <removesm> <get-constructor> a;
+        args := <get-arguments> a; 
+        result := <mkterm>(constructor, args)
+  removesm: str -> <string-replace(|"__C", "")> <string-replace(|"__SM", "")> str where <is-string> str
 
   member2type: PropertyMemberWithInitializer(NameWithType(n, t), e) -> NameWithType(n, t)
 strategies
-  	desugar-all = bottomup(try(desugar))
+  	desugar-all: ast -> result with
+  	   removed := <bottomup(try(removesemis))> ast;  	   
+  	   result := <bottomup(try(desugar))> removed

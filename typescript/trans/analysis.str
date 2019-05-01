@@ -18,11 +18,6 @@ rules // Analysis
   editor-analyze = tstx-editor-analyze(desugar-all|"typechecking/typescript", "projectOk", "fileOk")
 
 rules // Debugging
-  
-  // Prints the abstract syntax ATerm of a selection.
-  debug-show-aterm: (selected, _, _, path, project-path) -> (filename, result)
-    with filename := <guarantee-extension(|"aterm")> path
-       ; result   := <desugar-all> selected
 
   // Prints the analyzed annotated abstract syntax ATerm of a selection.
   debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)

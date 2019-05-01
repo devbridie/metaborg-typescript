@@ -37,6 +37,7 @@ context-free syntax
   TypeExpr.UnionType = <<TypeExpr> | <TypeExpr>> {left}
   TypeExpr.IntersectionType = <<TypeExpr> & <TypeExpr>> {left}
   TypeExpr.FunctionType = [([{TypeExpr ","}*]) => [TypeExpr]] 
+  TypeExpr.ArrayType = <<TypeExpr>[]> 
   StructureType.StructureType = "{" {NameWithType ","}* "}" 
   TypeExpr = StructureType
   

@@ -10,10 +10,10 @@ imports
 context-free syntax
 
   ClassDeclaration.ClassDeclaration = <class <ID> <ClassParent> <ImplementsClause> {
-    <{ClassElement "\n"}*>
+    <ClassElement*>
   }>
   ClassExpression.ClassExpressionWithTypeParameters = <class <ID> <TypeParameters> <ClassParent> <ImplementsClause> {
-    <{ClassElement "\n"}*>
+    <ClassElement*>
   }>
   
   ClassParent.NoParent =
@@ -23,11 +23,14 @@ context-free syntax
   ImplementsClause.Implements = <implements <{ID " "}*>>
   
   // TODO empty bodies allowed in abstract classes
-  ClassElement.FunctionMember = <function <ID><CallSignature> {
+  ClassElement.FunctionMember = <<{MemberModifier " "}*> <ID><CallSignature> {
     <StatementList>
   }>
-  ClassElement.StaticMethodDeclaration = <static <ID><CallSignature> {
-    <StatementList>
-  }>
+  MemberModifier.Static = <static>
+  MemberModifier.Public = <public>
+  MemberModifier.Private = <private>
+  
   ClassElement.PropertyMemberWithInitializer = <<NameWithOptionalType> = <Expression>>
-  ClassElement.PropertyMemberWithoutInitializer = <<NameWithOptionalType>> 
+  ClassElement.PropertyMemberWithInitializer__SM = <<NameWithOptionalType> = <Expression>;>
+  ClassElement.PropertyMemberWithoutInitializer = <<NameWithOptionalType>>
+  ClassElement.PropertyMemberWithoutInitializer__SM = <<NameWithOptionalType>;> 
