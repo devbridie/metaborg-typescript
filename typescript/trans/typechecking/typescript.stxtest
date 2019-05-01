@@ -4,7 +4,7 @@ projectOk(globalScope),
 fileOk(globalScope, "program",
 Program(
   [ InterfaceDeclaration("Test", [NameWithType("num", NumberType())])
-  , AssignStatement(
+  , VariableDeclaration(
       Const()
     , [ VariableDeclarationWithInitializer(
           NameWithType(
@@ -20,7 +20,7 @@ Program(
         )
       ]
     )
-  , AssignStatement(
+  , VariableDeclaration(
       Const()
     , [VariableDeclarationWithInitializer(
          NameWithType("instance", IdType("Test"))
@@ -160,7 +160,7 @@ rules
 
   eval_statements maps eval_statement(*, list(*))    
   eval_statement: scope * Statement
-  eval_statement(scope, AssignStatement(_, decls)) :-
+  eval_statement(scope, VariableDeclaration(_, decls)) :-
     eval_decls(scope, decls).
   eval_statement(scope, InterfaceDeclaration(name, types)) :- {type_scope}
     new type_scope, type_scope -P-> scope,
