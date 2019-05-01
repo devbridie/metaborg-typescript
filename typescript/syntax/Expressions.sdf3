@@ -11,7 +11,8 @@ context-free syntax
   Expression = <(<Expression>)> {bracket}
   
   Expression.ThisExpr = <this>
-  Expression.IdExpr = ID
+  IdExpr.IdExpr = ID
+  Expression = IdExpr
   Expression = Literal
   Expression.ObjectLiteral = <{<{NameWithValue ","}*>}>
   NameWithValue.NameWithValue = <<ID>: <Expression>>
@@ -26,11 +27,16 @@ context-free syntax
   }>
   Expression.ArrowExprExpr = [[CallSignature] => [Expression]]
   Expression.ArrowExprBlock = [[CallSignature] => { [StatementList] }]
-  Expression.MemberExpr = <<Expression>.<ID>>
-  Expression.ArrayAccessExpr = <<Expression>[<Expression>]>
+  MemberExpr.MemberExpr = <<Expression>.<ID>>
+  Expression = MemberExpr
+  ArrayAccessExpr.ArrayAccessExpr = <<Expression>[<Expression>]>
+  Expression = ArrayAccessExpr
   Expression.NewExpr = <new <Expression>(<{Expression ","}*>)>
   Expression = ClassExpr
-  Expression.AssignExpr = <<ID> = <Expression>>
+  Expression.AssignExpr = <<LHS> = <Expression>>
+  LHS = IdExpr
+  LHS = MemberExpr
+  LHS = ArrayAccessExpr
   
   ClassExpr.ClassExpr = <class <ID> <ClassParent> <ImplementsClause> {
     <{ClassElement "\n"}*>
