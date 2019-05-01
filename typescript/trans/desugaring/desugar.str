@@ -6,9 +6,14 @@ imports
 signature
 	constructors
 	InferredType: TypeExpr
-
+	
+	SingleVariableDeclaration                    : VariableDeclarationType * ID * TypeExpr * Expression -> VarDeclaration
+	ImportMember : STRING * ID * ID -> Statement
+	
 rules
-  desugar: Program(l) -> Program(<flatten-list> l)
+  desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(bottomup(try(desugar)))> l)
+  wrap-if-single: a@[_|_] -> a
+  wrap-if-single: a -> [a]
   desugar: VariableDeclarationNoInitializer(b) -> VariableDeclarationWithInitializer(b, UndefinedLiteral())
   desugar: NameWithNoType(n) -> NameWithType(n, InferredType())
   desugar: ArrowExprExpr(sig, expr) -> ArrowExprBlock(sig, [ValueReturn(expr)])
@@ -24,6 +29,12 @@ rules
     ), c)])
   ]
   
+  desugar: NamedImport(name) -> AsImport(name, name)
+  
+  desugar: ImportClause(ImportsList(items), From(name)) -> <map(\AsImport(n, n2) -> ImportMember(name, n, n2) \)> items
+  
+  desugar: VariableDeclaration(ty, decls) -> 
+     <map( debug ; \VariableDeclarationWithInitializer(NameWithType(n, t), i) -> SingleVariableDeclaration(ty, n, t, i)\)> decls
   removesemis: a -> result where <not(is-string)> a;
         constructor := <removesm> <get-constructor> a;
         args := <get-arguments> a; 
@@ -34,4 +45,4 @@ rules
 strategies
   	desugar-all: ast -> result with
   	   removed := <bottomup(try(removesemis))> ast;  	   
-  	   result := <bottomup(try(desugar))> removed
+  	   result := <desugar> removed

@@ -2,36 +2,12 @@ resolve {globalScope}
 new globalScope,
 projectOk(globalScope),
 fileOk(globalScope, "program",
-Program(
-  [ InterfaceDeclaration("Test", [NameWithType("num", NumberType())])
-  , VariableDeclaration(
-      Const()
-    , [ VariableDeclarationWithInitializer(
-          NameWithType(
-            "Test"
-          , StructureType([NameWithType("new", FunctionType([], IdType("Test")))])
-          )
-        , ClassExpr(
-            "Test"
-          , NoParent()
-          , NoImplements()
-          , [PropertyMemberWithInitializer(NameWithType("num", NumberType()), UndefinedLiteral())]
-          )
-        )
-      ]
-    )
-  , VariableDeclaration(
-      Const()
-    , [VariableDeclarationWithInitializer(
-         NameWithType("instance", IdType("Test"))
-       , NewExpr(IdExpr("Test"), [])
-       )]
-    )
-  ]
+Program([]
 )
 )
 signature
   sorts ID = string
+  sorts STRING = string
   
   sorts Program
   constructors
@@ -96,20 +72,23 @@ signature
     PropertyMemberWithInitializer     : NameWithType * Expression -> ClassElement
     PropertyMemberWithoutInitializer  : NameWithType -> ClassElement
 
-  sorts Statement ReturnStatement IfStatement BlockStatement StatementList VariableDeclaration VariableDeclarationType InterfaceDeclaration constructors
+  sorts Statement ReturnStatement IfStatement BlockStatement StatementList VariableDeclarationType InterfaceDeclaration constructors
     EmptyReturn                            : Statement
     ValueReturn                            : Expression -> Statement
     IfStatement                            : Expression * Statement -> Statement
     IfElseStatement                        : Expression * Statement * Statement -> Statement
     BlockStatement                         : StatementList -> Statement
     ExpressionStatement                    : Expression -> Statement
-    VariableDeclaration                    : VariableDeclarationType * list(VariableDeclaration) -> Statement
+    SingleVariableDeclaration              : VariableDeclarationType * ID * TypeExpr * Expression -> Statement
     Let                                    : VariableDeclarationType
     Const                                  : VariableDeclarationType
     Var                                    : VariableDeclarationType
-    VariableDeclarationWithInitializer     : NameWithType * Expression -> VariableDeclaration
     InterfaceDeclaration                   : ID * list(NameWithType) -> Statement
     StatementList                          : list(Statement) -> StatementList
+  
+  sorts ExportDeclaration constructors
+        ExportDeclaration          : Statement -> Statement // actually decl -> Statement
+        ImportMember : STRING * ID * ID -> Statement
 
  sorts Type constructors
     Void : Type
@@ -127,6 +106,7 @@ signature
 namespaces  
   Var  : string
   Type : string
+  Module : string
 
 name-resolution
   labels P
@@ -149,22 +129,24 @@ rules
 	s -> Type{"boolean"@-} with type Boolean(boolean_scope).
   
   fileOk: scope * string * Program
-  fileOk(scope, filename, program) :-
-//    scope -> Module{filename@program}
+  fileOk(globalScope, filename, program) :- {export_scope file_scope}
+    globalScope -> Module{filename@program},
+    new export_scope,
+    new file_scope,
+    file_scope -P-> export_scope,
+    export_scope -P-> globalScope,
     // Evaluate program
-	eval_program(scope, program).
+	eval_program(export_scope, file_scope, program).
 
-  eval_program: scope * Program
-  eval_program(scope, Program(statements)) :- 
-    eval_statements(scope, statements).
+  eval_program: scope * scope * Program
+  eval_program(export_scope, file_scope, Program(statements)) :- 
+    eval_statements(export_scope, file_scope, statements).
 
-  eval_statements maps eval_statement(*, list(*))    
-  eval_statement: scope * Statement
-  eval_statement(scope, VariableDeclaration(_, decls)) :-
-    eval_decls(scope, decls).
-  eval_statement(scope, InterfaceDeclaration(name, types)) :- {type_scope}
-    new type_scope, type_scope -P-> scope,
-    scope -> Type{name@name} with type Object(type_scope),
+  eval_statements maps eval_statement(*, *, list(*))    
+  eval_statement: scope * scope * Statement
+  eval_statement(export_scope, file_scope, InterfaceDeclaration(name, types)) :- {type_scope}
+    new type_scope, type_scope -P-> file_scope,
+    file_scope -> Type{name@name} with type Object(type_scope),
     add_props_to_type(type_scope, types). 
   add_props_to_type maps add_prop_to_type(*, list(*))
   add_prop_to_type: scope * NameWithType
@@ -172,17 +154,24 @@ rules
     ttype == eval_type(s, t),
     s -> Var{n@n} with type ttype.
   
-  eval_statement(s, ExpressionStatement(e)) :- {a}
-    a == eval_expression(s, e). 
-//  eval_statement(s, IfStatement(e, t)) :-
+  eval_statement(export_scope, file_scope, ExpressionStatement(e)) :- {a}
+    a == eval_expression(file_scope, e).
+    
+  eval_statement(export_scope, file_scope, ExportDeclaration(d)) :- put_declaration(export_scope, file_scope, d).
+  eval_statement(export_scope, file_scope, d@SingleVariableDeclaration(_, name, type, value)) :- put_declaration(file_scope, file_scope, d).
+  
+  eval_statement(_, file_scope, ImportMember(from, originalName, toName)) :- {module}// TODO ???
+    query decl
+      filter pathMatch[e] and { Module{from@-} }
+    in file_scope |-> module.
 
-  eval_decls maps eval_decl(*, list(*))  
-  eval_decl: scope * VariableDeclaration
-  eval_decl(s, VariableDeclarationWithInitializer(NameWithType(name, type), value)) :- {decl_type expr_type}
-    decl_type == eval_type(s, type),
-    expr_type == eval_expression(s, value),
-    is_assignable(expr_type, decl_type),
-    s -> Var{name@name} with type decl_type.
+    
+  put_declaration: scope * scope * Statement
+  put_declaration(into_scope, lookup_scope, SingleVariableDeclaration(_, name, type, value)) :- { decl_type expr_type }
+      decl_type == eval_type(lookup_scope, type),
+      expr_type == eval_expression(lookup_scope, value),
+      is_assignable(expr_type, decl_type),
+      into_scope -> Var{name@name} with type decl_type.
    
   unwrap_annotation: TypeAnnotation -> TypeExpr
   unwrap_annotation(TypeAnnotation(t)) = T :- T == t.
@@ -244,7 +233,7 @@ rules
     new function_scope, function_scope -P-> scope,
     return_type == eval_type(scope, unwrap_annotation(ret)),
     parameter_types == parse_parameters(scope, params, function_scope),
-    eval_statements(function_scope, body),
+    eval_statements(scope, function_scope, body), // TODO module scope?
     expr_type == Function(return_type, parameter_types).
     
   parse_parameter: scope * NameWithType * scope -> Type

@@ -14,21 +14,16 @@ context-free syntax
   ImportDeclaration.ImportClause = <import <ImportClause> <FromClause>>
   
   ImportClause = NamespaceImport
-  ImportClause = NamedImports
-  
   NamespaceImport.NameSpaceImport = <* as <ImportedBinding>>
   
+  ImportClause.ImportsList = <{<{ImportSpecifier ","}*>}>
+  ImportSpecifier.NamedImport = ImportedBinding
+  ImportSpecifier.AsImport = <<ID> as <ImportedBinding>>
+  
   ImportedBinding = ID
-  
-  NamedImports.ImportsEmpty = <{}>
-  NamedImports.ImportsList = <{<{ImportSpecifier ","}+><Comma?>}>
-  
   FromClause.From = <from <ModuleSpecifier>>
   
   ModuleSpecifier = STRING
-  
-  ImportSpecifier.NamedImport = ImportedBinding
-  ImportSpecifier.AsImport = <<ID> as <ImportedBinding>>
   
   ExportDeclaration.ExportStar = <export * <FromClause>>
   ExportDeclaration.ExportDeclaration = <export <Declaration>>
