@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc ; node src/generate-tests.js"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +13,9 @@
   "devDependencies": {
     "@types/node": "^11.13.7",
     "typescript": "^3.4.4"
+  },
+  "dependencies": {
+    "@types/rimraf": "^2.0.2",
+    "rimraf": "^2.6.3"
   }
 }

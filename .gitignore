@@ -24,3 +24,5 @@ node_modules/
 /.metadata/
 
 *.stxresult
+typescript-reference
+typescript.test/generated
