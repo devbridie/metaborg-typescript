@@ -8,18 +8,19 @@ imports
   static-semantics
   
   statixruntime
-  tstatix
   
   pp
   
   desugaring/desugar
+  disamb
 
 rules // Analysis
-  editor-analyze = tstx-editor-analyze(desugar-all|"typechecking/typescript", "projectOk", "fileOk")
+//  editor-analyze = stx-editor-analyze(desugar-all|"typechecking/typescript", "projectOk", "fileOk")
+  editor-analyze = stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")
 
 rules // Debugging
 
   // Prints the analyzed annotated abstract syntax ATerm of a selection.
   debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)
     with filename := <guarantee-extension(|"analyzed.aterm")> path
-       ; result   := selected
+       ; result   := <disamb-all> selected

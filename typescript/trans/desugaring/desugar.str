@@ -24,7 +24,7 @@ rules
   desugar: PropertyMemberWithoutInitializer(n) -> PropertyMemberWithInitializer(n, UndefinedLiteral())
   desugar: ExpressionStatement(c@ClassExpr(n, p, i, e)) -> [
     InterfaceDeclaration(n, <map(member2type)> e),
-    VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
+    <desugar> VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
       StructureType([NameWithType("new", FunctionType([], IdType(n)))])
     ), c)])
   ]

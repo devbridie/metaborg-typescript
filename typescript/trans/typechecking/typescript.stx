@@ -1,10 +1,4 @@
-resolve {globalScope}
-new globalScope,
-projectOk(globalScope),
-fileOk(globalScope, "program",
-Program([]
-)
-)
+module typechecking/typescript
 signature
   sorts ID = string
   sorts STRING = string
@@ -137,6 +131,10 @@ rules
     export_scope -P-> globalScope,
     // Evaluate program
 	eval_program(export_scope, file_scope, program).
+	
+  main: Program
+  main(Program(prog)) :- {globalScope}
+    true.
 
   eval_program: scope * scope * Program
   eval_program(export_scope, file_scope, Program(statements)) :- 

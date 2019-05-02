@@ -1,0 +1,9 @@
+module disamb
+
+imports
+	signatures/-
+	pp
+rules
+   disamb: amb([a,b]) -> b
+strategies 
+   disamb-all = topdown(try(disamb))

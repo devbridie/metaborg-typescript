@@ -15,10 +15,10 @@ rules // Debugging
     (node, _, _, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"aterm")> path
-    ; result   := node
+    ; result   := <disamb-all> node
 
   editor-desugar:
     (_, _, ast, path, project-path) -> (filename, text)
     where
       filename := <guarantee-extension(|"desugared.aterm")> path ;
-      text     := <desugar-all> ast
+      text     := <desugar-all> <disamb-all>  ast
