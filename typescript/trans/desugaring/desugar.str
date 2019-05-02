@@ -11,7 +11,7 @@ signature
 	ImportMember : STRING * ID * ID -> Statement
 	
 rules
-  desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(bottomup(try(desugar)))> l)
+  desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(topdown(try(desugar)))> l)
   wrap-if-single: a@[_|_] -> a
   wrap-if-single: a -> [a]
   desugar: VariableDeclarationNoInitializer(b) -> VariableDeclarationWithInitializer(b, UndefinedLiteral())
@@ -20,11 +20,17 @@ rules
   desugar: ArrowExprBlock(sig, statements) -> AnonymousFunction(sig, statements)
   desugar: NoTypeAnnotation() -> TypeAnnotation(InferredType())
   desugar: MemberExpr(par, IdExpr(n)) -> ArrayAccessExpr(par, StringLiteral(n))
-  desugar: ExpressionStatement(FunctionDeclaration(name, sig, body)) -> VariableDeclaration(Const(), [name, AnonymousFunction(sig, body)])
+  desugar: ExpressionStatement(FunctionDeclaration(name, sig, body)) -> <desugar> VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(name, <sig2type> sig), AnonymousFunction(sig, body))])
+  sig2type: CallSignature(params, NoTypeAnnotation()) -> result where 
+    newparams := <map(\NameWithType(n, t) -> t \)> params;
+    result := FunctionType(newparams, InferredType())
+  sig2type: CallSignature(params, TypeAnnotation(ty)) -> result where 
+    newparams := <map(\NameWithType(n, t) -> t \)> params;
+    result := FunctionType(newparams, ty)
   desugar: PropertyMemberWithoutInitializer(n) -> PropertyMemberWithInitializer(n, UndefinedLiteral())
   desugar: ExpressionStatement(c@ClassExpr(n, p, i, e)) -> [
     InterfaceDeclaration(n, <map(member2type)> e),
-    <desugar> VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
+     VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
       StructureType([NameWithType("new", FunctionType([], IdType(n)))])
     ), c)])
   ]
@@ -44,5 +50,5 @@ rules
   member2type: PropertyMemberWithInitializer(NameWithType(n, t), e) -> NameWithType(n, t)
 strategies
   	desugar-all: ast -> result with
-  	   removed := <bottomup(try(removesemis))> ast;  	   
+  	   removed := <topdown(try(removesemis))> ast;  	   
   	   result := <desugar> removed
