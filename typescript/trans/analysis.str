@@ -18,8 +18,7 @@ rules // Analysis
 //  editor-analyze = stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "projectOk", "fileOk")
   editor-analyze: a -> s
     where
-      s := <stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")> a;
-      <debug> s
+      s := <stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")> a
 
 rules // Debugging
 

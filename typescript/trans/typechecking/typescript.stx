@@ -1,25 +1,4 @@
-resolve {s}
-new s,
-projectOk(s),
-fileOk(s, "bla",
-Program(
-  [ SingleVariableDeclaration(
-      Const()
-    , "test"
-    , FunctionType([BooleanType(), BooleanType()], InferredType())
-    , AnonymousFunction(
-        CallSignature(
-          [NameWithType("a", BooleanType()), NameWithType("b", BooleanType())]
-        , TypeAnnotation(InferredType())
-        )
-      , StatementList([])
-      )
-    )
-  , ExpressionStatement(
-      CallExpr(IdExpr("test"), [NumericLiteral("1"), NumericLiteral("2")])
-    )
-  ]
-))
+module typechecking/typescript
 signature
   sorts ID = string
   sorts STRING = string
@@ -57,7 +36,7 @@ signature
     CallExpr                       : Expression * list(Expression) -> Expression
     NamedFunction                  : ID * CallSignature * StatementList -> Expression
     AnonymousFunction              : CallSignature * StatementList -> Expression
-    MemberExpr                     : Expression * ID -> Expression
+    MemberExpr                     : Expression * string -> Expression
     ArrayAccessExpr                : Expression * Expression -> Expression
     NewExpr                        : Expression * list(Expression) -> Expression
     ClassExpr               : ID * ClassParent * ImplementsClause * list(ClassElement) -> Expression
@@ -244,6 +223,11 @@ rules
     
   eval_expression(scope, IdExpr(id)) = T :-
     T == lookup_type(scope, id).
+
+  eval_expression(scope, MemberExpr(receiver, selector)) = T :- {obj_type obj_scope}
+    obj_type == eval_expression(scope, receiver),
+    obj_scope == properties_of(obj_type),
+    T == lookup_type(obj_scope, selector).
  
   eval_expression(scope, AssignExpr(id, expr)) = expr_type :- {existing_type}
     existing_type == lookup_type(scope, id),
@@ -269,7 +253,13 @@ rules
     
   eval_expression(scope, ClassExpr(n, p, i, members)) = Object(cscope) :- // TODO inheritance
     new cscope, cscope -P-> scope,
+    add_props_to_type(cscope, members2NameWithType(members)),
     cscope -> Var{"new"@-} with type Function(Object(cscope),[]).
+  
+  members2NameWithType maps member2NameWithType(list(*)) = list(*)  
+  member2NameWithType: ClassElement -> NameWithType
+  member2NameWithType(PropertyMemberWithInitializer(n, e)) = n.
+  
     
   eval_expression(scope, ObjectLiteral(fields)) = Object(pscope) :-
   new pscope, parse_object_literal(scope, pscope, fields).

@@ -49,10 +49,10 @@ context-free syntax
   InterfaceMember.Member = NameWithOptionalType
   InterfaceMember.Member__C = <<NameWithOptionalType>,>
   InterfaceMember.Member__SM = <<NameWithOptionalType>;>
-  InterfaceMember.MemberFn = <<ID><CallSignature><OptionalTypeAnnotation>>
-  InterfaceMember.MemberFn__C = <<ID><CallSignature><OptionalTypeAnnotation>,>
-  InterfaceMember.MemberFn__SM = <<ID><CallSignature><OptionalTypeAnnotation>;>
-  InterfaceDeclaration.InterfaceDeclaration__SM = <interface <ID> { <{NameWithType ","}*> };> 
+  InterfaceMember.MemberFn = <<ID><CallSignature>>
+  InterfaceMember.MemberFn__C = <<ID><CallSignature>,>
+  InterfaceMember.MemberFn__SM = <<ID><CallSignature>;>
+  InterfaceDeclaration.InterfaceDeclaration__SM = <interface <ID> { <InterfaceMember*> }> 
 
   StatementList.StatementList = <<{Statement "\n"}*>>
   

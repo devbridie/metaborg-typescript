@@ -11,7 +11,7 @@ signature
 	ImportMember : STRING * ID * ID -> Statement
 	
 rules
-  desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(topdown(try(desugar)))> l)
+  desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(topdown(try(bottomup(try(desugar)))))> l)
   wrap-if-single: a@[_|_] -> a
   wrap-if-single: a -> [a]
   desugar: VariableDeclarationNoInitializer(b) -> VariableDeclarationWithInitializer(b, UndefinedLiteral())
@@ -19,7 +19,7 @@ rules
   desugar: ArrowExprExpr(sig, expr) -> ArrowExprBlock(sig, [ValueReturn(expr)])
   desugar: ArrowExprBlock(sig, statements) -> AnonymousFunction(sig, statements)
   desugar: NoTypeAnnotation() -> TypeAnnotation(InferredType())
-  desugar: MemberExpr(par, IdExpr(n)) -> ArrayAccessExpr(par, StringLiteral(n))
+//  desugar: MemberExpr(par, n) -> ArrayAccessExpr(par, StringLiteral(n))
   desugar: ExpressionStatement(FunctionDeclaration(name, sig, body)) -> <desugar> VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(name, <sig2type> sig), AnonymousFunction(sig, body))])
   sig2type: CallSignature(params, NoTypeAnnotation()) -> result where 
     newparams := <map(\NameWithType(n, t) -> t \)> params;
@@ -34,13 +34,18 @@ rules
       StructureType([NameWithType("new", FunctionType([], IdType(n)))])
     ), c)])
   ]
+  desugar: FunctionMember(mods, n, sig, statements) -> 
+  PropertyMemberWithInitializer(NameWithType(n, <sig2type> sig), AnonymousFunction(sig, statements)) 
   
   desugar: NamedImport(name) -> AsImport(name, name)
   
   desugar: ImportClause(ImportsList(items), From(name)) -> <map(\AsImport(n, n2) -> ImportMember(name, n, n2) \)> items
   
   desugar: VariableDeclaration(ty, decls) -> 
-     <map( debug ; \VariableDeclarationWithInitializer(NameWithType(n, t), i) -> SingleVariableDeclaration(ty, n, t, i)\)> decls
+     <map(\VariableDeclarationWithInitializer(NameWithType(n, t), i) -> SingleVariableDeclaration(ty, n, t, i)\)> decls
+     
+  desugar: MemberFn(name, sig) -> Member(NameWithType(name, <sig2type> sig))
+  desugar: Member(n) -> n
   removesemis: a -> result where <not(is-string)> a;
         constructor := <removesm> <get-constructor> a;
         args := <get-arguments> a; 
