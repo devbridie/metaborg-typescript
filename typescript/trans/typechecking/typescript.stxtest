@@ -1,4 +1,25 @@
-module typechecking/typescript
+resolve {s}
+new s,
+projectOk(s),
+fileOk(s, "bla",
+Program(
+  [ SingleVariableDeclaration(
+      Const()
+    , "test"
+    , FunctionType([BooleanType(), BooleanType()], InferredType())
+    , AnonymousFunction(
+        CallSignature(
+          [NameWithType("a", BooleanType()), NameWithType("b", BooleanType())]
+        , TypeAnnotation(InferredType())
+        )
+      , StatementList([])
+      )
+    )
+  , ExpressionStatement(
+      CallExpr(IdExpr("test"), [NumericLiteral("1"), NumericLiteral("2")])
+    )
+  ]
+))
 signature
   sorts ID = string
   sorts STRING = string
@@ -46,7 +67,7 @@ signature
     UndefinedLiteral       : Expression
     TrueLiteral            : Expression
     FalseLiteral           : Expression
-    NumericLiteral         : int -> Expression
+    NumericLiteral         : string -> Expression
     StringLiteral          : string -> Expression
     BooleanLiteral         : Expression
     
@@ -110,6 +131,13 @@ relations
   type : occurrence -> Type
 
 rules
+  main: Program
+  main(prog) :- {globalScope}
+    new globalScope,
+    projectOk(globalScope),
+    fileOk(globalScope, "bla", prog).
+
+rules
   projectOk: scope
   projectOk(s) :- {number_scope string_scope boolean_scope}
     // Create property scopes for base types
@@ -132,9 +160,7 @@ rules
     // Evaluate program
 	eval_program(export_scope, file_scope, program).
 	
-  main: Program
-  main(Program(prog)) :- {globalScope}
-    true.
+
 
   eval_program: scope * scope * Program
   eval_program(export_scope, file_scope, Program(statements)) :- 
@@ -170,9 +196,6 @@ rules
       expr_type == eval_expression(lookup_scope, value),
       is_assignable(expr_type, decl_type),
       into_scope -> Var{name@name} with type decl_type.
-   
-  unwrap_annotation: TypeAnnotation -> TypeExpr
-  unwrap_annotation(TypeAnnotation(t)) = T :- T == t.
   
   eval_type: scope * TypeExpr -> Type
   eval_type(scope, NumberType()) = T :-
@@ -227,9 +250,9 @@ rules
     expr_type == eval_expression(scope, expr),
     existing_type == expr_type.
 
-  eval_expression(scope, AnonymousFunction(CallSignature(params, ret), StatementList(body))) = expr_type :- {return_type parameter_types function_scope}
+  eval_expression(scope, AnonymousFunction(CallSignature(params, TypeAnnotation(ret)), StatementList(body))) = expr_type :- {return_type parameter_types function_scope}
     new function_scope, function_scope -P-> scope,
-    return_type == eval_type(scope, unwrap_annotation(ret)),
+    return_type == eval_type(scope, ret),
     parameter_types == parse_parameters(scope, params, function_scope),
     eval_statements(scope, function_scope, body), // TODO module scope?
     expr_type == Function(return_type, parameter_types).
@@ -264,8 +287,10 @@ rules
 	// Parse rest of object literal
     parse_object_literal(scope, pscope, rest).
     
-  eval_expression(scope, CallExpr(fn, args)) = result_type :-
-    Function(result_type, _) == eval_expression(scope, fn). // TODO match arg types
+  eval_expression(scope, CallExpr(fn, args)) = result_type :- {fnType declared_arg_types}
+    fnType == eval_expression(scope, fn),
+    Function(result_type, declared_arg_types) == fnType,
+    args_assignable(eval_expressions(scope, args), declared_arg_types).
   
   eval_expression(scope, ArrayAccessExpr(obj, StringLiteral(prop))) = result_type :- {obj_scope}
     Object(obj_scope) == eval_expression(scope, obj),
@@ -276,6 +301,8 @@ rules
   
   eval_expression(scope, ThisExpr()) = result_type :- 
     result_type == lookup_type(scope, "this").
+    
+  eval_expressions maps eval_expression(*, list(*)) = list(*)
 
   lookup_type: scope * ID -> Type
   lookup_type(scope, name) = T :-
@@ -390,7 +417,14 @@ intersect_assignable_all maps is_assignable(*, list(*))
     in pscope_b |-> query_results,
     recurse_properties(pscope_a, pscope_b, query_results).
     
-  is_assignable(Function(r1, a1), Function(r2, a2)).
+  is_assignable(Function(r1, a1), Function(r2, a2)) :-
+     is_assignable(r1, r2),
+     args_assignable(a1,a2).
+  
+  args_assignable: list(Type) * list(Type)
+  args_assignable([], []).
+  args_assignable([x | xs], [y | ys]) :- is_assignable(x, y), args_assignable(xs, ys).
+  
 
 // Checks whether the properties from a type A can be assigned to the properties of B
 // Pretty much the same reasoning can be applied as if we were checking sub type relations

@@ -15,8 +15,11 @@ imports
   disamb
 
 rules // Analysis
-//  editor-analyze = stx-editor-analyze(desugar-all|"typechecking/typescript", "projectOk", "fileOk")
-  editor-analyze = stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")
+//  editor-analyze = stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "projectOk", "fileOk")
+  editor-analyze: a -> s
+    where
+      s := <stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")> a;
+      <debug> s
 
 rules // Debugging
 
