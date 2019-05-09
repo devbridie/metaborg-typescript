@@ -77,7 +77,7 @@ signature
     Let                                    : VariableDeclarationType
     Const                                  : VariableDeclarationType
     Var                                    : VariableDeclarationType
-    InterfaceDeclaration                   : ID * list(NameWithType) -> Statement
+    InterfaceDeclaration                   : ID * ID * list(NameWithType) -> Statement
     StatementList                          : list(Statement) -> StatementList
   
   sorts ExportDeclaration constructors
@@ -118,13 +118,15 @@ rules
 
 rules
   projectOk: scope
-  projectOk(s) :- {number_scope string_scope boolean_scope}
+  projectOk(s) :- {number_scope string_scope boolean_scope object_scope}
     // Create property scopes for base types
     new number_scope,
 	new string_scope,
 	new boolean_scope,
+	new object_scope,
 	
 	// Add types to scope
+	s -> Type{"Object"@-} with type Object(object_scope),
 	s -> Type{"number"@-} with type Number(number_scope),
 	s -> Type{"string"@-} with type String(string_scope),
 	s -> Type{"boolean"@-} with type Boolean(boolean_scope).
@@ -147,7 +149,7 @@ rules
 
   eval_statements maps eval_statement(*, *, list(*))    
   eval_statement: scope * scope * Statement
-  eval_statement(export_scope, file_scope, InterfaceDeclaration(name, types)) :- {type_scope}
+  eval_statement(export_scope, file_scope, InterfaceDeclaration(name, pname, types)) :- {type_scope parent_type parent_scope}
     new type_scope, type_scope -P-> file_scope,
     file_scope -> Type{name@name} with type Object(type_scope),
     add_props_to_type(type_scope, types). 
@@ -251,11 +253,18 @@ rules
     Object(cscope) == eval_expression(scope, classExpr),
     Function(out, _) == lookup_type(cscope, "new").
     
-  eval_expression(scope, ClassExpr(n, p, i, members)) = Object(cscope) :- // TODO inheritance
+  eval_expression(scope, ClassExpr(n, p, Implements(is), members)) = Object(cscope) :- // TODO inheritance
     new cscope, cscope -P-> scope,
     add_props_to_type(cscope, members2NameWithType(members)),
+    class_implements_interfaces(scope, cscope, is),
     cscope -> Var{"new"@-} with type Function(Object(cscope),[]).
-  
+  class_implements_interface: scope * scope * string
+  class_implements_interface(lookup_scope, class_scope, interfaceName) :- {interface_scope interface_type}
+    type of Type{interfaceName@interfaceName} in lookup_scope |-> [(_, (_, interface_type))],
+    interface_scope == properties_of(interface_type),
+    is_assignable(Object(class_scope), Object(interface_scope)).
+  class_implements_interfaces maps class_implements_interface(*,*,list(*))
+    
   members2NameWithType maps member2NameWithType(list(*)) = list(*)  
   member2NameWithType: ClassElement -> NameWithType
   member2NameWithType(PropertyMemberWithInitializer(n, e)) = n.

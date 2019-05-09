@@ -29,7 +29,7 @@ rules
     result := FunctionType(newparams, ty)
   desugar: PropertyMemberWithoutInitializer(n) -> PropertyMemberWithInitializer(n, UndefinedLiteral())
   desugar: ExpressionStatement(c@ClassExpr(n, p, i, e)) -> [
-    InterfaceDeclaration(n, <map(member2type)> e),
+    InterfaceDeclaration(n, p, <map(member2type)> e),
      VariableDeclaration(Const(), [VariableDeclarationWithInitializer(NameWithType(n, 
       StructureType([NameWithType("new", FunctionType([], IdType(n)))])
     ), c)])
@@ -46,6 +46,8 @@ rules
      
   desugar: MemberFn(name, sig) -> Member(NameWithType(name, <sig2type> sig))
   desugar: Member(n) -> n
+  desugar: NoImplements() -> Implements([])
+  desugar: InterfaceDeclarationNoExtends(i,im) -> InterfaceDeclaration(i, "Object", im)
   removesemis: a -> result where <not(is-string)> a;
         constructor := <removesm> <get-constructor> a;
         args := <get-arguments> a; 

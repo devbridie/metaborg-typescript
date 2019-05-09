@@ -20,7 +20,7 @@ context-free syntax
   ClassParent.ClassParent = <extends <ID>>
   
   ImplementsClause.NoImplements =  
-  ImplementsClause.Implements = <implements <{ID " "}*>>
+  ImplementsClause.Implements = <implements <{ID ", "}*>>
   
   // TODO empty bodies allowed in abstract classes
   ClassElement.FunctionMember = <<{MemberModifier " "}*> <ID><CallSignature> {

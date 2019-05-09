@@ -1,0 +1,47 @@
+module test
+language typescript
+
+test structural instead of nominal [[
+interface A { }
+class B extends A { }
+class X { 
+  b: B;
+}
+class Y extends X {
+  b: A;
+}
+]] analysis succeeds 
+
+test must copy properties [[
+interface A { num: number }
+class B implements A { }
+]] analysis fails
+
+test interface inheritance [[
+interface A { num: number }
+interface B extends A { num2: number }
+
+class C implements B { }
+]] analysis fails
+
+
+test interface inheritance [[
+interface A { num: number }
+interface B extends A { num2: number }
+
+class C implements B { num: number }
+]] analysis fails
+
+test interface inheritance [[
+interface A { num: number }
+interface B extends A { num2: number }
+
+class C implements B { num2: number }
+]] analysis fails
+
+test interface inheritance [[ 
+interface A { num: number }
+interface B extends A { num2: number } 
+
+class C implements B { num: number; num2: number }
+]] analysis succeeds

@@ -45,14 +45,17 @@ context-free syntax
   
 //  Statement.EmptyInterfaceDeclaration = <interface <ID>>
   Statement.InterfaceDeclarationWithTypeParameters = <interface <ID><TypeParameters><StructureType>>
-  InterfaceDeclaration.InterfaceDeclaration = <interface <ID> { <InterfaceMember*> }>
   InterfaceMember.Member = NameWithOptionalType
   InterfaceMember.Member__C = <<NameWithOptionalType>,>
   InterfaceMember.Member__SM = <<NameWithOptionalType>;>
   InterfaceMember.MemberFn = <<ID><CallSignature>>
   InterfaceMember.MemberFn__C = <<ID><CallSignature>,>
   InterfaceMember.MemberFn__SM = <<ID><CallSignature>;>
-  InterfaceDeclaration.InterfaceDeclaration__SM = <interface <ID> { <InterfaceMember*> }> 
+  InterfaceDeclaration.InterfaceDeclarationNoExtends = <interface <ID> { <InterfaceMember*> }>
+  InterfaceDeclaration.InterfaceDeclarationNoExtends__SM = <interface <ID> { <InterfaceMember*> };>
+  InterfaceDeclaration.InterfaceDeclaration = <interface <ID> extends <ID> { <InterfaceMember*> }>
+  InterfaceDeclaration.InterfaceDeclaration__SM = <interface <ID> extends <ID> { <InterfaceMember*> };>
+   
 
   StatementList.StatementList = <<{Statement "\n"}*>>
   
