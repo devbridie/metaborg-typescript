@@ -22,7 +22,7 @@ interface A { num: number }
 interface B extends A { num2: number }
 
 class C implements B { }
-]] analysis fails
+]] transform "Compare -> Compare to reference result"    
 
 
 test interface inheritance [[

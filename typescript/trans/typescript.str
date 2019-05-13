@@ -8,6 +8,7 @@ imports
   analysis
   compile
   desugaring/desugar
+  reference
 
 rules // Debugging
   
@@ -22,3 +23,9 @@ rules // Debugging
     where
       filename := <guarantee-extension(|"desugared.aterm")> path ;
       text     := <desugar-all> <disamb-all>  ast
+      
+  compare-compiler-result: 
+    (_, _, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"compiler")> path
+    ; result   := <reference-compiler> <pp-debug> ast

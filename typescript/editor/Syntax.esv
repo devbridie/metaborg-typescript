@@ -22,8 +22,9 @@ menus
     action: "Format"          = editor-format (source)
     action: "Show parsed AST" = debug-show-aterm (source)
     action: "Show desugared syntax" = editor-desugar (source)
-
-  action: "Compile" = compile-typescript (source) 
+    action: "Compile" = compile-typescript (source)
+  menu: "Compare" (openeditor)
+    action: "Compare to reference result" =  compare-compiler-result (source)
 views
 
   outline view: editor-outline (source)
