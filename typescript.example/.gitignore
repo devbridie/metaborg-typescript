@@ -10,4 +10,4 @@
 *.compiled.ts
 *.desugared.aterm
 *.pp.ts
-
+*.compiler
