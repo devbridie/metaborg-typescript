@@ -179,6 +179,7 @@ rules
       into_scope -> Var{name@name} with type decl_type.
   
   eval_type: scope * TypeExpr -> Type
+  eval_type(scope, InferredType()) = Any().
   eval_type(scope, NumberType()) = T :-
     type of Type{"number"@-} in scope |-> [(_, (_, T))].
     
