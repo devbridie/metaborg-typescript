@@ -257,9 +257,18 @@ rules
     
   eval_expression(scope, ClassExpr(n, p, Implements(is), members)) = Object(cscope) :- // TODO inheritance
     new cscope, cscope -P-> scope,
+    cscope -> Var{"this"@-} with type Object(cscope),
     add_props_to_type(cscope, members2NameWithType(members)),
     class_implements_interfaces(scope, cscope, is),
+    check_members(cscope, members),
     cscope -> Var{"new"@-} with type Function(Object(cscope),[]).
+    
+  check_member: scope * ClassElement
+  check_member(s, PropertyMemberWithInitializer(NameWithType(n, t), other)) :- {rhs_type}
+    rhs_type == eval_expression(s, other),
+    is_assignable(rhs_type, eval_type(s, t)).
+
+  check_members maps check_member(*, list(*))
   class_implements_interface: scope * scope * string
   class_implements_interface(lookup_scope, class_scope, interfaceName) :- {interface_scope interface_type}
     type of Type{interfaceName@interfaceName} in lookup_scope |-> [(_, (_, interface_type))],
