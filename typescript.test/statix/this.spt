@@ -1,0 +1,20 @@
+module test
+language typescript
+
+test find from class scope [[
+class X {
+	num: boolean;
+	test(): boolean {
+		const x: number = this.num;
+	}
+}
+]] analysis fails
+
+test find from class scope [[
+class X {
+	num: number;
+	test(): boolean {
+		const x: number = this.num;
+	}
+}
+]] analysis succeeds 
