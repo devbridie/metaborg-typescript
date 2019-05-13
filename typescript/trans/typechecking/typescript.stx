@@ -225,6 +225,8 @@ rules
     
   eval_expression(scope, IdExpr(id)) = T :-
     T == lookup_type(scope, id).
+  eval_expression(scope, UndefinedLiteral()) = Any().
+  eval_expression(scope, NullLiteral()) = Any().
 
   eval_expression(scope, MemberExpr(receiver, selector)) = T :- {obj_type obj_scope}
     obj_type == eval_expression(scope, receiver),
@@ -390,7 +392,8 @@ intersect_assignable_any maps maybe_assignable(list(*), *) = list(*)
 // or whether all types in a list of types can be assigned to a type
 union_assignable_all     maps is_assignable(list(*), *)
 intersect_assignable_all maps is_assignable(*, list(*))
-
+  is_assignable(Any(), _).
+  is_assignable(_, Any()).
   is_assignable(Number(_), Number(_)).
   is_assignable(String(_), String(_)).
   is_assignable(Boolean(_), Boolean(_)).
