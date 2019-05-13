@@ -12,6 +12,7 @@ signature
 	
 rules
   desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(topdown(try(bottomup(try(desugar)))))> l)
+  desugar: StatementList(l) -> StatementList(<flatten-list> <map(wrap-if-single)> <map(topdown(try(bottomup(try(desugar)))))> l)
   wrap-if-single: a@[_|_] -> a
   wrap-if-single: a -> [a]
   desugar: VariableDeclarationNoInitializer(b) -> VariableDeclarationWithInitializer(b, UndefinedLiteral())
