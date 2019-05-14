@@ -23,8 +23,10 @@ public class reference_compiler_0_0 extends Strategy {
 				writer.write(inputProgram);
 				writer.flush();
 			}
+			long time = System.currentTimeMillis();
 			Process tsc = new ProcessBuilder("tsc", "--noEmit", "--target", "ESNext", tmpFile.getAbsolutePath()).start();
 			int out = tsc.waitFor();
+			context.getIOAgent().printError("tsc duration: " + (System.currentTimeMillis() - time) + "ms");
 			if (out == 0) return new StrategoString("success", TermFactory.EMPTY_LIST, IStrategoTerm.IMMUTABLE);
 			else return new StrategoString("fail\n" + IOUtils.toString(tsc.getInputStream(), Charset.forName("utf8")), TermFactory.EMPTY_LIST, IStrategoTerm.IMMUTABLE);
 		} catch (Exception e) {
