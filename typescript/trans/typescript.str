@@ -9,6 +9,7 @@ imports
   compile
   desugaring/desugar
   reference
+  libspoofax/stratego/debug
 
 rules // Debugging
   
@@ -27,5 +28,10 @@ rules // Debugging
   compare-compiler-result: 
     (_, _, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"compiler")> path
-    ; result   := <reference-compiler> <pp-debug> ast
+      filename := <guarantee-extension(|"compiler")> path;
+      (reference, statixResult) := <run-reference-statix> ast;
+      AnalysisResult([(resource, Full(ast', a, error*, warning*, note*))]) := <debug(|"statixResult")>  statixResult;
+      statix := <concat-strings> ["Errors: ", <write-to-string> error*, "\n\n", "Warnings: ", <write-to-string> warning*, "\n\n", "Notes: ", <write-to-string> note*];
+      result   := <concat-strings> ["Reference result: ", reference, "\n\n", "Statix result: ", statix, "\n\n", <write-to-string> ast]
+      
+  test-reference-result: (_,_, ast, _,_) -> <spt-reference-statix> ast

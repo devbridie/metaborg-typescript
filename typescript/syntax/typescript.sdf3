@@ -10,7 +10,7 @@ imports
  
 context-free start-symbols
   
-  Expression Statement Program
+  Program
 
 context-free syntax
  

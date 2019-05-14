@@ -1,4 +1,6 @@
-const x = 5    
-+5
-
-class Test {}
+class X {
+	num: boolean;
+	test(): boolean {
+		const x: boolean = this.num;
+	}
+} 

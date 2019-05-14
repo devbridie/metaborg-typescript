@@ -1,16 +1,17 @@
+
 module test
 language typescript
 
 test structural instead of nominal [[
 interface A { }
-class B extends A { }
+class B implements A { }
 class X { 
   b: B;
 }
 class Y extends X {
-  b: A;
-}
-]] analysis succeeds 
+  b: A;  
+} 
+]] transform "Compare -> Test against reference result"    
 
 test must copy properties [[
 interface A { num: number }
@@ -22,26 +23,26 @@ interface A { num: number }
 interface B extends A { num2: number }
 
 class C implements B { }
-]] transform "Compare -> Compare to reference result"    
+]] transform "Compare -> Test against reference result" 
 
 
 test interface inheritance [[
 interface A { num: number }
 interface B extends A { num2: number }
 
-class C implements B { num: number }
-]] analysis fails
+class C implements B { num: number } 
+]] transform "Compare -> Test against reference result"  
 
-test interface inheritance [[
+test interface inheritance [[ 
 interface A { num: number }
 interface B extends A { num2: number }
 
 class C implements B { num2: number }
-]] analysis fails
+]] transform "Compare -> Test against reference result" 
 
 test interface inheritance [[ 
 interface A { num: number }
 interface B extends A { num2: number } 
 
 class C implements B { num: number; num2: number }
-]] analysis succeeds
+]] transform "Compare -> Test against reference result"

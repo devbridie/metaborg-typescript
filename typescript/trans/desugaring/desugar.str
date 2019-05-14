@@ -3,6 +3,7 @@ module desugar
 imports
 	signatures/-
 	pp
+	libspoofax/stratego/debug
 signature
 	constructors
 	InferredType: TypeExpr
@@ -58,5 +59,6 @@ rules
   member2type: PropertyMemberWithInitializer(NameWithType(n, t), e) -> NameWithType(n, t)
 strategies
   	desugar-all: ast -> result with
-  	   removed := <topdown(try(removesemis))> ast;  	   
+  	   removed := <topdown(try(removesemis))> ast;  	
   	   result := <desugar> removed
+  	   

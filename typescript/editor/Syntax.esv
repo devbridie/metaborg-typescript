@@ -24,7 +24,8 @@ menus
     action: "Show desugared syntax" = editor-desugar (source)
     action: "Compile" = compile-typescript (source)
   menu: "Compare" (openeditor)
-    action: "Compare to reference result" =  compare-compiler-result (source)
+    action: "Show reference result" =  compare-compiler-result (source)
+    action: "Test against reference result" = test-reference-result (source)
 views
 
   outline view: editor-outline (source)

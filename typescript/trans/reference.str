@@ -1,4 +1,33 @@
 module reference
 imports pp disamb desugaring/desugar
+  completion/completion
+  outline
+  analysis
+  compile
+  statixruntime
+    libstratego-lib
+  libstratego-gpp
+
+  libspoofax/analysis/constraint
+  libspoofax/core/language
+  libspoofax/stratego/debug
+
+  pp/statix/runtime/-
+  
 rules
   external reference-compiler(|)
+  
+  run-reference-statix: ast -> (referenceResult, statixResult) where
+    referenceResult := <reference-compiler> <pp-debug> ast;
+    statixin := AnalyzeSingle([("file.ts", Changed(ast, Solution([],""))),("file.ts",Cached(Solution([],"")))]);
+    statixResult := <stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")> statixin 
+  
+  statix-result-to-succeed: a@AnalysisResult([(_, Full(_, _, [],[],[]))]) -> a
+  reference-result-to-succeed: a -> <string-starts-with(|"success")> a
+  
+  spt-reference-statix: ast -> <test-compiler-and-statix> <run-reference-statix> ast
+  
+  test-compiler-and-statix: (referenceResult, statixResult) -> "a" where
+    <reference-result-to-succeed> referenceResult <+ <statix-result-to-succeed> statixResult
+    
+  print-incoming-argument-from-spt: a -> <debug(|"SPT is giving us: ")> a
