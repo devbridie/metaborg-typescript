@@ -57,7 +57,6 @@ signature
   sorts ClassExpression ClassParent ImplementsClause ClassElement constructors
     ClassExpression                   : ID * ClassParent * ImplementsClause * list(ClassElement) -> ClassExpression
     ClassExpressionWithTypeParameters : ID * TypeParameters * ClassParent * ImplementsClause * list(ClassElement) -> ClassExpression
-    NoParent                          : ClassParent
     ClassParent                       : ID -> ClassParent
     NoImplements                      : ImplementsClause
     Implements                        : list(ID) -> ImplementsClause
@@ -256,20 +255,25 @@ rules
     Object(cscope) == eval_expression(scope, classExpr),
     Function(out, _) == lookup_type(cscope, "new").
     
-  eval_expression(scope, ClassExpr(n, p, Implements(is), members)) = Object(cscope) :- // TODO inheritance
+  eval_expression(scope, ClassExpr(n, ClassParent(p), Implements(is), members)) = Object(cscope) :- {parent_type parent_scope}
     new cscope, cscope -P-> scope,
     cscope -> Var{"this"@-} with type Object(cscope),
+    type of Type{p@p} in scope |-> [(_, (_, parent_type))],
+    Object(parent_scope) == parent_type, 
+    cscope -P-> parent_scope,
     add_props_to_type(cscope, members2NameWithType(members)),
     class_implements_interfaces(scope, cscope, is),
-    check_members(cscope, members),
+    check_members(scope, cscope, members),
     cscope -> Var{"new"@-} with type Function(Object(cscope),[]).
     
-  check_member: scope * ClassElement
-  check_member(s, PropertyMemberWithInitializer(NameWithType(n, t), other)) :- {rhs_type}
-    rhs_type == eval_expression(s, other),
+  check_member: scope * scope * ClassElement
+  check_member(s, cscope, PropertyMemberWithInitializer(NameWithType(n, t), other)) :- {rhs_type member_scope}
+    new member_scope, member_scope -P-> s,
+    member_scope -> Var{"this"@-} with type Object(cscope),
+    rhs_type == eval_expression(member_scope, other),
     is_assignable(rhs_type, eval_type(s, t)).
-
-  check_members maps check_member(*, list(*))
+  check_members maps check_member(*, *, list(*))
+  
   class_implements_interface: scope * scope * string
   class_implements_interface(lookup_scope, class_scope, interfaceName) :- {interface_scope interface_type}
     type of Type{interfaceName@interfaceName} in lookup_scope |-> [(_, (_, interface_type))],

@@ -17,4 +17,13 @@ class X {
 		const x: number = this.num;
 	}
 }
+]] analysis succeeds
+
+test find from parent scope [[
+class Y { num: number }
+class X extends Y {
+	test() {
+		const x: number = this.num;  
+	}
+}
 ]] analysis succeeds 

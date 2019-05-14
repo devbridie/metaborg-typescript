@@ -1,6 +1,6 @@
-class X {
-	num: boolean;
-	test(): boolean {
-		const x: boolean = this.num;
+class Y { num: number }
+class X extends Y {
+	test() {
+		const x: number = this.num; 
 	}
 } 
