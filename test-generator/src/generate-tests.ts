@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf'
 
-const bannedWords = ["async", "await", "function*", "@", "enum", "module", "namespace", "yield", "declare"];
+const bannedWords = ["async", "await", "function*", "@", "enum", "module", "namespace", "yield", "declare", "import", "export", "get ", "set ", "keyof", "<", " is ", "...", "switch", "static"];
 
 const from = "../typescript-reference/tests";
 const to = "../typescript.test/generated";
