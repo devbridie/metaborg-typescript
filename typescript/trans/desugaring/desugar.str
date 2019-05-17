@@ -10,6 +10,8 @@ signature
 	
 	SingleVariableDeclaration                    : VariableDeclarationType * ID * TypeExpr * Expression -> VarDeclaration
 	ImportMember : STRING * ID * ID -> Statement
+	AssignExpr                   : LHS * Expression -> Expression
+	
 	
 rules
   desugar: Program(l) -> Program(<flatten-list> <map(wrap-if-single)> <map(topdown(try(bottomup(try(desugar)))))> l)
@@ -51,6 +53,26 @@ rules
   desugar: NoImplements() -> Implements([])
   desugar: InterfaceDeclarationNoExtends(i,im) -> InterfaceDeclaration(i, "Object", im)
   desugar: NoParent() -> ClassParent("Object")
+  
+  desugar: AssignExpr(lhs, AssignmentEquals(), rhs) -> AssignExpr(lhs, rhs)
+  desugar: AssignExpr(lhs, op, rhs) -> result with
+           constructor := <find-constructor-for-assignment> op;
+           new_rhs := <mkterm> (constructor, [lhs, rhs]);
+           result := AssignExpr(lhs, new_rhs)
+  
+  find-constructor-for-assignment: AssignmentPlus() -> "AddExpr"
+  find-constructor-for-assignment: AssignmentMinus() -> "SubtractExpr"
+  find-constructor-for-assignment: AssignmentMultiply() -> "MultiplyExpr"
+  find-constructor-for-assignment: AssignmentDivide() -> "DivideExpr"
+  find-constructor-for-assignment: AssignmentModulo() -> "ModuloExpr"
+  find-constructor-for-assignment: AssignmentExponentiation() -> "ExponentiationExpr"
+  find-constructor-for-assignment: AssignmentShiftLeft() -> "BitwiseShiftLeftExpr"
+  find-constructor-for-assignment: AssignmentShiftRight() -> "BitwiseShiftRightExpr"
+  find-constructor-for-assignment: AssignmentUnsignedRightShift() -> "BitwiseUnsignedShiftRightExpr" 
+  find-constructor-for-assignment: AssignmentBitwiseOr() -> "BitwiseOrExpr"
+  find-constructor-for-assignment: AssignmentBitwiseXor() -> "BitwiseXorExpr"
+  find-constructor-for-assignment: AssignmentBitwiseAnd() -> "BitwiseAndExpr"
+  
   removesemis: a -> result where <not(is-string)> a;
         constructor := <removesm> <get-constructor> a;
         args := <get-arguments> a; 

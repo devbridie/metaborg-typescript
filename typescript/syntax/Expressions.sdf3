@@ -33,10 +33,24 @@ context-free syntax
   Expression = ArrayAccessExpr
   Expression.NewExpr = <new <Expression>(<{Expression ","}*>)>
   Expression = ClassExpr
-  Expression.AssignExpr = <<LHS> = <Expression>>
+  Expression.AssignExpr = <<LHS> <AssignmentOperator> <Expression>>
   LHS = IdExpr
   LHS = MemberExpr
   LHS = ArrayAccessExpr
+  
+  AssignmentOperator.AssignmentEquals = <=>
+  AssignmentOperator.AssignmentPlus = <+=>
+  AssignmentOperator.AssignmentMinus = <-=>
+  AssignmentOperator.AssignmentMultiply = <*=>
+  AssignmentOperator.AssignmentDivide = </=>
+  AssignmentOperator.AssignmentModulo = <%=>
+  AssignmentOperator.AssignmentExponentiation = <**=>
+  AssignmentOperator.AssignmentShiftLeft = [<<=]
+  AssignmentOperator.AssignmentShiftRight = [>>=]
+  AssignmentOperator.AssignmentUnsignedRightShift = [>>>=]
+  AssignmentOperator.AssignmentBitwiseOr = [|=]
+  AssignmentOperator.AssignmentBitwiseXor = [^=]
+  AssignmentOperator.AssignmentBitwiseAnd = [&=]
   
   ClassExpr.ClassExpr = <class <ID> <ClassParent> <ImplementsClause> {
     <{ClassElement "\n"}*>
@@ -47,6 +61,7 @@ context-free syntax
   Expression.MultiplyExpr = <<Expression> * <Expression>> {left}
   Expression.DivideExpr = <<Expression> / <Expression>> {left}
   Expression.ModuloExpr = <<Expression> % <Expression>> {left}
+  Expression.ExponentiationExpr = [[Expression] ** [Expression]] {left}
   
   Expression.LtExpr = [[Expression] < [Expression]] {left}
   Expression.GtExpr = [[Expression] > [Expression]] {left}
@@ -62,8 +77,13 @@ context-free syntax
   Expression.BitwiseAndExpr = [[Expression] & [Expression]] {left}
   Expression.BitwiseOrExpr = [[Expression] | [Expression]] {left}
   Expression.BitwiseXorExpr = [[Expression] ^ [Expression]] {left}
+  Expression.BitwiseShiftLeftExpr = [[Expression] << [Expression]] {left}
+  Expression.BitwiseShiftRightExpr = [[Expression] >> [Expression]] {left}
+  Expression.BitwiseUnsignedShiftRightExpr = [[Expression] >>> [Expression]] {left}
+  
   Expression.LogicalOrExpr = [[Expression] || [Expression]] {left}
   Expression.LogicalAndExpr = [[Expression] && [Expression]] {left}
+  
   Expression.ConditionalExpr = [[Expression] ? [Expression] : [Expression]] {left}
   
   Expression.DeleteExpr = [delete [Expression]]

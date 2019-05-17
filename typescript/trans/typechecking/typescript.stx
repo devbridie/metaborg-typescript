@@ -40,7 +40,7 @@ signature
     ArrayAccessExpr                : Expression * Expression -> Expression
     NewExpr                        : Expression * list(Expression) -> Expression
     ClassExpr               : ID * ClassParent * ImplementsClause * list(ClassElement) -> Expression
-    AssignExpr                     : ID * Expression -> Expression
+    AssignExpr                     : Expression * Expression -> Expression
     
     AddExpr                   : Expression * Expression -> Expression
     SubtractExpr              : Expression * Expression -> Expression
@@ -61,6 +61,7 @@ signature
     BitwiseXorExpr            : Expression * Expression -> Expression
     LogicalOrExpr             : Expression * Expression -> Expression
     LogicalAndExpr            : Expression * Expression -> Expression
+    ExponentiationExpr        : Expression * Expression -> Expression
     ConditionalExpr           : Expression * Expression * Expression -> Expression
     DeleteExpr                : Expression -> Expression
     VoidExpr                  : Expression -> Expression
@@ -271,9 +272,9 @@ rules
     T == lookup_type(obj_scope, selector).
  
   eval_expression(scope, AssignExpr(id, expr)) = expr_type :- {existing_type}
-    existing_type == lookup_type(scope, id),
+    existing_type == eval_expression(scope, id),
     expr_type == eval_expression(scope, expr),
-    existing_type == expr_type.
+    is_assignable(existing_type, expr_type).
     
   eval_expression(scope, AddExpr(e1, e2)) = T :- {lt rt}
     lt == eval_expression(scope, e1),
@@ -288,6 +289,7 @@ rules
   eval_expression(scope, MultiplyExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
   eval_expression(scope, DivideExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
   eval_expression(scope, ModuloExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, ExponentiationExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
   eval_expression(scope, BitwiseAndExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
   eval_expression(scope, BitwiseOrExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
   eval_expression(scope, BitwiseXorExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
