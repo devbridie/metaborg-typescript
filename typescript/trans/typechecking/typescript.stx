@@ -255,6 +255,11 @@ rules
   eval_expression(scope, BooleanLiteral()) = T :-
     type of Type{"boolean"@-} in scope |-> [(_, (_, T))].
     
+  eval_expression(scope, TrueLiteral()) = T :-
+    type of Type{"boolean"@-} in scope |-> [(_, (_, T))].
+  eval_expression(scope, FalseLiteral()) = T :-
+    type of Type{"boolean"@-} in scope |-> [(_, (_, T))].
+    
   eval_expression(scope, IdExpr(id)) = T :-
     T == lookup_type(scope, id).
   eval_expression(scope, UndefinedLiteral()) = Any().
