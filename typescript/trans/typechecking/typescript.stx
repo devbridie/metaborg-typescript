@@ -42,6 +42,38 @@ signature
     ClassExpr               : ID * ClassParent * ImplementsClause * list(ClassElement) -> Expression
     AssignExpr                     : ID * Expression -> Expression
     
+    AddExpr                   : Expression * Expression -> Expression
+    SubtractExpr              : Expression * Expression -> Expression
+    MultiplyExpr              : Expression * Expression -> Expression
+    DivideExpr                : Expression * Expression -> Expression
+    ModuloExpr                : Expression * Expression -> Expression
+    LtExpr                    : Expression * Expression -> Expression
+    GtExpr                    : Expression * Expression -> Expression
+    LteExpr                   : Expression * Expression -> Expression
+    GteExpr                   : Expression * Expression -> Expression
+    InstanceofExpr            : Expression * Expression -> Expression
+    EqEqExpr                  : Expression * Expression -> Expression
+    NegEqExpr                 : Expression * Expression -> Expression
+    EqEqEqExpr                : Expression * Expression -> Expression
+    NegEqEqExpr               : Expression * Expression -> Expression
+    BitwiseAndExpr            : Expression * Expression -> Expression
+    BitwiseOrExpr             : Expression * Expression -> Expression
+    BitwiseXorExpr            : Expression * Expression -> Expression
+    LogicalOrExpr             : Expression * Expression -> Expression
+    LogicalAndExpr            : Expression * Expression -> Expression
+    ConditionalExpr           : Expression * Expression * Expression -> Expression
+    DeleteExpr                : Expression -> Expression
+    VoidExpr                  : Expression -> Expression
+    TypeofExpr                : Expression -> Expression
+    IncrementPreExpr          : Expression -> Expression
+    DecrementPreExpr          : Expression -> Expression
+    IncrementPostExpr         : Expression -> Expression
+    DecrementPostExpr         : Expression -> Expression    
+    PlusExpr                  : Expression -> Expression
+    NegExpr                   : Expression -> Expression
+    BitwiseNotExpr            : Expression -> Expression
+    NegateExpr                : Expression -> Expression
+    
     NullLiteral            : Expression
     UndefinedLiteral       : Expression
     TrueLiteral            : Expression
@@ -237,7 +269,47 @@ rules
     existing_type == lookup_type(scope, id),
     expr_type == eval_expression(scope, expr),
     existing_type == expr_type.
-
+    
+  eval_expression(scope, AddExpr(e1, e2)) = T :- {lt rt}
+    lt == eval_expression(scope, e1),
+    rt == eval_expression(scope, e2),
+    T == eval_plus(lt, rt).
+    eval_plus: Type * Type -> Type
+    eval_plus(Number(_), String(a)) = String(a).
+    eval_plus(Number(_), Number(a)) = Number(a).
+    eval_plus(String(a), _) = String(a).
+  
+  eval_expression(scope, SubtractExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, MultiplyExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, DivideExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, ModuloExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, BitwiseAndExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, BitwiseOrExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, BitwiseXorExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == Number(lt).
+  eval_expression(scope, LtExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, GtExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, LteExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, GteExpr(e1, e2)) = T :- {lt rt} Number(lt) == eval_expression(scope, e1), Number(rt) == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, EqEqExpr(e1, e2)) = T :- {lt rt} lt == eval_expression(scope, e1), rt == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, NegEqExpr(e1, e2)) = T :- {lt rt} lt == eval_expression(scope, e1), rt == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, EqEqEqExpr(e1, e2)) = T :- {lt rt} lt == eval_expression(scope, e1), rt == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, NegEqEqExpr(e1, e2)) = T :- {lt rt} lt == eval_expression(scope, e1), rt == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, LogicalOrExpr(e1, e2)) = T :- {lt rt} lt == eval_expression(scope, e1), rt == eval_expression(scope, e2), T == Union(lt, rt).
+  eval_expression(scope, LogicalAndExpr(e1, e2)) = T :- {lt rt} lt == eval_expression(scope, e1), rt == eval_expression(scope, e2), T == Union(lt, rt).
+  eval_expression(scope, InstanceofExpr(e1, e2)) = T :- {lt} lt == eval_expression(scope, e1), Function(_, _) == eval_expression(scope, e2), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, ConditionalExpr(e1, e2, e3)) = T :- {it tt et} it == eval_expression(scope, e1), tt == eval_expression(scope, e2), et == eval_expression(scope, e3), T == Union(tt, et).
+  eval_expression(scope, DeleteExpr(e)) = T :- {et} et == eval_expression(scope, e), T == eval_type(scope, BooleanType()).
+  eval_expression(scope, VoidExpr(e)) = Any() :- {et} et == eval_expression(scope, e).   
+  eval_expression(scope, TypeofExpr(e)) = eval_type(scope, NumberType()) :- {et} et == eval_expression(scope, e).
+  eval_expression(scope, IncrementPreExpr(e)) = eval_type(scope, NumberType()) :- Number(_) == eval_expression(scope, e).
+  eval_expression(scope, DecrementPreExpr(e)) = eval_type(scope, NumberType()) :- Number(_) == eval_expression(scope, e).
+  eval_expression(scope, IncrementPostExpr(e)) = eval_type(scope, NumberType()) :- Number(_) == eval_expression(scope, e).
+  eval_expression(scope, DecrementPostExpr(e)) = eval_type(scope, NumberType()) :- Number(_) == eval_expression(scope, e).
+  eval_expression(scope, PlusExpr(e)) = eval_type(scope, NumberType()) :- {t1} t1 == eval_expression(scope, e).
+  eval_expression(scope, NegExpr(e)) = eval_type(scope, NumberType()) :- {t1} t1 == eval_expression(scope, e).
+  eval_expression(scope, BitwiseNotExpr(e)) = eval_type(scope, NumberType()) :- {t1} t1 == eval_expression(scope, e).
+  eval_expression(scope, NegateExpr(e)) = eval_type(scope, BooleanType()) :- {t1} t1 == eval_expression(scope, e).   
+  
   eval_expression(scope, AnonymousFunction(CallSignature(params, TypeAnnotation(ret)), StatementList(body))) = expr_type :- {return_type parameter_types function_scope}
     new function_scope, function_scope -P-> scope,
     return_type == eval_type(scope, ret),
