@@ -184,12 +184,12 @@ rules
   eval_statement(export_scope, file_scope, InterfaceDeclaration(name, pname, types)) :- {type_scope parent_type parent_scope}
     new type_scope, type_scope -P-> file_scope,
     file_scope -> Type{name@name} with type Object(type_scope),
-    add_props_to_type(type_scope, types). 
-  add_props_to_type maps add_prop_to_type(*, list(*))
-  add_prop_to_type: scope * NameWithType
-  add_prop_to_type(s, NameWithType(n, t)) :- {ttype}
-    ttype == eval_type(s, t),
-    s -> Var{n@n} with type ttype.
+    add_props_to_type(type_scope, file_scope, types). 
+  add_props_to_type maps add_prop_to_type(*, *, list(*))
+  add_prop_to_type: scope * scope * NameWithType
+  add_prop_to_type(to_scope, lookup_scope, NameWithType(n, t)) :- {ttype}
+    ttype == eval_type(lookup_scope, t),
+    to_scope -> Var{n@n} with type ttype.
   
   eval_statement(export_scope, file_scope, ExpressionStatement(e)) :- {a}
     a == eval_expression(file_scope, e).
@@ -340,8 +340,9 @@ rules
     type of Type{p@p} in scope |-> [(_, (_, parent_type))],
     Object(parent_scope) == parent_type, 
     cscope -P-> parent_scope,
-    add_props_to_type(cscope, members2NameWithType(members)),
+    add_props_to_type(cscope, scope, members2NameWithType(members)),
     class_implements_interfaces(scope, cscope, is),
+    class_implements_interface(scope, cscope, p),
     check_members(scope, cscope, members),
     cscope -> Var{"new"@-} with type Function(Object(cscope),[]).
     
