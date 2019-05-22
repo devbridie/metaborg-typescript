@@ -6,7 +6,9 @@ imports
   Statements
   Classes
   Types
-
+  
+context-free priorities Expression.NewExpr > Expression.MemberExpr
+  
 context-free syntax
   Expression = <(<Expression>)> {bracket}
   
@@ -14,7 +16,7 @@ context-free syntax
   IdExpr.IdExpr = ID
   Expression = IdExpr
   Expression = Literal
-  Expression.ObjectLiteral = <{<{NameWithValue ","}*>}>
+  Expression.ObjectLiteral = <{<{NameWithValue ","}*>}> 
   NameWithValue.NameWithValue = <<ID>: <Expression>>
   Expression.CallExpr = <<Expression>(<{Expression ","}*>)>
   FunctionDeclaration.FunctionDeclaration = <function <ID><CallSignature> {
@@ -27,15 +29,14 @@ context-free syntax
   }>
   Expression.ArrowExprExpr = [[CallSignature] => [Expression]]
   Expression.ArrowExprBlock = [[CallSignature] => { [StatementList] }]
-  MemberExpr.MemberExpr = <<Expression>.<ID>>
-  Expression = MemberExpr
+  Expression.MemberExpr = <<Expression>.<ID>> {left}
   ArrayAccessExpr.ArrayAccessExpr = <<Expression>[<Expression>]>
   Expression = ArrayAccessExpr
-  Expression.NewExpr = <new <Expression>(<{Expression ","}*>)>
+  Expression.NewExpr = <new <Expression>(<{Expression ","}*>)> {non-assoc}
   Expression = ClassExpr
   Expression.AssignExpr = <<LHS> <AssignmentOperator> <Expression>>
   LHS = IdExpr
-  LHS = MemberExpr
+  LHS.MemberExpr = <<Expression>.<ID>> {left}
   LHS = ArrayAccessExpr
   
   AssignmentOperator.AssignmentEquals = <=>
