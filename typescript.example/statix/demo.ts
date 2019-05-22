@@ -13,7 +13,7 @@ class Cat extends Animal {
 class Dog extends Animal {
 	name: string
 	test(): string {
-
+		const t: string = this.name
 	}
 }
 
@@ -30,6 +30,8 @@ const animal: Animal = new Cat(); // Type widened
 const x: number | string = animal.test() // test on animal
 const catTest: number = new Cat().test()  // test on specific type Cat
 
+// ----
+
 interface OneField { num: number }
 interface TwoField extends OneField { num2: number }
 
@@ -39,5 +41,9 @@ class X implements OneField, TwoField { // multiple implements
 }
 
 const f2: TwoField = new X();
-const f2: OneField = new X();
+const f1: OneField = new X();
+
+// seemingly unrelated interface?
+interface TwoField2 { num2: number }
+const f22: TwoField2 = f2;
 
