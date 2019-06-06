@@ -6,6 +6,5 @@ imports
   nabl2/References
 
 language
-
+	observer : editor-analyze (constraint)
 //  observer : editor-analyze (constraint) (multifile)
-  observer : editor-analyze (constraint)

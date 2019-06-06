@@ -8,6 +8,7 @@ imports
   static-semantics
   
   statixruntime
+  tstatix
   
   pp
   
@@ -19,6 +20,7 @@ rules // Analysis
   editor-analyze: a -> s
     where
       s := <stx-editor-analyze(disamb-all ; desugar-all|"typechecking/typescript", "main")> a
+
 
 rules // Debugging
 

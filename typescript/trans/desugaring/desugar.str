@@ -42,7 +42,7 @@ rules
   PropertyMemberWithInitializer(NameWithType(n, <sig2type> sig), AnonymousFunction(sig, statements)) 
   
   desugar: NamedImport(name) -> AsImport(name, name)
-  
+  desugar: From(n) -> From(<unquote('"', '"'|)>n)
   desugar: ImportClause(ImportsList(items), From(name)) -> <map(\AsImport(n, n2) -> ImportMember(name, n, n2) \)> items
   
   desugar: VariableDeclaration(ty, decls) -> 

@@ -21,7 +21,7 @@ context-free syntax
   ImportSpecifier.AsImport = <<ID> as <ImportedBinding>>
   
   ImportedBinding = ID
-  FromClause.From = <from <ModuleSpecifier>>
+  FromClause.From = <from <STRING>>
   
   ModuleSpecifier = STRING
   

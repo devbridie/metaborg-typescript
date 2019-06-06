@@ -112,9 +112,11 @@ signature
     InterfaceDeclaration                   : ID * ID * list(NameWithType) -> Statement
     StatementList                          : list(Statement) -> StatementList
   
-  sorts ExportDeclaration constructors
-        ExportDeclaration          : Statement -> Statement // actually decl -> Statement
-        ImportMember : STRING * ID * ID -> Statement
+  sorts ExportDeclaration ImportDeclaration FromClause NamespaceImport constructors
+      NameSpaceImport            : ID -> NamespaceImport
+        ExportDeclaration          : list(Statement) -> Statement // actually decl -> Statement
+	    ImportClause               : NamespaceImport * FromClause -> Statement
+	    From                       : STRING -> FromClause   
 
  sorts Type constructors
     Void : Type
@@ -140,12 +142,18 @@ name-resolution
 
 relations
   type : occurrence -> Type
+  module : occurrence -> Type
 
 rules
   main: Program
-  main(prog) :- {globalScope}
+  main(prog) :- {globalScope demoModuleExportScope}
     new globalScope,
     projectOk(globalScope),
+//    globalScope -> Module{"demomodule"@-},
+    new demoModuleExportScope,
+//    demoModuleExportScope -P-> globalScope,
+	demoModuleExportScope -> Var{"exportMember"@-} with type Number(globalScope),
+    globalScope -> Module{"demomodule"@-} with module Object(demoModuleExportScope),
     fileOk(globalScope, "bla", prog).
 
 rules
@@ -194,14 +202,15 @@ rules
   eval_statement(export_scope, file_scope, ExpressionStatement(e)) :- {a}
     a == eval_expression(file_scope, e).
     
-  eval_statement(export_scope, file_scope, ExportDeclaration(d)) :- put_declaration(export_scope, file_scope, d).
+  eval_statement(export_scope, file_scope, ExportDeclaration([d])) :- put_declaration(export_scope, file_scope, d).
   eval_statement(export_scope, file_scope, d@SingleVariableDeclaration(_, name, type, value)) :- put_declaration(file_scope, file_scope, d).
   
-  eval_statement(_, file_scope, ImportMember(from, originalName, toName)) :- {module}// TODO ???
-    query decl
-      filter pathMatch[e] and { Module{from@-} }
-    in file_scope |-> module.
-
+  eval_statement(_, file_scope,  ImportClause(NameSpaceImport(name),From(fromFile))) :- {moduleType}
+    moduleType == module2obj(file_scope, fromFile),
+    file_scope -> Var{name@name} with type moduleType.
+  module2obj: scope * string -> Type
+  module2obj(file_scope, string) = moduleScope :-
+  	module of Module{string@string} in file_scope |-> [(_, (_, moduleScope))].
     
   put_declaration: scope * scope * Statement
   put_declaration(into_scope, lookup_scope, SingleVariableDeclaration(_, name, type, value)) :- { decl_type expr_type }
