@@ -173,8 +173,8 @@ rules
   
   fileOk: scope * string * Program
   fileOk(globalScope, filename, program) :- {export_scope file_scope}
-    globalScope -> Module{filename@program},
     new export_scope,
+    globalScope -> Module{filename@program} with module Object(export_scope),
     new file_scope,
     file_scope -P-> export_scope,
     export_scope -P-> globalScope,
